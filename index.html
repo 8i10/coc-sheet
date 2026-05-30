@@ -78,7 +78,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 
 <!-- FIX3: 保存ボタン行を最上部へ -->
 <div style="display:flex;gap:4px;justify-content:flex-end;padding:4px 0 6px;align-items:center">
-  <div id="save_msg" style="font-size:10px;color:#2a7;display:none">✓ 保存しました</div>
+  <div id="save_msg" style="font-size:11px;color:#000;display:none">✓ 保存しました</div>
   <button onclick="saveToStorage()" style="padding:2px 12px;font-size:11px;cursor:pointer;background:#2a7;color:#fff;border:none;border-radius:2px">💾 保存</button>
   <button onclick="copyViewURL()" style="padding:2px 12px;font-size:11px;cursor:pointer;background:#a72;color:#fff;border:none;border-radius:2px">🔗 閲覧URL</button>
   <button onclick="loadFromStorage()" style="padding:2px 12px;font-size:11px;cursor:pointer;background:#558;color:#fff;border:none;border-radius:2px">📂 読込</button>
@@ -1051,7 +1051,7 @@ function copyViewURL() {
     alert('先に保存してください');
     return;
   }
-  const url = 'https://dazzling-semolina-ee8493.netlify.app/view.html?id=' + currentCharId;
+  const url = 'https://8i10.github.io/coc-sheet/view.html?id=' + currentCharId;
   navigator.clipboard.writeText(url).then(() => {
     alert('閲覧URLをコピーしました！\n' + url);
   });
