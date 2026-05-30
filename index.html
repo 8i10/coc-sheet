@@ -25,6 +25,8 @@ select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:n
 textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;resize:vertical;padding:2px}
 .hdr{background:#444;color:#fff;font-size:11px;padding:2px 5px;font-weight:bold}
 .personal-data td.hdr{text-align:center}
+.personal-data input[type=text],.personal-data input[type=number]{text-align:left}
+.personal-data input[type=text],.personal-data input[type=number]{text-align:left}
 .section{border:1px solid #777;margin-bottom:5px;background:#fff}
 .derived{background:#e8e8e8;text-align:center;min-width:28px}
 .row-label{background:#444;color:#fff;font-size:11px;text-align:center;padding:1px 3px;white-space:nowrap}
@@ -557,11 +559,13 @@ function recalcAllSkills(){
   tx('max_san',99-mythosTotal);updatePointBar();
 }
 
-// 自由入力欄の自動幅伸縮
+// 自由入力欄の自動幅伸縮（display:none内でも動作するよう文字幅で計算）
 function autoResize(inp){
-  inp.style.width='0';
-  const minW=44;
-  inp.style.width=Math.max(minW,inp.scrollWidth+4)+'px';
+  const val=inp.value||inp.placeholder||'';
+  // 日本語は2文字幅、ASCII は1文字幅として概算
+  let w=0;
+  for(const ch of val){w+=(ch.charCodeAt(0)>0x7f)?13:7;}
+  inp.style.width=Math.max(44,w+8)+'px';
 }
 function autoResizeAll(){
   document.querySelectorAll('.free-inp-auto').forEach(autoResize);
@@ -1075,14 +1079,51 @@ function addSecretContentRow(contentId){
 const SAVE_KEY='coc6_sheet_data';
 function collectData(){
   const inputs={};
-  document.querySelectorAll('input[id],textarea[id]').forEach(el=>{if(el.id)inputs[el.id]=el.type==='checkbox'?el.checked:el.value;});
+  // input・textarea・selectすべてidありを保存
+  document.querySelectorAll('input[id],textarea[id],select[id]').forEach(el=>{
+    if(!el.id)return;
+    inputs[el.id]=el.type==='checkbox'?el.checked:el.value;
+  });
+
+  // 技能テーブル（freeValも含む）
   const skills=[];
   document.querySelectorAll('.skill-table tbody tr').forEach(tr=>{
     const key=tr.querySelector('[data-skill]')?.dataset?.skill||'';if(!key)return;
-    const fv=tr.querySelector('.sk-name .free-inp-auto')?.value||tr.querySelector('.sk-name input[type=text]')?.value||'';skills.push({key,chk:tr.querySelector('input[type=checkbox]')?.checked||false,job:tr.querySelector('.job-inp')?.value||'',int:tr.querySelector('.int-inp')?.value||'',grw:tr.querySelector('.grw-inp')?.value||'',oth:tr.querySelector('.oth-inp')?.value||'',freeVal:fv});
+    const fv=tr.querySelector('.sk-name .free-inp-auto')?.value||tr.querySelector('.sk-name input[type=text]')?.value||'';
+    skills.push({key,chk:tr.querySelector('input[type=checkbox]')?.checked||false,
+      job:tr.querySelector('.job-inp')?.value||'',int:tr.querySelector('.int-inp')?.value||'',
+      grw:tr.querySelector('.grw-inp')?.value||'',oth:tr.querySelector('.oth-inp')?.value||'',freeVal:fv});
   });
 
-  // ネタバレ管理を保存
+  // 武器テーブル
+  const weapons=[];
+  document.querySelectorAll('#weapon_rows tr').forEach(tr=>{
+    const inps=[...tr.querySelectorAll('input')].map(i=>i.value);
+    if(inps.some(v=>v))weapons.push(inps);
+  });
+
+  // 所持品テーブル
+  const items=[];
+  document.querySelectorAll('#item_rows tr').forEach(tr=>{
+    const inps=[...tr.querySelectorAll('input')].map(i=>i.value);
+    if(inps.some(v=>v))items.push(inps);
+  });
+
+  // その他メモ
+  const memos=[];
+  document.querySelectorAll('#memo_rows textarea').forEach(ta=>memos.push(ta.value));
+
+  // 通過シナリオ
+  const scenarios=[];
+  document.querySelectorAll('#scenario_rows textarea').forEach(ta=>scenarios.push(ta.value));
+
+  // 後遺症・AF・呪文
+  const ae={kouisho:[],af:[],spell:[]};
+  document.querySelectorAll('#tbody_kouisho tr').forEach(tr=>{const inps=[...tr.querySelectorAll('input')].map(i=>i.value);if(inps.some(v=>v))ae.kouisho.push(inps);});
+  document.querySelectorAll('#tbody_af tr').forEach(tr=>{const inps=[...tr.querySelectorAll('input')].map(i=>i.value);if(inps.some(v=>v))ae.af.push(inps);});
+  document.querySelectorAll('#tbody_spell tr').forEach(tr=>{const inps=[...tr.querySelectorAll('input')].map(i=>i.value);if(inps.some(v=>v))ae.spell.push(inps);});
+
+  // ネタバレ管理
   const secrets=[];
   document.querySelectorAll('#secret_items_wrap .secret-item').forEach(wrap=>{
     const id=wrap.id;
@@ -1096,12 +1137,19 @@ function collectData(){
     secrets.push({id,title,pass,summary,contents,cats});
   });
 
-  return JSON.stringify({inputs,skills,secrets,ts:Date.now()});
+  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,ts:Date.now()});
 }
 
 function applyData(json){
   let data;try{data=JSON.parse(json);}catch(e){alert('データが壊れています');return;}
-  if(data.inputs)Object.entries(data.inputs).forEach(([id,val])=>{const el=document.getElementById(id);if(!el)return;if(el.type==='checkbox')el.checked=val;else el.value=val;});
+
+  // input・textarea・select（id付き）を復元
+  if(data.inputs)Object.entries(data.inputs).forEach(([id,val])=>{
+    const el=document.getElementById(id);if(!el)return;
+    if(el.type==='checkbox')el.checked=val;else el.value=val;
+  });
+
+  // 技能（freeValも復元）
   if(data.skills)data.skills.forEach(s=>{
     const tr=document.querySelector(`[data-skill="${s.key}"]`)?.closest('tr');if(!tr)return;
     const chk=tr.querySelector('input[type=checkbox]');if(chk)chk.checked=s.chk;
@@ -1109,8 +1157,85 @@ function applyData(json){
     const ii=tr.querySelector('.int-inp');if(ii)ii.value=s.int;
     const gi=tr.querySelector('.grw-inp');if(gi)gi.value=s.grw;
     const oi=tr.querySelector('.oth-inp');if(oi)oi.value=s.oth;
-    if(s.freeVal){const fi=tr.querySelector('.sk-name .free-inp-auto')||tr.querySelector('.sk-name input[type=text]');if(fi){fi.value=s.freeVal;}}
+    if(s.freeVal){const fi=tr.querySelector('.sk-name .free-inp-auto')||tr.querySelector('.sk-name input[type=text]');if(fi)fi.value=s.freeVal;}
   });
+
+  // 武器テーブル
+  if(data.weapons&&data.weapons.length){
+    const tbody=document.getElementById('weapon_rows');
+    const rows=[...tbody.querySelectorAll('tr')];
+    data.weapons.forEach((vals,i)=>{
+      let tr=rows[i];
+      if(!tr){tr=makeWeaponTr();tbody.appendChild(tr);}
+      [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
+    });
+  }
+
+  // 所持品テーブル
+  if(data.items&&data.items.length){
+    const tbody=document.getElementById('item_rows');
+    const rows=[...tbody.querySelectorAll('tr')];
+    data.items.forEach((vals,i)=>{
+      let tr=rows[i];
+      if(!tr){tr=makeItemTr();tbody.appendChild(tr);}
+      [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
+    });
+  }
+
+  // その他メモ
+  if(data.memos&&data.memos.length){
+    const memoDiv=document.getElementById('memo_rows');
+    const tas=[...memoDiv.querySelectorAll('textarea')];
+    data.memos.forEach((v,i)=>{
+      if(i<tas.length){tas[i].value=v;}
+      else{addMemoRow();const all=memoDiv.querySelectorAll('textarea');all[all.length-1].value=v;}
+    });
+  }
+
+  // 通過シナリオ
+  if(data.scenarios&&data.scenarios.length){
+    const scDiv=document.getElementById('scenario_rows');
+    const tas=[...scDiv.querySelectorAll('textarea')];
+    data.scenarios.forEach((v,i)=>{
+      if(i<tas.length){tas[i].value=v;}
+      else{addScenarioRow();const all=scDiv.querySelectorAll('textarea');all[all.length-1].value=v;}
+    });
+  }
+
+  // 後遺症・AF・呪文
+  if(data.ae){
+    [['kouisho','tbody_kouisho'],['af','tbody_af'],['spell','tbody_spell']].forEach(([key,tbodyId])=>{
+      const tbody=document.getElementById(tbodyId);
+      if(!tbody||!data.ae[key])return;
+      const rows=[...tbody.querySelectorAll('tr')];
+      data.ae[key].forEach((vals,i)=>{
+        let tr=rows[i];
+        if(!tr&&typeof addAERow==='function'){addAERow(tbodyId);tr=[...tbody.querySelectorAll('tr')].pop();}
+        if(!tr)return;
+        [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
+      });
+    });
+  }
+
+  // ネタバレ管理
+  if(data.secrets&&data.secrets.length){
+    const wrap=document.getElementById('secret_items_wrap');
+    data.secrets.forEach((s,si)=>{
+      let item=document.getElementById(s.id);
+      if(!item){addSecretItem(s.title,s.pass);item=wrap.lastElementChild;}
+      if(!item)return;
+      item.dataset.pass=s.pass;
+      const titleInp=item.querySelector('.secret-item-header input[type=text]');
+      if(titleInp)titleInp.value=s.title;
+      const summInp=item.querySelector('#body_'+item.id+' input[type=text]');
+      if(summInp)summInp.value=s.summary||'';
+      const tas=[...item.querySelectorAll('#content_'+item.id+' textarea')];
+      s.contents.forEach((c,i)=>{if(i<tas.length)tas[i].value=c;});
+      const sels=[...item.querySelectorAll('#content_'+item.id+' select')];
+      s.cats.forEach((c,i)=>{if(i<sels.length)sels[i].value=c;});
+    });
+  }
+
   calc();
   setTimeout(autoResizeAll,100);
 }
@@ -1727,35 +1852,29 @@ function parseSpreadsheetHTML(html){
         if(!tokucho1)tokucho1=v;
         else if(!tokucho2&&v!==tokucho1)tokucho2=v;
       }
-      // 職業計算式: EDU*20形式 ─ 特記事項エリア（Row38付近）のみ取得
-      // 特記事項エリアは「特記事項」または「参照：」が同じ行か前行にある
-      if(/^(EDU|STR|CON|POW|DEX|APP|SIZ|INT)/.test(v)&&v.includes('*')&&!jobFormula){
-        // 能力値ロール列のCCB<=...*5 形式は除外
-        if(!v.startsWith('CCB')){
-          // 正規化: 空白除去
-          jobFormula=v.trim().replace(/\s/g,'');
-        }
-      }
-      // 職業参照名: 「参照：」直後の非数値セル（職業一覧に対応する名称）
+      // 職業参照名: 「参照：」直後の非数値セル
       if((v==='参照：'||v==='参照:')&&!jobRefName){
         for(let d=1;d<=3;d++){
           const t=(row[ci+d]?.text||'').trim();
           if(t&&!/^\d+$/.test(t)&&t!=='-'){jobRefName=t;break;}
         }
       }
-      if(v.startsWith('参照：')||v.startsWith('参照:')){
+      if((v.startsWith('参照：')||v.startsWith('参照:'))&&v.length>3){
         const refName=v.replace(/^参照[：:]\s*/,'').trim();
         if(refName&&!/^\d+$/.test(refName)&&!jobRefName)jobRefName=refName;
       }
-      // 特記事項エリアで cs=5 のセルが2つ並んでいる行（職業名＋計算式）を検出
-      // Row39形式: [ci]=職業名(cs5), [ci+1]=計算式(cs5)
-      if(c.colspan===5&&v&&!v.includes('選択技能')&&!v.includes('(D)')&&!v.includes('特記')&&!v.includes('その他')&&!v.startsWith('CCB')&&!v.startsWith('###')&&!/^（/.test(v)){
-        // 同じ行に計算式(cs>=5)があるか確認
-        const formulaCell=row.find((x,xi)=>xi!==ci&&x.colspan>=5&&x.text&&/^(EDU|STR|CON|POW|DEX|APP|SIZ|INT)/.test(x.text)&&!x.text.startsWith('CCB'));
+      // 特記事項エリア（Row38-41付近）: cs=5のセルが同行に職業名＋計算式で並ぶパターン
+      // 例: [ネットタレント cs=5][EDU*10+DEX*10 cs=5]
+      if(c.colspan===5&&v&&!v.includes('選択技能')&&!v.includes('(D)')&&!v.includes('特記')&&!v.includes('その他')&&!v.startsWith('CCB')&&!v.startsWith('###')&&!v.startsWith('1d')&&!/^（/.test(v)&&!/^\d/.test(v)){
+        const formulaCell=row.find((x,xi)=>xi!==ci&&x.colspan>=4&&x.text&&/^(EDU|STR|CON|POW|DEX|APP|SIZ|INT)/.test(x.text)&&!x.text.startsWith('CCB')&&x.text.includes('*'));
         if(formulaCell){
           if(!jobRefName)jobRefName=v.trim();
           if(!jobFormula)jobFormula=formulaCell.text.trim().replace(/\s/g,'');
         }
+      }
+      // 上記で取れなかった場合の補完: 参照後に単独で計算式セルがある行
+      if(jobRefName&&!jobFormula&&/^(EDU|STR|CON|POW|DEX|APP|SIZ|INT)/.test(v)&&v.includes('*')&&!v.startsWith('CCB')&&c.colspan>=4){
+        jobFormula=v.trim().replace(/\s/g,'');
       }
       // 選択技能: '選択技能'行のみ取得（チャパレ文字列・ラベル類を除外）
       if(v==='選択技能'){
