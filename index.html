@@ -1606,7 +1606,14 @@ function parseSpreadsheetHTML(html){
 
   // 各行のセルを配列に
   const rows=trs.map(tr=>[...tr.querySelectorAll('td,th')].map(td=>({
-    text:(td.innerText||td.textContent||'').trim().replace(/[\r\n]+/g,' ').replace(/\s{2,}/g,' '),
+    // brタグを先に\nに変換してから取得（改行保持）
+    text:(()=>{
+      // brを改行文字に置換
+      td.querySelectorAll('br').forEach(br=>br.replaceWith('\n'));
+      return (td.innerText||td.textContent||'').trim()
+        .replace(/\r\n/g,'\n').replace(/\r/g,'\n')
+        .replace(/[ \t]{2,}/g,' '); // 横方向の余分スペースのみ削除（縦改行は保持）
+    })(),
     colspan:parseInt(td.getAttribute('colspan')||'1'),
     rowspan:parseInt(td.getAttribute('rowspan')||'1'),
   })));
@@ -1635,6 +1642,7 @@ function parseSpreadsheetHTML(html){
   let selectSkills=[];
   let dBonus1=0,dBonus2=0,dBonus1Set=false,dBonus2Set=false;
   let otherNote='';
+  let jobRefName='';
 
   rows.forEach((row,ri)=>{
     row.forEach((c,ci)=>{
@@ -1708,31 +1716,71 @@ function parseSpreadsheetHTML(html){
       }
       // 職業計算式: EDU*20形式
       if(/^EDU/.test(v)&&!jobFormula){jobFormula=v;}
-      // 選択技能: col[20]='選択技能' の行で col[21]以降を取得
+      // 職業参照名: 「参照：」直後の非数値セル（職業一覧に対応する名称）
+      if((v==='参照：'||v==='参照:')&&!jobRefName){
+        for(let d=1;d<=3;d++){
+          const t=(row[ci+d]?.text||'').trim();
+          // 数値（年度）は無視し、職業名らしき文字列を取得
+          if(t&&!/^\d+$/.test(t)&&t!=='-'){jobRefName=t;break;}
+        }
+        // 参照先が同じ行にない場合は次行を探す（列が異なる場合）
+      }
+      // 「参照：」の次の行に職業名がある場合（列ズレ対応）
+      if(v.startsWith('参照：')||v.startsWith('参照:')){
+        const refName=v.replace(/^参照[：:]\s*/,'').trim();
+        if(refName&&!/^\d+$/.test(refName)&&!jobRefName)jobRefName=refName;
+      }
+      // 選択技能: '選択技能'行のみ取得（チャパレ文字列・ラベル類を除外）
       if(v==='選択技能'){
         for(let d=1;d<=8;d++){
-          const t=row[ci+d]?.text||'';
-          if(t&&t!=='-'&&t!=='選択技能'&&t!=='─'&&t!=='―')selectSkills.push(t);
+          const t=(row[ci+d]?.text||'').trim();
+          if(!t||t==='-'||t==='─'||t==='―'||t==='選択技能')continue;
+          // チャットパレット文字列（数字で始まる「80 【XXX】」など）を除外
+          if(/^\d/.test(t))continue;
+          // 【】を含む（コマンド文字列）を除外
+          if(t.includes('【')||t.includes('】'))continue;
+          // (D)ボーナスや各種ラベルを除外
+          if(/^[（(]|^\+|^Dボーナス/.test(t))continue;
+          selectSkills.push(t);
         }
       }
-      // Dボーナス: col[20]='(D)ボーナス' の行から [XXP] を抽出
-      if(v==='(D)ボーナス'||v==='Dボーナス'){
-        // col21,22,23,24から「[数字P]」を探す
+      // Dボーナス: '(D)ボーナス'行から数値を抽出
+      // 形式: [数字P] / +数字P / 数字 (いずれかに対応)
+      if(v==='(D)ボーナス'||v==='Dボーナス'||v==='Dボーナス(興味Pに加算)'){
         for(let d=1;d<=6;d++){
-          const t=row[ci+d]?.text||'';
-          const m=t.match(/\[(\d+)P\]/);
-          if(m){
-            const pts=parseInt(m[1]);
+          const t=(row[ci+d]?.text||'').trim();
+          // [数字P] または +数字P または 数字P または 純数値
+          const m=t.match(/\[?(\+)?(\d+)P?\]?/);
+          if(m&&parseInt(m[2])>0){
+            const pts=parseInt(m[2]);
             if(!dBonus1Set){dBonus1=pts;dBonus1Set=true;}
-            else if(!dBonus2Set){dBonus2=pts;dBonus2Set=true;}
+            else if(!dBonus2Set&&pts!==dBonus1){dBonus2=pts;dBonus2Set=true;}
           }
         }
       }
-      // その他特記: col[4]='その他特記' の右セル群を結合
+      // その他特記: 「その他特記」行＋次数行にある長文セルを全取得
       if(v==='その他特記'&&!otherNote){
+        // 同じ行の右セル（ダメージボーナスを除く）
         const parts=[];
-        for(let d=1;d<=6;d++){const t=row[ci+d]?.text||'';if(t)parts.push(t);}
-        if(parts.length)otherNote=parts.join(' ');
+        for(let d=1;d<=10;d++){
+          const t=(row[ci+d]?.text||'').trim();
+          if(!t||t.startsWith('ダメージボーナス'))continue;
+          if(t.length>=3)parts.push(t);
+        }
+        // 直後5行のcolspan>=3かつ長文セルも収集
+        for(let dr=1;dr<=6;dr++){
+          const nextRow=rows[ri+dr];
+          if(!nextRow)break;
+          nextRow.forEach(nc=>{
+            const t=(nc.text||'').trim();
+            if(nc.colspan>=3&&t&&t.length>=10&&
+               !['ダメージボーナス：','名前','成功率','ダメージ','射程','装弾数','耐久力','所持品'].includes(t)&&
+               !t.startsWith('＜')&&!t.startsWith('（')&&!t.match(/^\d+\s*【/)){
+              parts.push(t);
+            }
+          });
+        }
+        if(parts.length)otherNote=parts.join('\n');
       }
     });
   });
@@ -1884,37 +1932,68 @@ function parseSpreadsheetHTML(html){
 
   // ---- メモ・通過シナリオ・秘匿情報抽出 ----
   let memoText='',scenarioText='',secretText='';
-  let inMemo=false,inScenario=false;
+  let inMemo=false,inScenario=false,passedScenarioItemHeader=false;
   rows.forEach((row,ri)=>{
     const texts=row.map(c=>c.text);
     // 「その他メモ」ヘッダー行を検出
-    if(texts.some(t=>t==='その他メモ')){inMemo=true;return;}
+    if(texts.some(t=>t==='その他メモ')){inMemo=true;inScenario=false;return;}
     // 「通過シナリオ」ヘッダー行を検出
-    if(texts.some(t=>t==='通過シナリオ'||t.includes('通過シナリオ'))){inMemo=false;inScenario=true;return;}
+    if(texts.some(t=>t==='通過シナリオ'||t.includes('通過シナリオ'))){
+      inMemo=false;inScenario=true;passedScenarioItemHeader=false;return;
+    }
     // 秘匿情報
     row.forEach((c,ci)=>{
       if(c.text&&c.text.startsWith('▼以下秘匿')){
-        const nextRow=rows[ri+1];
-        if(nextRow){
+        // 同じ行または次の行の長文セルを取得
+        const bigInRow=row.find(cl=>cl.colspan>=3&&cl.text&&cl.text.length>20&&!cl.text.startsWith('▼'));
+        if(bigInRow){secretText=bigInRow.text;return;}
+        for(let dr=1;dr<=3;dr++){
+          const nextRow=rows[ri+dr];
+          if(!nextRow)break;
           const bigCell=nextRow.find(cl=>cl.colspan>=3&&cl.text&&cl.text.length>20);
-          if(bigCell)secretText=bigCell.text;
+          if(bigCell){secretText=bigCell.text;break;}
         }
       }
     });
-    // メモテキストの収集: その他メモ行の後、colspan>=2かつtext>=5文字のセルを収集
+    // メモテキストの収集: colspan>=2かつ長文
     if(inMemo&&!memoText){
       row.forEach(c=>{
-        if(c.colspan>=2&&c.text&&c.text.length>=5&&!memoText){
-          memoText=c.text.replace(/ /g,'\n');
+        if(c.colspan>=2&&c.text&&c.text.length>=5&&!memoText&&
+           !['その他メモ','後遺症','AF','呪文','通過シナリオ'].includes(c.text)){
+          memoText=c.text; // brで\nに変換済み
         }
       });
     }
-    if(inScenario&&!scenarioText){
-      row.forEach(c=>{
-        if(c.colspan>=2&&c.text&&c.text.length>=5&&!scenarioText){
-          scenarioText=c.text.replace(/ /g,'\n');
+    // 通過シナリオ: 「名称/単価…」ヘッダーを飛ばして、「効果・備考など」列のデータを拾う
+    if(inScenario){
+      // ヘッダー行（名称・単価・個・価格・効果・備考など）をスキップ
+      if(texts.some(t=>t==='名称')||texts.some(t=>t==='単価')){passedScenarioItemHeader=true;return;}
+      if(passedScenarioItemHeader&&!scenarioText){
+        // 「効果・備考など」列: colspan>=3のセルで、¥記号なし・品名でない長い文字列
+        // または単純に長文セルを探す
+        row.forEach(c=>{
+          const t=(c.text||'').trim();
+          if(!scenarioText&&t&&t.length>=3&&
+             !t.startsWith('¥')&&!t.startsWith('￥')&&
+             !/^\d+$/.test(t)&&
+             !['名称','単価','個','価格','効果・備考など','価格総計','預金・借金'].includes(t)&&
+             c.colspan>=3){
+            scenarioText=t;
+          }
+        });
+        // colspanが小さくても長文ならOK
+        if(!scenarioText){
+          row.forEach(c=>{
+            const t=(c.text||'').trim();
+            if(!scenarioText&&t&&t.length>=5&&
+               !t.startsWith('¥')&&!t.startsWith('￥')&&
+               !/^\d+$/.test(t)&&
+               !['名称','単価','個','価格','効果・備考など','価格総計','預金・借金'].includes(t)){
+              scenarioText=t;
+            }
+          });
         }
-      });
+      }
     }
   });
 
@@ -1976,19 +2055,20 @@ function parseSpreadsheetHTML(html){
     }
   }
 
-  // 職業参照を自動選択（jobNameでマッチ。完全一致→部分一致の順）
-  if(jobName){
+  // 職業参照を自動選択（jobRefName優先 → jobNameでマッチ。完全一致→部分一致の順）
+  const jobMatchName=jobRefName||jobName;
+  if(jobMatchName){
     const jsel=document.getElementById('job_ref_sel');
     if(jsel){
       let matched=false;
       // 完全一致
       for(let i=0;i<jsel.options.length;i++){
-        if(jsel.options[i].value===jobName||jsel.options[i].text===jobName){jsel.selectedIndex=i;matched=true;break;}
+        if(jsel.options[i].value===jobMatchName||jsel.options[i].text===jobMatchName){jsel.selectedIndex=i;matched=true;break;}
       }
-      // 部分一致（例「殺し屋」→リストにない場合はそのまま）
+      // 部分一致
       if(!matched){
         for(let i=0;i<jsel.options.length;i++){
-          if(jsel.options[i].text.includes(jobName)||jobName.includes(jsel.options[i].text)){jsel.selectedIndex=i;matched=true;break;}
+          if(jsel.options[i].text.includes(jobMatchName)||jobMatchName.includes(jsel.options[i].text)){jsel.selectedIndex=i;matched=true;break;}
         }
       }
       onJobRefChange();
@@ -2018,10 +2098,23 @@ function parseSpreadsheetHTML(html){
     }
   }
 
-  // その他特記を自動入力
+  // その他特記を自動入力（memo_rowsの最初のtextareaへ、なければ追加）
   if(otherNote){
-    const el=document.getElementById('job_other_note');
-    if(el)el.value=otherNote;
+    const memoDiv=document.getElementById('memo_rows');
+    if(memoDiv){
+      let ta=memoDiv.querySelector('textarea');
+      if(!ta){
+        // 欄がなければ追加
+        const w=document.createElement('div');
+        w.style.cssText='position:relative;margin-bottom:4px';
+        w.innerHTML='<textarea style="width:100%;height:80px" placeholder="メモを入力..."></textarea>';
+        memoDiv.appendChild(w);
+        ta=memoDiv.querySelector('textarea');
+      }
+      if(ta)ta.value=otherNote;
+      const memoAcc=document.getElementById('memo_acc');
+      if(memoAcc&&!memoAcc.classList.contains('open'))toggleAcc('memo_acc');
+    }
   }
 
   // 技能値を反映
@@ -2133,7 +2226,7 @@ function parseSpreadsheetHTML(html){
 
   const summary=[
     `PC名: ${pcname||'(未取得)'}`,
-    `職業: ${jobName||'(未取得)'}`,
+    `職業: ${jobName||'(未取得)'}${jobRefName?' [参照:'+jobRefName+']':''}`,
     `ステータス: ${Object.values(stats).filter(Boolean).length}/8項目`,
     `技能: ${Object.keys(skillData).length}件 + カスタム${customSkillRows.length}件`,
     `武器: ${weapons.length}件`,
