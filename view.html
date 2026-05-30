@@ -8,8 +8,13 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:11px;background:#d8d8d8;color:#111}
+body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:11px;background:#d8d8d8;color:#111;padding-top:36px}
 .sheet{background:#f4f4f4;padding:6px;width:980px;margin:0 auto}
+#sticky-header{position:fixed;top:0;left:0;width:100%;background:#333;color:#fff;z-index:9999;display:flex;align-items:center;gap:8px;padding:4px 10px;font-size:11px;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
+#sticky-pcname{font-weight:bold;font-size:13px;flex:0 0 auto;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sticky-pts{display:flex;gap:6px;align-items:center;flex:1}
+.sticky-pt{background:#444;border-radius:3px;padding:2px 6px;font-size:11px}
+#sticky-actions{display:flex;gap:4px;margin-left:auto}
 table{border-collapse:collapse;width:100%}
 td,th{border:1px solid #888;padding:1px 3px}
 th{background:#444;color:#fff;text-align:center;font-weight:normal;font-size:11px}
@@ -1176,26 +1181,34 @@ async function initViewMode() {
     });
   }
 
-  // 全inputをreadonlyにする（passwordは除く）
-  document.querySelectorAll('input:not([type=password]):not([type=checkbox]), textarea, select').forEach(el => {
+  // 全inputをreadonlyにする（secret_items_wrap内は除く）
+  document.querySelectorAll('input, textarea, select').forEach(el => {
+    if (el.closest('#secret_items_wrap')) return;
+    if (el.type === 'checkbox') {
+      el.style.pointerEvents = 'none';
+      return;
+    }
     el.setAttribute('readonly', true);
     el.setAttribute('disabled', true);
     el.style.pointerEvents = 'none';
   });
 
-  // チェックボックスは見た目だけ残す
-  document.querySelectorAll('input[type=checkbox]').forEach(el => {
-    el.removeAttribute('disabled');
-    el.style.pointerEvents = 'none';
-  });
-
-  // 全てのボタンを非表示（unlockViewSecretとtoggle系は残す）
+  // 全てのボタンを非表示（secret_items_wrap内とtoggle系は残す）
   document.querySelectorAll('button').forEach(el => {
+    if (el.closest('#secret_items_wrap')) return;
     const oc = el.getAttribute('onclick') || '';
-    if (oc.includes('unlockViewSecret') || oc.includes('toggle')) return;
+    if (oc.includes('toggle')) return;
     el.style.display = 'none';
   });
 
+
+// 固定ヘッダーを更新
+  const pcname = document.getElementById('pcname')?.value || 'キャラクターシート';
+  document.getElementById('sticky-pcname').textContent = pcname;
+  const jobRemain = document.getElementById('job_remain')?.textContent || '-';
+  const intRemain = document.getElementById('int_remain')?.textContent || '-';
+  document.getElementById('sticky-job-remain').textContent = jobRemain;
+  document.getElementById('sticky-int-remain').textContent = intRemain;
 
 // sk-del列を非表示
 document.querySelectorAll('.sk-del').forEach(el => el.style.display = 'none');
