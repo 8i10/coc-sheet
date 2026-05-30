@@ -79,13 +79,18 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 </style>
 </head>
 <body>
-<div class="sheet">
-
-<!-- FIX3: 保存ボタン行を最上部へ -->
-<div style="display:flex;gap:4px;justify-content:flex-end;padding:4px 0 6px;align-items:center">
-  <div id="save_msg" style="font-size:10px;color:#2a7;display:none">✓ 保存しました</div>
-  <span style="font-size:11px;color:#888;background:#eee;padding:2px 10px;border-radius:2px">閲覧モード</span>
+<div id="sticky-header">
+  <div id="sticky-pcname">キャラクターシート</div>
+  <div id="sticky-pts">
+    <span class="sticky-pt">職業P: 残<span id="sticky-job-remain">-</span></span>
+    <span class="sticky-pt">興味P: 残<span id="sticky-int-remain">-</span></span>
+  </div>
+  <div id="sticky-actions">
+    <span style="font-size:11px;color:#aaa;padding:2px 8px;border-radius:2px;background:#444">閲覧モード</span>
+  </div>
 </div>
+<div class="sheet">
+<div style="display:none"><div id="save_msg"></div></div>
 
 <!-- ===== 行1 ===== -->
 <div class="section">
