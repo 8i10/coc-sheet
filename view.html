@@ -15,6 +15,7 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:11px;ba
 #sticky-pts{display:flex;gap:6px;align-items:center;flex:1}
 .sticky-pt{background:#444;border-radius:3px;padding:2px 6px;font-size:11px}
 #sticky-actions{display:flex;gap:4px;margin-left:auto}
+.sticky-pt-block{display:flex;align-items:center;gap:5px;background:#444;border-radius:3px;padding:2px 8px;font-size:11px;color:#fff}
 table{border-collapse:collapse;width:100%}
 td,th{border:1px solid #888;padding:1px 3px}
 th{background:#444;color:#fff;text-align:center;font-weight:normal;font-size:11px}
@@ -82,8 +83,18 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 <div id="sticky-header">
   <div id="sticky-pcname">キャラクターシート</div>
   <div id="sticky-pts">
-    <span class="sticky-pt">職業P: 残<span id="sticky-job-remain">-</span></span>
-    <span class="sticky-pt">興味P: 残<span id="sticky-int-remain">-</span></span>
+    <div class="sticky-pt-block">
+      <span style="font-size:10px;font-weight:bold">職業P</span>
+      <span style="font-size:9px;opacity:0.8">上限<span id="sticky-job-max">0</span>pt</span>
+      <span style="font-size:9px;opacity:0.8">使用<span id="sticky-job-used">0</span>pt</span>
+      <span id="sticky-job-remain" style="font-weight:bold;font-size:11px">残0</span>
+    </div>
+    <div class="sticky-pt-block">
+      <span style="font-size:10px;font-weight:bold">興味P</span>
+      <span style="font-size:9px;opacity:0.8">上限<span id="sticky-int-max">0</span>pt</span>
+      <span style="font-size:9px;opacity:0.8">使用<span id="sticky-int-used">0</span>pt</span>
+      <span id="sticky-int-remain" style="font-weight:bold;font-size:11px">残0</span>
+    </div>
   </div>
   <div id="sticky-actions">
     <span style="font-size:11px;color:#aaa;padding:2px 8px;border-radius:2px;background:#444">閲覧モード</span>
@@ -183,8 +194,8 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       &nbsp;&nbsp;
       <span style="background:#444;color:#fff;padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:8px">0</span>
     </div>
-    <div style="padding:2px 4px;border-top:1px solid #ccc;background:#fafafa">
-      <div style="font-size:10px;color:#000;font-weight:bold;margin-bottom:1px">＜不定＞</div>
+    <div style="padding:2px 4px;border-top:1px solid #ccc;background:#555">
+      <div style="font-size:10px;color:#fff;font-weight:bold;margin-bottom:1px">＜不定＞</div>
       <table style="width:100%;border-collapse:collapse;margin-bottom:2px">
         <tr>
           <td style="background:#555;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
@@ -1209,11 +1220,15 @@ async function initViewMode() {
 
 // 固定ヘッダーを更新
   const pcname = document.getElementById('pcname')?.value || 'キャラクターシート';
-  document.getElementById('sticky-pcname').textContent = pcname;
-  const jobRemain = document.getElementById('job_remain')?.textContent || '-';
-  const intRemain = document.getElementById('int_remain')?.textContent || '-';
-  document.getElementById('sticky-job-remain').textContent = jobRemain;
-  document.getElementById('sticky-int-remain').textContent = intRemain;
+  const sn = document.getElementById('sticky-pcname');
+  if(sn) sn.textContent = pcname;
+  const set = (sid, src) => { const el=document.getElementById(sid); if(el) el.textContent=document.getElementById(src)?.textContent||'-'; };
+  set('sticky-job-max','job_max_disp');
+  set('sticky-job-used','job_used_disp');
+  set('sticky-job-remain','job_remain');
+  set('sticky-int-max','int_max_disp');
+  set('sticky-int-used','int_used_disp');
+  set('sticky-int-remain','int_remain');
 
 // sk-del列を非表示
 document.querySelectorAll('.sk-del').forEach(el => el.style.display = 'none');
