@@ -108,8 +108,9 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
     <button onclick="loadFromStorage()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#558;color:#fff;border:none;border-radius:2px">📂読込</button>
     <button onclick="copyViewURL()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#a72;color:#fff;border:none;border-radius:2px">🔗閲覧URL</button>
     <button onclick="openCocofoliaCopyDialog()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px">🐔駒出力</button>
-    <button onclick="exportJSON()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">⬆ JSON</button>
-    <button onclick="importSpreadsheetHTML()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">📥スプシ取込</button>
+    <button onclick="exportJSON()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">⬇ JSON</button>
+    <button onclick="importJSON()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">⬆ JSON</button>
+    <button onclick="importSpreadsheetHTML()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#5a3a8a;color:#fff;border:none;border-radius:2px">📥スプシ取込</button>
   </div>
 </div>
 
@@ -1518,11 +1519,8 @@ function importSpreadsheetHTML(){
     if(!file)return;
     const reader=new FileReader();
     reader.onload=ev=>{
-      try{
-        parseSpreadsheetHTML(ev.target.result);
-      }catch(err){
-        alert('スプレッドシートの読み込みに失敗しました: '+err.message);
-      }
+      try{ parseSpreadsheetHTML(ev.target.result); }
+      catch(err){ alert('取込失敗: '+err.message+'\n'+err.stack); }
     };
     reader.readAsText(file);
   };
@@ -1530,137 +1528,104 @@ function importSpreadsheetHTML(){
 }
 
 function parseSpreadsheetHTML(html){
-  // DOMパーサーでHTMLを解析
+  // ---- セルをリスト形式で抽出（rowspan/colspan展開しない単純版） ----
   const parser=new DOMParser();
-  const doc=parser.parseFromString('<html><body>'+html+'</body></html>','text/html');
-  const rows=doc.querySelectorAll('tr');
+  const doc=parser.parseFromString('<div>'+html+'</div>','text/html');
+  // 全trを取得
+  const trs=[...doc.querySelectorAll('tr')];
 
-  // セルテキストを2次元配列に展開（rowspan/colspanを考慮したシンプル抽出）
-  const grid=[];
-  rows.forEach((tr,ri)=>{
-    if(!grid[ri])grid[ri]=[];
-    let ci=0;
-    tr.querySelectorAll('td').forEach(td=>{
-      while(grid[ri][ci]!==undefined)ci++;
-      const txt=(td.innerText||td.textContent||'').trim().replace(/\s+/g,' ');
-      const cs=parseInt(td.getAttribute('colspan')||'1');
-      const rs=parseInt(td.getAttribute('rowspan')||'1');
-      for(let r=0;r<rs;r++){
-        if(!grid[ri+r])grid[ri+r]=[];
-        for(let c=0;c<cs;c++) grid[ri+r][ci+c]=txt;
-      }
-      ci+=cs;
-    });
-  });
+  // 各行のセルを配列に
+  const rows=trs.map(tr=>[...tr.querySelectorAll('td,th')].map(td=>({
+    text:(td.innerText||td.textContent||'').trim().replace(/[\r\n]+/g,' ').replace(/\s{2,}/g,' '),
+    colspan:parseInt(td.getAttribute('colspan')||'1'),
+    rowspan:parseInt(td.getAttribute('rowspan')||'1'),
+  })));
 
-  // ヘルパー：行ri、列ci の値（空でなければ）
-  const g=(ri,ci)=>(grid[ri]&&grid[ri][ci]!=null?grid[ri][ci]:'');
+  // ---- セルテキスト取得ヘルパー（行ri, セルインデックスci） ----
+  // ※スプレッドシートは各行のTDをそのまま順番に持つ（colspan/rowspanで"論理列"ずれに注意）
+  // ここではTDの出現順インデックスをそのまま使う
+  const cell=(ri,ci)=>rows[ri]?.(ci)?.text||'';
+  const num=(ri,ci)=>{const v=cell(ri,ci);return /^-?\d+$/.test(v)?v:''};
 
-  // ---- パーソナルデータ抽出 ----
-  // Row index は0始まり。スプレッドシートのrow2=index1, row3=index2, ...
-  // ふりがな: row2(index1) のラベル列の次
-  // PC名: row3(index2)
-  // 文字色: row6(index5)
-  // 職業/年齢/性別: row7(index6)
-  // 身長/体重/出身: row8(index7)
-  // 髪の色/瞳の色/誕生日: row9(index8)
+  // ---- パーソナルデータ ----
+  // Row3(index2): [2]=ふりがな(cs2), [3]=ひがん(cs7)
+  // Row4(index3): [2]=PC名(cs2), [3]=彼岸(cs7)
+  // Row7(index6): [2]=現在値(cs2) → 以降STR〜EDU
+  // Row8(index7): [2]=文字色(cs2), [3]=カラーコード(cs7)
+  // Row9(index8): [2]=職業, [3]=職業名, [4]=年齢, [5]=年齢値, [6]=性別, [7]=性別値
+  // Row10(index9): [2]=身長, [3]=値, [4]=体重, [?]=値, [6]=出身, [7]=値
+  // Row11(index10): [2]=髪の色, [?]=値, [4]=瞳の色, [?]=値, [6]=誕生日, [7]=値
 
-  let furigana='',pcname='',txtcolor='',job='',age='',gender='';
+  let furigana='',pcname='',txtcolor='',jobName='',age='',gender='';
   let height='',weight='',origin='',hair='',eye='',birthday='';
-
-  // 各行をスキャンしてラベルから値を取得
-  grid.forEach((row,ri)=>{
-    if(!row)return;
-    row.forEach((cell,ci)=>{
-      if(!cell)return;
-      const v=cell.trim();
-      // ふりがな
-      if(v==='ふりがな'&&!furigana){furigana=g(ri,ci+2)||g(ri,ci+1)||'';}
-      // PC名ラベルを探してPC名を取得
-      if(v==='PC名'&&!pcname){
-        // 同じ行か次の行のコンテンツを探す
-        for(let dc=1;dc<=10;dc++){
-          const cand=g(ri,ci+dc);
-          if(cand&&cand!=='PC名'){pcname=cand;break;}
-        }
-        if(!pcname){
-          for(let dc=1;dc<=10;dc++){
-            const cand=g(ri+1,ci+dc);
-            if(cand&&cand!=='PC名'){pcname=cand;break;}
-          }
-        }
-      }
-      // 文字色
-      if(v==='文字色'&&!txtcolor){
-        for(let dc=1;dc<=10;dc++){
-          const cand=g(ri,ci+dc);
-          if(cand&&cand!=='文字色'&&cand.length>=6){txtcolor=cand;break;}
-        }
-      }
-      // 職業
-      if(v==='職業'&&!job){
-        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='職業'&&c!=='年齢'&&c!=='性別'){job=c;break;}}
-      }
-      // 年齢
-      if(v==='年齢'&&!age){
-        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='年齢'&&c!=='職業'&&c!=='性別'){age=c;break;}}
-      }
-      // 性別
-      if(v==='性別'&&!gender){
-        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='性別'&&c!=='年齢'&&c!=='職業'){gender=c;break;}}
-      }
-      // 身長
-      if(v==='身長'&&!height){
-        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='身長'&&c!=='体重'&&c!=='出身'){height=c;break;}}
-      }
-      // 体重
-      if(v==='体重'&&!weight){
-        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='体重'&&c!=='身長'&&c!=='出身'){weight=c;break;}}
-      }
-      // 出身
-      if(v==='出身'&&!origin){
-        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='出身'&&c!=='身長'&&c!=='体重'){origin=c;break;}}
-      }
-      // 髪の色
-      if(v==='髪の色'&&!hair){
-        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='髪の色'&&c!=='瞳の色'&&c!=='誕生日'){hair=c;break;}}
-      }
-      // 瞳の色
-      if(v==='瞳の色'&&!eye){
-        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='瞳の色'&&c!=='髪の色'&&c!=='誕生日'){eye=c;break;}}
-      }
-      // 誕生日
-      if(v==='誕生日'&&!birthday){
-        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='誕生日'&&c!=='髪の色'&&c!=='瞳の色'){birthday=c;break;}}
-      }
-    });
-  });
-
-  // ---- ステータス抽出 ----
-  // 「能力値」ラベル行からSTR〜EDUを8列分読む
   let stats={str:'',con:'',pow:'',dex:'',app:'',siz:'',int_v:'',edu:''};
-  const statKeys=['str','con','pow','dex','app','siz','int_v','edu'];
-  grid.forEach((row,ri)=>{
-    if(!row)return;
-    row.forEach((cell,ci)=>{
-      if(cell==='現在値'||cell==='能力値'){
-        // 次の列から8つ連続して数値を取得
+  let sanNow='';
+
+  rows.forEach((row,ri)=>{
+    row.forEach((c,ci)=>{
+      const v=c.text;
+      if(v==='ふりがな' && !furigana){furigana=row[ci+1]?.text||'';}
+      if(v==='PC名' && !pcname){pcname=row[ci+1]?.text||'';}
+      if(v==='文字色' && !txtcolor){txtcolor=row[ci+1]?.text||'';}
+      if(v==='職業' && !jobName){jobName=row[ci+1]?.text||'';}
+      if(v==='年齢' && !age){
+        // 年齢は数値のみ取得
+        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(/^\d+$/.test(t)){age=t;break;}}
+      }
+      if(v==='性別' && !gender){
+        for(let d=1;d<=4;d++){const t=row[ci+d]?.text||'';if(t&&t!=='職業'&&t!=='年齢'&&t!=='性別'&&!/^(職業|年齢|性別|身長|体重|出身)$/.test(t)){gender=t;break;}}
+      }
+      if(v==='身長' && !height){
+        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&!/^(身長|体重|出身|性別)$/.test(t)){height=t;break;}}
+      }
+      if(v==='体重' && !weight){
+        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&!/^(身長|体重|出身|性別)$/.test(t)){weight=t;break;}}
+      }
+      if(v==='出身' && !origin){
+        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&!/^(身長|体重|出身|性別|年齢)$/.test(t)){origin=t;break;}}
+      }
+      if(v==='髪の色' && !hair){
+        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&!/^(髪の色|瞳の色|誕生日)$/.test(t)){hair=t;break;}}
+      }
+      if(v==='瞳の色' && !eye){
+        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&!/^(髪の色|瞳の色|誕生日)$/.test(t)){eye=t;break;}}
+      }
+      if(v==='誕生日' && !birthday){
+        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&!/^(髪の色|瞳の色|誕生日)$/.test(t)){birthday=t;break;}}
+      }
+      // 現在値行からSTR〜EDU取得
+      if(v==='現在値' && !stats.str){
+        const statKeys=['str','con','pow','dex','app','siz','int_v','edu'];
         let found=0;
-        for(let dc=1;dc<=20&&found<8;dc++){
-          const v=g(ri,ci+dc);
-          if(/^\d+$/.test(v)){
-            if(!stats[statKeys[found]])stats[statKeys[found]]=v;
-            found++;
-          }
+        for(let d=1;d<=20&&found<8;d++){
+          const t=row[ci+d]?.text||'';
+          if(/^\d+$/.test(t)){stats[statKeys[found]]=t;found++;}
         }
+      }
+      // SAN値
+      if(v==='SAN値'||v==='現在SAN'){
+        for(let d=1;d<=5;d++){const t=row[ci+d]?.text||'';if(/^\d+$/.test(t)){sanNow=t;break;}}
       }
     });
   });
 
   // ---- 技能データ抽出 ----
-  // スプレッドシートの技能行パターン:
-  // [checkbox_svg, 技能名(colspan3), 初期値, 職業P, 興味P, 成長分, その他, 合計]
-  // 技能名→キーマッピング
+  // スプレッドシートの技能行構造（列インデックス=TD出現順）:
+  //
+  // 【戦闘・探索セクション（左列）】
+  // [0]=行番号, [1]=空, [2]=成長CB, [3]=技能名(cs=3), [4]=初期値, [5]=職P, [6]=興P, [7]=成長, [8]=他, [9]=合計
+  // ※ 自由入力技能(cs=1)の場合: [3]=技能名, [4]=種類(cs=2), [5]=初期値, [6]=職P, [7]=興P, [8]=成長, [9]=他, [合計は後]
+  // → 見分け方: cell[3].colspan==3なら通常, ==1なら自由入力
+  //
+  // 【行動・交渉セクション（中列）】
+  // [10]=空, [11]=空, [12]=技能名(cs=3or1), [13]=種類 or 初期値, ...
+  // 通常: [12]=技能名(cs3), [13]=初期値, [14]=職P, [15]=興P, [16]=成長, [17]=他, [18]=合計
+  // 自由入力: [12]=技能名(cs1), [13]=種類(cs2), [14]=初期値, [15]=職P, [16]=興P, [17]=成長, [18]=他, [19]=合計
+  //
+  // 【知識セクション（右列）】
+  // 通常: [21]=技能名(cs3), [22]=初期値, [23]=職P, [24]=興P, [25]=成長, [26]=他, [27]=合計
+  // 自由入力: [21]=技能名(cs1), [22]=種類(cs2), [23]=初期値, [24]=職P, [25]=興P, [26]=成長, [27]=他, [28]=合計
+
   const skillNameToKey={
     '回避':'kaihi','キック':'kick','組みつき':'kumi','こぶし(パンチ)':'punch',
     '頭突き':'atama','投擲':'tousha','武道(MA)':'ma','拳銃':'gun',
@@ -1678,161 +1643,339 @@ function parseSpreadsheetHTML(html){
     '心理学':'shinri','人類学':'jinrui','生物学':'bio','地質学':'chishitsu',
     '電子工学':'denshi','天文学':'tenmon','博物学':'hakubutsu','物理学':'butsuri',
     '法律':'law','薬学':'yakugaku','歴史':'rekishi',
-    '太刀':'custom_katana',  // カスタム技能として扱う
   };
+  // 自由入力系技能（技能名のcolspan=1で次セルが種類）
+  const freeInputSkills=new Set(['運転','製作','操縦','母国語','外国語','芸術']);
 
-  // 技能データ収集: {key, job, int, grw, oth, freeVal}
+  // 技能データ格納: key→{job,int,grw,oth,freeVal}
   const skillData={};
-  const customSkills=[]; // {name, job, int, grw, oth, freeVal}
+  // カスタム技能（スプレッドシート固有技能・太刀など）
+  const customSkillRows=[];
 
-  grid.forEach((row,ri)=>{
-    if(!row)return;
-    // 技能テーブル行を探す: 数値列が複数含まれて、技能名が含まれる行
-    // パターン: 空白, 技能名テキスト, 数値, 数値(or空), ..., 数値(合計)
-    row.forEach((cell,ci)=>{
-      const v=(cell||'').trim();
-      // 技能名として登録されているか確認
-      let matchedKey=null;
-      let freeVal='';
-      let skillDisplayName=v;
+  // セクション判定用: 左[3], 中[12], 右[21]
+  function extractSkillFromCells(row, nameIdx){
+    const nameCell=row[nameIdx];
+    if(!nameCell)return;
+    const name=nameCell.text;
+    if(!name)return;
+    const cs=nameCell.colspan;
+    const isFree=freeInputSkills.has(name)&&cs===1;
+    let jobV,intV,grwV,othV,freeVal='';
 
-      // 完全一致チェック
-      if(skillNameToKey[v])matchedKey=skillNameToKey[v];
+    if(isFree){
+      // 自由入力: [nameIdx]=技名(cs1), [nameIdx+1]=種類(cs2), [nameIdx+2]=初期値,
+      //           [nameIdx+3]=職P, [nameIdx+4]=興P, [nameIdx+5]=成長, [nameIdx+6]=他
+      freeVal=row[nameIdx+1]?.text||'';
+      jobV=row[nameIdx+3]?.text||'';
+      intV=row[nameIdx+4]?.text||'';
+      grwV=row[nameIdx+5]?.text||'';
+      othV=row[nameIdx+6]?.text||'';
+    } else {
+      // 通常(cs=3): [nameIdx]=技名(cs3), [nameIdx+1]=初期値, [nameIdx+2]=職P,
+      //             [nameIdx+3]=興P, [nameIdx+4]=成長, [nameIdx+5]=他
+      jobV=row[nameIdx+2]?.text||'';
+      intV=row[nameIdx+3]?.text||'';
+      grwV=row[nameIdx+4]?.text||'';
+      othV=row[nameIdx+5]?.text||'';
+    }
 
-      // 「芸術」「運転」「製作」「操縦」「外国語」「母国語」は自由入力があるので別処理
-      if(!matchedKey){
-        for(const [name,key] of Object.entries(skillNameToKey)){
-          if(v===name||(v.startsWith(name)&&name.length>=2)){
-            matchedKey=key;
-            // 隣接セルから自由入力値を探す
-            for(let dc=1;dc<=3;dc++){
-              const nv=g(ri,ci+dc);
-              if(nv&&!/^\d+$/.test(nv)&&nv!==name){freeVal=nv;break;}
-            }
-            break;
-          }
-        }
+    const toNum=v=>/^-?\d+$/.test(v)?v:'';
+    const key=skillNameToKey[name];
+
+    if(key){
+      // 同名技能が複数ある場合（芸術など）は複数エントリ保存
+      if(!skillData[key]){
+        skillData[key]={key,job:toNum(jobV),int:toNum(intV),grw:toNum(grwV),oth:toNum(othV),freeVal};
+      } else if(name==='芸術'||name==='外国語'||name==='製作'){
+        // 2つ目以降はカスタムとして追加
+        customSkillRows.push({name:name+(freeVal?'('+freeVal+')':''),job:toNum(jobV),int:toNum(intV),grw:toNum(grwV),oth:toNum(othV)});
       }
+    } else if(name && !/^(成長|技能|初期値|職業P|興味P|成長分|その他|合計|＜|選択技能)/.test(name)){
+      // スプレッドシート固有のカスタム技能
+      customSkillRows.push({name:name+(freeVal?'('+freeVal+')':''),job:toNum(jobV),int:toNum(intV),grw:toNum(grwV),oth:toNum(othV)});
+    }
+  }
 
-      if(matchedKey){
-        // この行から数値を読む: 初期値の次から職P・興P・成長・他・合計
-        const nums=[];
-        for(let dc=1;dc<=10;dc++){
-          const nv=g(ri,ci+dc+2); // 技能名列は3スパンなので+2オフセット
-          if(/^-?\d+$/.test(nv))nums.push(nv);
-          else if(nv!==''&&nv!==undefined&&nums.length>0)break;
+  rows.forEach((row,ri)=>{
+    // ヘッダー行・空行スキップ
+    if(!row[0]?.text)return;
+    const r0=row[0].text;
+    if(r0==='A'||r0==='1')return; // ヘッダー行
+
+    // 左列（戦闘・探索技能）: cell[3]に技能名があるパターン
+    const c3=row[3];
+    if(c3&&c3.text&&(c3.colspan===3||freeInputSkills.has(c3.text))){
+      extractSkillFromCells(row,3);
+    }
+    // 中列（行動・交渉技能）: cell[12]に技能名
+    const c12=row[12];
+    if(c12&&c12.text&&skillNameToKey[c12.text]!==undefined||
+       (c12&&freeInputSkills.has(c12.text))){
+      extractSkillFromCells(row,12);
+    } else if(c12&&c12.text&&(c12.colspan===3)){
+      extractSkillFromCells(row,12);
+    }
+    // 右列（知識技能）: cell[21]に技能名
+    const c21=row[21];
+    if(c21&&c21.text&&(c21.colspan===3||c21.colspan===1&&skillNameToKey[c21.text])){
+      extractSkillFromCells(row,21);
+    }
+  });
+
+  // ---- 武器データ抽出 ----
+  // 武器テーブルヘッダー行: '名前','成功率','ダメージ','射程','攻撃回数','装弾数','耐久力','その他'
+  // データ行: [2]=武器名(cs5), [3]=成功率, [4]='%', [5]=ダメージ(cs2)
+  const weapons=[];
+  let inWeaponTable=false;
+  rows.forEach((row,ri)=>{
+    const texts=row.map(c=>c.text);
+    if(texts.some(t=>t==='名前')&&texts.some(t=>t==='成功率')&&texts.some(t=>t==='ダメージ')){
+      inWeaponTable=true;return;
+    }
+    if(inWeaponTable){
+      // '％'を含む行が武器データ行
+      const pctIdx=row.findIndex(c=>c.text==='％');
+      if(pctIdx>=0){
+        const nameCell=row.find(c=>c.colspan>=3&&c.text&&c.text!=='ダメージボーナス：'&&c.text!=='ダメージ'&&!/^(名前|成功率|ダメージ|射程|攻撃回数|装弾数|耐久力|その他)$/.test(c.text));
+        const skillPct=row[pctIdx-1]?.text||'';
+        const dmgCell=row.find((c,i)=>i>pctIdx&&c.text&&!/^(射程|攻撃回数|装弾数|耐久力|その他|％)$/.test(c.text));
+        if(nameCell&&nameCell.text){
+          weapons.push({
+            name:nameCell.text,
+            skill:skillPct,
+            damage:dmgCell?.text||'',
+            range:'',shots:'',ammo:'',hp:'',note:'',
+          });
         }
-        // 技能名→初期値列を探す（初期値は読まなくてよい、職P以降のみ）
-        // スプレッドシート列: 初期値(F列), 職P(G), 興P(H), 成長(I), 他(J), 合計(K)
-        // ci は技能名の先頭列、colspan3なのでci+3=初期値列
-        const baseCol=ci+(v===skillDisplayName?3:3);
-        const jobVal=g(ri,baseCol+1); // 職P
-        const intVal=g(ri,baseCol+2); // 興P
-        const grwVal=g(ri,baseCol+3); // 成長
-        const othVal=g(ri,baseCol+4); // 他
+      } else {
+        // ヘッダーでも武器行でもなければ終了
+        if(row.some(c=>c.text&&c.text==='所持品・所持金')||row.some(c=>c.text&&c.text.includes('所持品')))inWeaponTable=false;
+      }
+    }
+  });
 
-        skillData[matchedKey]={
-          key:matchedKey,
-          job:/^\d+$/.test(jobVal)?jobVal:'',
-          int:/^\d+$/.test(intVal)?intVal:'',
-          grw:/^\d+$/.test(grwVal)?grwVal:'',
-          oth:/^\d+$/.test(othVal)?othVal:'',
-          freeVal:freeVal,
-        };
+  // ---- 所持品データ抽出 ----
+  // '所持品・所持金'見出しの後の行
+  // 品名(cs5), 単価(cs2), 個数, 価格(cs2), 効果・備考(cs11)
+  const items=[];
+  let inItemTable=false;
+  let passedItemHeader=false;
+  rows.forEach((row,ri)=>{
+    const texts=row.map(c=>c.text);
+    if(texts.some(t=>t.includes('所持品')&&t.includes('所持金'))){inItemTable=true;return;}
+    if(inItemTable){
+      if(texts.some(t=>t==='名称')&&texts.some(t=>t==='単価')){passedItemHeader=true;return;}
+      if(passedItemHeader){
+        // 品名はcs=5のセル
+        const nameCell=row.find(c=>c.colspan>=3&&c.text&&!/^(名称|単価|効果・備考など|価格)$/.test(c.text)&&!c.text.includes('価格総計')&&!c.text.includes('現在の'));
+        if(nameCell&&nameCell.text){
+          // 個数(単品)
+          const qtyCell=row.find((c,i)=>row.indexOf(nameCell)<i&&/^\d+$/.test(c.text));
+          // 備考
+          const noteCell=row.find(c=>c.colspan>=5&&c.text&&c.text!==nameCell.text&&!/^¥/.test(c.text));
+          items.push({name:nameCell.text,qty:qtyCell?.text||'1',note:noteCell?.text||''});
+        }
+        if(texts.some(t=>t.includes('価格総計')))inItemTable=false;
+      }
+    }
+  });
+
+  // ---- その他メモ抽出 ----
+  let memoText='';
+  rows.forEach((row,ri)=>{
+    row.forEach((c,ci)=>{
+      if(c.text&&c.rowspan>=5&&c.text.length>30&&c.colspan>=15&&!memoText){
+        // 大きなテキストブロック = その他メモ
+        memoText=c.text;
       }
     });
   });
 
-  // SAN現在値
-  let sanNow='';
-  grid.forEach((row,ri)=>{
-    if(!row)return;
-    row.forEach((cell,ci)=>{
-      if(cell==='SAN値'||cell==='SAN'){
-        // 隣の数値
-        for(let dc=1;dc<=5;dc++){
-          const v=g(ri,ci+dc);
-          if(/^\d+$/.test(v)){sanNow=v;break;}
+  // ---- 通過シナリオ抽出 ----
+  let scenarioText='';
+  rows.forEach((row,ri)=>{
+    row.forEach((c,ci)=>{
+      if(c.text&&c.text.includes('通過シナリオ'))return;
+      // 通過シナリオ列(右側 cs=10, rs>=5)
+      if(c.colspan>=5&&c.rowspan>=5&&c.text&&c.text.length>2&&c.text!==memoText&&!scenarioText){
+        // 通過シナリオセルを特定（その他メモと区別）
+        const rowHasScenarioLabel=rows.some(r=>r.some(cl=>cl.text==='通過シナリオ'));
+        // 所持品テーブル右の大きなセルが通過シナリオ
+        if(ri>=55&&ri<=75){scenarioText=c.text;}
+      }
+    });
+  });
+
+  // ---- ネタバレ（秘匿情報）抽出 ----
+  let secretText='';
+  rows.forEach((row,ri)=>{
+    row.forEach((c,ci)=>{
+      if(c.text&&c.text.startsWith('▼以下秘匿')){
+        // 次の大きなセルが秘匿内容
+        const nextRow=rows[ri+1];
+        if(nextRow){
+          const bigCell=nextRow.find(cl=>cl.colspan>=10&&cl.text&&cl.text.length>50);
+          if(bigCell)secretText=bigCell.text;
         }
       }
     });
   });
 
-  // ---- シートに反映 ----
+  // ==== シートに反映 ====
   const sv=(id,val)=>{if(val){const el=document.getElementById(id);if(el)el.value=val;}};
 
   // パーソナルデータ
-  if(furigana)sv('furigana',furigana);
-  if(pcname)sv('pcname',pcname);
-  if(job)sv('job',job);
-  if(age)sv('age',age);
-  if(gender)sv('gender',gender);
-  if(height)sv('height',height);
-  if(weight)sv('weight',weight);
-  if(origin)sv('origin',origin);
-  if(hair)sv('hair',hair);
-  if(eye)sv('eye',eye);
-  if(birthday)sv('birthday',birthday);
+  sv('furigana',furigana);
+  sv('pcname',pcname);
+  sv('job',jobName);
+  sv('age',age);
+  sv('gender',gender);
+  sv('height',height);
+  sv('weight',weight);
+  sv('origin',origin);
+  sv('hair',hair);
+  sv('eye',eye);
+  sv('birthday',birthday);
 
   // 文字色
   if(txtcolor){
-    const hex=txtcolor.startsWith('#')?txtcolor:'#'+txtcolor;
-    if(/^#[0-9a-fA-F]{6}$/.test(hex)){
+    const hex=('#'+txtcolor.replace(/^#/,'')).toUpperCase();
+    if(/^#[0-9A-F]{6}$/.test(hex)){
       const el=document.getElementById('txtcolor');
-      if(el){el.value=hex;updateColorCode();}
+      if(el){el.value=hex.toLowerCase();updateColorCode();}
     }
   }
 
-  // ステータス（能力値行）
-  statKeys.forEach(k=>sv(k,stats[k]));
+  // ステータス
+  ['str','con','pow','dex','app','siz','int_v','edu'].forEach(k=>sv(k,stats[k]));
 
-  // 技能値を反映
+  // 技能値を反映（職P/興P/成長/他 を正しい列に）
   Object.values(skillData).forEach(sd=>{
     const tr=document.querySelector(`[data-skill="${sd.key}"]`)?.closest('tr');
     if(!tr)return;
-    const setInp=(cls,val)=>{const el=tr.querySelector(cls);if(el&&val)el.value=val;};
-    setInp('.job-inp',sd.job);
-    setInp('.int-inp',sd.int);
-    setInp('.grw-inp',sd.grw);
-    setInp('.oth-inp',sd.oth);
-    // 自由入力欄（芸術・運転等）
-    if(sd.freeVal){
-      const freeEl=tr.querySelector('.sk-name input[type=text]');
-      if(freeEl)freeEl.value=sd.freeVal;
+    const si=(cls,val)=>{const el=tr.querySelector(cls);if(el&&val)el.value=val;};
+    si('.job-inp',sd.job);
+    si('.int-inp',sd.int);
+    si('.grw-inp',sd.grw);
+    si('.oth-inp',sd.oth);
+    // 自由入力欄
+    if(sd.freeVal){const fi=tr.querySelector('.sk-name input[type=text]');if(fi)fi.value=sd.freeVal;}
+    // 値が入っていればチェック
+    if((+sd.job||0)+(+sd.int||0)+(+sd.grw||0)+(+sd.oth||0)>0){
+      const chk=tr.querySelector('input[type=checkbox]');if(chk)chk.checked=true;
     }
-    // チェックボックス：何かしら値が入っていればチェック
-    const hasVal=(parseInt(sd.job)||0)+(parseInt(sd.int)||0)+(parseInt(sd.grw)||0)+(parseInt(sd.oth)||0)>0;
-    if(hasVal){const chk=tr.querySelector('input[type=checkbox]');if(chk)chk.checked=true;}
+    skillChanged(tr.querySelector('.job-inp')||tr.querySelector('.int-inp')||tr.querySelector('.grw-inp')||tr.querySelector('.oth-inp'));
   });
 
-  // カスタム技能（太刀など）を追加
-  // 太刀が skillData に入っていれば戦闘セクションに追加
-  if(skillData['custom_katana']){
-    const sd=skillData['custom_katana'];
+  // カスタム技能を戦闘セクションに追加
+  customSkillRows.forEach(sd=>{
     const tbody=document.getElementById('tbody_combat');
-    const key='custom_katana_'+Date.now();
+    const key='ss_'+Date.now()+'_'+Math.random().toString(36).slice(2);
     const tr=document.createElement('tr');
+    const hasVal=(+sd.job||0)+(+sd.int||0)+(+sd.grw||0)+(+sd.oth||0)>0;
     tr.innerHTML=`
-      <td class="sk-chk"><input type="checkbox" ${(parseInt(sd.job)||0)+(parseInt(sd.int)||0)+(parseInt(sd.grw)||0)+(parseInt(sd.oth)||0)>0?'checked':''}></td>
-      <td class="sk-name" data-skill="${key}"><input type="text" value="太刀" style="border:none;border-bottom:1px solid #aaa;width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
-      <td class="sk-base" data-base>5</td>
-      <td class="sk-inp"><input type="number" class="job-inp" value="${sd.job||''}" oninput="skillChanged(this)"></td>
-      <td class="sk-inp"><input type="number" class="int-inp" value="${sd.int||''}" oninput="skillChanged(this)"></td>
-      <td class="sk-inp"><input type="number" class="grw-inp" value="${sd.grw||''}" oninput="skillChanged(this)"></td>
-      <td class="sk-inp"><input type="number" class="oth-inp" value="${sd.oth||''}" oninput="skillChanged(this)"></td>
-      <td class="sk-total">5</td>
+      <td class="sk-chk"><input type="checkbox"${hasVal?' checked':''}></td>
+      <td class="sk-name" data-skill="${key}"><input type="text" value="${sd.name}" style="border:none;border-bottom:1px solid #aaa;width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
+      <td class="sk-base" data-base>0</td>
+      <td class="sk-inp"><input type="number" class="job-inp" value="${sd.job}" oninput="skillChanged(this)"></td>
+      <td class="sk-inp"><input type="number" class="int-inp" value="${sd.int}" oninput="skillChanged(this)"></td>
+      <td class="sk-inp"><input type="number" class="grw-inp" value="${sd.grw}" oninput="skillChanged(this)"></td>
+      <td class="sk-inp"><input type="number" class="oth-inp" value="${sd.oth}" oninput="skillChanged(this)"></td>
+      <td class="sk-total">0</td>
       <td class="sk-del"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
     tbody.appendChild(tr);
-  }
+    skillChanged(tr.querySelector('.job-inp'));
+  });
 
   // SAN現在値
-  if(sanNow)sv('san_now',sanNow);
+  sv('san_now',sanNow);
+
+  // 武器テーブルに入力（既存行を使う）
+  if(weapons.length>0){
+    const wRows=document.querySelectorAll('#weapon_rows tr');
+    weapons.forEach((w,i)=>{
+      let tr=wRows[i];
+      if(!tr){addWeaponRow();tr=[...document.querySelectorAll('#weapon_rows tr')][i];}
+      if(!tr)return;
+      const inputs=tr.querySelectorAll('input');
+      if(inputs[0])inputs[0].value=w.name;      // 武器名
+      if(inputs[1])inputs[1].value=w.skill;     // 技能%
+      if(inputs[2])inputs[2].value=w.damage;    // ダメージ
+    });
+    // 戦闘アコーディオンを開く
+    const combatAcc=document.getElementById('combat_acc');
+    if(combatAcc&&!combatAcc.classList.contains('open'))toggleAcc('combat_acc');
+  }
+
+  // 所持品テーブルに入力
+  if(items.length>0){
+    const iRows=document.querySelectorAll('#item_rows tr');
+    items.forEach((itm,i)=>{
+      let tr=iRows[i];
+      if(!tr){addItemRow();tr=[...document.querySelectorAll('#item_rows tr')][i];}
+      if(!tr)return;
+      const inputs=tr.querySelectorAll('input');
+      if(inputs[0])inputs[0].value=itm.name;
+      if(inputs[1])inputs[1].value=itm.qty;
+      if(inputs[2])inputs[2].value=itm.note;
+    });
+    const itemsAcc=document.getElementById('items_acc');
+    if(itemsAcc&&!itemsAcc.classList.contains('open'))toggleAcc('items_acc');
+  }
+
+  // その他メモ
+  if(memoText){
+    const memoArea=document.querySelector('#memo_rows textarea');
+    if(memoArea)memoArea.value=memoText;
+    const memoAcc=document.getElementById('memo_acc');
+    if(memoAcc&&!memoAcc.classList.contains('open'))toggleAcc('memo_acc');
+  }
+
+  // 通過シナリオ
+  if(scenarioText){
+    const scArea=document.querySelector('#scenario_rows textarea');
+    if(scArea)scArea.value=scenarioText;
+    const scAcc=document.getElementById('scenario_outer');
+    if(scAcc&&!scAcc.classList.contains('open'))toggleAcc('scenario_outer');
+  }
+
+  // ネタバレ（秘匿）があればネタバレ管理に追加
+  if(secretText){
+    const wrap=document.getElementById('secret_items_wrap');
+    // 既存の空アイテムがあれば更新、なければ追加
+    const existing=wrap?.querySelector('.secret-item');
+    if(existing){
+      const titleInp=existing.querySelector('.secret-item-header input[type=text]');
+      if(titleInp)titleInp.value='秘匿情報（SS取込）';
+      // 解除してコンテンツを入れる
+      existing.dataset.pass='1234';
+      const contentDiv=existing.querySelector('[id^="content_"]');
+      if(contentDiv){
+        contentDiv.style.display='block';
+        const ta=contentDiv.querySelector('textarea');
+        if(ta)ta.value=secretText;
+      }
+    }
+    const secAcc=document.getElementById('secret_outer');
+    if(secAcc&&!secAcc.classList.contains('open'))toggleAcc('secret_outer');
+  }
 
   // 計算更新
   calc();
   updateStickyHeader();
 
-  alert(`✅ スプレッドシートの取込が完了しました！\nPC名: ${pcname||'(未取得)'}\n\n取込内容:\n・パーソナルデータ\n・ステータス (STR〜EDU)\n・技能値 (職業P/興味P/成長/その他)\n\n技能の初期値・合計は自動再計算されます。`);
+  const summary=[
+    `PC名: ${pcname||'(未取得)'}`,
+    `ステータス: ${Object.values(stats).filter(Boolean).length}/8項目`,
+    `技能: ${Object.keys(skillData).length}件 + カスタム${customSkillRows.length}件`,
+    `武器: ${weapons.length}件`,
+    `所持品: ${items.length}件`,
+    memoText?'その他メモ: ✓':'',
+    scenarioText?'通過シナリオ: ✓':'',
+    secretText?'秘匿情報: ✓':'',
+  ].filter(Boolean).join('\n');
+
+  alert('✅ スプレッドシート取込完了！\n\n'+summary);
 }
 
 // 初期化
