@@ -107,10 +107,9 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
     <button onclick="saveToStorage()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#2a7;color:#fff;border:none;border-radius:2px">💾保存</button>
     <button onclick="loadFromStorage()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#558;color:#fff;border:none;border-radius:2px">📂読込</button>
     <button onclick="copyViewURL()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#a72;color:#fff;border:none;border-radius:2px">🔗閲覧URL</button>
-    <button onclick="openCocofoliaCopyDialog()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px">🐔ココフォリア駒出力</button>
-    <button onclick="exportJSON()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">⬇ JSON</button>
-    <button onclick="importJSON()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">⬆ JSON</button>
-    <button onclick="window.print()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">🖨</button>
+    <button onclick="openCocofoliaCopyDialog()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px">🐔駒出力</button>
+    <button onclick="exportJSON()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">⬆ JSON</button>
+    <button onclick="importSpreadsheetHTML()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">📥スプシ取込</button>
   </div>
 </div>
 
@@ -1509,6 +1508,332 @@ async function authSignup() {
 db.auth.getSession().then(({ data: { session } }) => {
   if (session) document.getElementById('auth_modal').style.display = 'none';
 });
+
+// ===== スプレッドシートHTML取込 =====
+function importSpreadsheetHTML(){
+  const input=document.createElement('input');
+  input.type='file';input.accept='.html,.htm';
+  input.onchange=e=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        parseSpreadsheetHTML(ev.target.result);
+      }catch(err){
+        alert('スプレッドシートの読み込みに失敗しました: '+err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function parseSpreadsheetHTML(html){
+  // DOMパーサーでHTMLを解析
+  const parser=new DOMParser();
+  const doc=parser.parseFromString('<html><body>'+html+'</body></html>','text/html');
+  const rows=doc.querySelectorAll('tr');
+
+  // セルテキストを2次元配列に展開（rowspan/colspanを考慮したシンプル抽出）
+  const grid=[];
+  rows.forEach((tr,ri)=>{
+    if(!grid[ri])grid[ri]=[];
+    let ci=0;
+    tr.querySelectorAll('td').forEach(td=>{
+      while(grid[ri][ci]!==undefined)ci++;
+      const txt=(td.innerText||td.textContent||'').trim().replace(/\s+/g,' ');
+      const cs=parseInt(td.getAttribute('colspan')||'1');
+      const rs=parseInt(td.getAttribute('rowspan')||'1');
+      for(let r=0;r<rs;r++){
+        if(!grid[ri+r])grid[ri+r]=[];
+        for(let c=0;c<cs;c++) grid[ri+r][ci+c]=txt;
+      }
+      ci+=cs;
+    });
+  });
+
+  // ヘルパー：行ri、列ci の値（空でなければ）
+  const g=(ri,ci)=>(grid[ri]&&grid[ri][ci]!=null?grid[ri][ci]:'');
+
+  // ---- パーソナルデータ抽出 ----
+  // Row index は0始まり。スプレッドシートのrow2=index1, row3=index2, ...
+  // ふりがな: row2(index1) のラベル列の次
+  // PC名: row3(index2)
+  // 文字色: row6(index5)
+  // 職業/年齢/性別: row7(index6)
+  // 身長/体重/出身: row8(index7)
+  // 髪の色/瞳の色/誕生日: row9(index8)
+
+  let furigana='',pcname='',txtcolor='',job='',age='',gender='';
+  let height='',weight='',origin='',hair='',eye='',birthday='';
+
+  // 各行をスキャンしてラベルから値を取得
+  grid.forEach((row,ri)=>{
+    if(!row)return;
+    row.forEach((cell,ci)=>{
+      if(!cell)return;
+      const v=cell.trim();
+      // ふりがな
+      if(v==='ふりがな'&&!furigana){furigana=g(ri,ci+2)||g(ri,ci+1)||'';}
+      // PC名ラベルを探してPC名を取得
+      if(v==='PC名'&&!pcname){
+        // 同じ行か次の行のコンテンツを探す
+        for(let dc=1;dc<=10;dc++){
+          const cand=g(ri,ci+dc);
+          if(cand&&cand!=='PC名'){pcname=cand;break;}
+        }
+        if(!pcname){
+          for(let dc=1;dc<=10;dc++){
+            const cand=g(ri+1,ci+dc);
+            if(cand&&cand!=='PC名'){pcname=cand;break;}
+          }
+        }
+      }
+      // 文字色
+      if(v==='文字色'&&!txtcolor){
+        for(let dc=1;dc<=10;dc++){
+          const cand=g(ri,ci+dc);
+          if(cand&&cand!=='文字色'&&cand.length>=6){txtcolor=cand;break;}
+        }
+      }
+      // 職業
+      if(v==='職業'&&!job){
+        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='職業'&&c!=='年齢'&&c!=='性別'){job=c;break;}}
+      }
+      // 年齢
+      if(v==='年齢'&&!age){
+        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='年齢'&&c!=='職業'&&c!=='性別'){age=c;break;}}
+      }
+      // 性別
+      if(v==='性別'&&!gender){
+        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='性別'&&c!=='年齢'&&c!=='職業'){gender=c;break;}}
+      }
+      // 身長
+      if(v==='身長'&&!height){
+        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='身長'&&c!=='体重'&&c!=='出身'){height=c;break;}}
+      }
+      // 体重
+      if(v==='体重'&&!weight){
+        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='体重'&&c!=='身長'&&c!=='出身'){weight=c;break;}}
+      }
+      // 出身
+      if(v==='出身'&&!origin){
+        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='出身'&&c!=='身長'&&c!=='体重'){origin=c;break;}}
+      }
+      // 髪の色
+      if(v==='髪の色'&&!hair){
+        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='髪の色'&&c!=='瞳の色'&&c!=='誕生日'){hair=c;break;}}
+      }
+      // 瞳の色
+      if(v==='瞳の色'&&!eye){
+        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='瞳の色'&&c!=='髪の色'&&c!=='誕生日'){eye=c;break;}}
+      }
+      // 誕生日
+      if(v==='誕生日'&&!birthday){
+        for(let dc=1;dc<=3;dc++){const c=g(ri,ci+dc);if(c&&c!=='誕生日'&&c!=='髪の色'&&c!=='瞳の色'){birthday=c;break;}}
+      }
+    });
+  });
+
+  // ---- ステータス抽出 ----
+  // 「能力値」ラベル行からSTR〜EDUを8列分読む
+  let stats={str:'',con:'',pow:'',dex:'',app:'',siz:'',int_v:'',edu:''};
+  const statKeys=['str','con','pow','dex','app','siz','int_v','edu'];
+  grid.forEach((row,ri)=>{
+    if(!row)return;
+    row.forEach((cell,ci)=>{
+      if(cell==='現在値'||cell==='能力値'){
+        // 次の列から8つ連続して数値を取得
+        let found=0;
+        for(let dc=1;dc<=20&&found<8;dc++){
+          const v=g(ri,ci+dc);
+          if(/^\d+$/.test(v)){
+            if(!stats[statKeys[found]])stats[statKeys[found]]=v;
+            found++;
+          }
+        }
+      }
+    });
+  });
+
+  // ---- 技能データ抽出 ----
+  // スプレッドシートの技能行パターン:
+  // [checkbox_svg, 技能名(colspan3), 初期値, 職業P, 興味P, 成長分, その他, 合計]
+  // 技能名→キーマッピング
+  const skillNameToKey={
+    '回避':'kaihi','キック':'kick','組みつき':'kumi','こぶし(パンチ)':'punch',
+    '頭突き':'atama','投擲':'tousha','武道(MA)':'ma','拳銃':'gun',
+    'サブマシンガン':'smg','ショットガン':'sg','マシンガン':'mg','ライフル':'rifle',
+    '応急手当':'firstaid','鍵開け':'keylock','隠す':'kakusu','隠れる':'hide',
+    '聞き耳':'kikiimi','忍び歩き':'sneak','写真術':'photo','精神分析':'psych',
+    '追跡':'track','登攀':'climb','図書館':'lib','目星':'meboshi',
+    '運転':'drive','機械修理':'mech','重機械操作':'heavymach','乗馬':'horse',
+    '水泳':'swim','製作':'make','操縦':'operate','跳躍':'jump',
+    '電気修理':'elec','ナビゲート':'navi','変装':'hensou',
+    '言いくるめ':'ii','信用':'shin','説得':'settoku','値切り':'negiri',
+    '母国語':'kokugo','外国語':'gaikokugo',
+    '医学':'ika','オカルト':'occult','化学':'chem','クトゥルフ神話':'mythos',
+    '芸術':'art','経理':'keiri','考古学':'kouko','コンピューター':'pc',
+    '心理学':'shinri','人類学':'jinrui','生物学':'bio','地質学':'chishitsu',
+    '電子工学':'denshi','天文学':'tenmon','博物学':'hakubutsu','物理学':'butsuri',
+    '法律':'law','薬学':'yakugaku','歴史':'rekishi',
+    '太刀':'custom_katana',  // カスタム技能として扱う
+  };
+
+  // 技能データ収集: {key, job, int, grw, oth, freeVal}
+  const skillData={};
+  const customSkills=[]; // {name, job, int, grw, oth, freeVal}
+
+  grid.forEach((row,ri)=>{
+    if(!row)return;
+    // 技能テーブル行を探す: 数値列が複数含まれて、技能名が含まれる行
+    // パターン: 空白, 技能名テキスト, 数値, 数値(or空), ..., 数値(合計)
+    row.forEach((cell,ci)=>{
+      const v=(cell||'').trim();
+      // 技能名として登録されているか確認
+      let matchedKey=null;
+      let freeVal='';
+      let skillDisplayName=v;
+
+      // 完全一致チェック
+      if(skillNameToKey[v])matchedKey=skillNameToKey[v];
+
+      // 「芸術」「運転」「製作」「操縦」「外国語」「母国語」は自由入力があるので別処理
+      if(!matchedKey){
+        for(const [name,key] of Object.entries(skillNameToKey)){
+          if(v===name||(v.startsWith(name)&&name.length>=2)){
+            matchedKey=key;
+            // 隣接セルから自由入力値を探す
+            for(let dc=1;dc<=3;dc++){
+              const nv=g(ri,ci+dc);
+              if(nv&&!/^\d+$/.test(nv)&&nv!==name){freeVal=nv;break;}
+            }
+            break;
+          }
+        }
+      }
+
+      if(matchedKey){
+        // この行から数値を読む: 初期値の次から職P・興P・成長・他・合計
+        const nums=[];
+        for(let dc=1;dc<=10;dc++){
+          const nv=g(ri,ci+dc+2); // 技能名列は3スパンなので+2オフセット
+          if(/^-?\d+$/.test(nv))nums.push(nv);
+          else if(nv!==''&&nv!==undefined&&nums.length>0)break;
+        }
+        // 技能名→初期値列を探す（初期値は読まなくてよい、職P以降のみ）
+        // スプレッドシート列: 初期値(F列), 職P(G), 興P(H), 成長(I), 他(J), 合計(K)
+        // ci は技能名の先頭列、colspan3なのでci+3=初期値列
+        const baseCol=ci+(v===skillDisplayName?3:3);
+        const jobVal=g(ri,baseCol+1); // 職P
+        const intVal=g(ri,baseCol+2); // 興P
+        const grwVal=g(ri,baseCol+3); // 成長
+        const othVal=g(ri,baseCol+4); // 他
+
+        skillData[matchedKey]={
+          key:matchedKey,
+          job:/^\d+$/.test(jobVal)?jobVal:'',
+          int:/^\d+$/.test(intVal)?intVal:'',
+          grw:/^\d+$/.test(grwVal)?grwVal:'',
+          oth:/^\d+$/.test(othVal)?othVal:'',
+          freeVal:freeVal,
+        };
+      }
+    });
+  });
+
+  // SAN現在値
+  let sanNow='';
+  grid.forEach((row,ri)=>{
+    if(!row)return;
+    row.forEach((cell,ci)=>{
+      if(cell==='SAN値'||cell==='SAN'){
+        // 隣の数値
+        for(let dc=1;dc<=5;dc++){
+          const v=g(ri,ci+dc);
+          if(/^\d+$/.test(v)){sanNow=v;break;}
+        }
+      }
+    });
+  });
+
+  // ---- シートに反映 ----
+  const sv=(id,val)=>{if(val){const el=document.getElementById(id);if(el)el.value=val;}};
+
+  // パーソナルデータ
+  if(furigana)sv('furigana',furigana);
+  if(pcname)sv('pcname',pcname);
+  if(job)sv('job',job);
+  if(age)sv('age',age);
+  if(gender)sv('gender',gender);
+  if(height)sv('height',height);
+  if(weight)sv('weight',weight);
+  if(origin)sv('origin',origin);
+  if(hair)sv('hair',hair);
+  if(eye)sv('eye',eye);
+  if(birthday)sv('birthday',birthday);
+
+  // 文字色
+  if(txtcolor){
+    const hex=txtcolor.startsWith('#')?txtcolor:'#'+txtcolor;
+    if(/^#[0-9a-fA-F]{6}$/.test(hex)){
+      const el=document.getElementById('txtcolor');
+      if(el){el.value=hex;updateColorCode();}
+    }
+  }
+
+  // ステータス（能力値行）
+  statKeys.forEach(k=>sv(k,stats[k]));
+
+  // 技能値を反映
+  Object.values(skillData).forEach(sd=>{
+    const tr=document.querySelector(`[data-skill="${sd.key}"]`)?.closest('tr');
+    if(!tr)return;
+    const setInp=(cls,val)=>{const el=tr.querySelector(cls);if(el&&val)el.value=val;};
+    setInp('.job-inp',sd.job);
+    setInp('.int-inp',sd.int);
+    setInp('.grw-inp',sd.grw);
+    setInp('.oth-inp',sd.oth);
+    // 自由入力欄（芸術・運転等）
+    if(sd.freeVal){
+      const freeEl=tr.querySelector('.sk-name input[type=text]');
+      if(freeEl)freeEl.value=sd.freeVal;
+    }
+    // チェックボックス：何かしら値が入っていればチェック
+    const hasVal=(parseInt(sd.job)||0)+(parseInt(sd.int)||0)+(parseInt(sd.grw)||0)+(parseInt(sd.oth)||0)>0;
+    if(hasVal){const chk=tr.querySelector('input[type=checkbox]');if(chk)chk.checked=true;}
+  });
+
+  // カスタム技能（太刀など）を追加
+  // 太刀が skillData に入っていれば戦闘セクションに追加
+  if(skillData['custom_katana']){
+    const sd=skillData['custom_katana'];
+    const tbody=document.getElementById('tbody_combat');
+    const key='custom_katana_'+Date.now();
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="sk-chk"><input type="checkbox" ${(parseInt(sd.job)||0)+(parseInt(sd.int)||0)+(parseInt(sd.grw)||0)+(parseInt(sd.oth)||0)>0?'checked':''}></td>
+      <td class="sk-name" data-skill="${key}"><input type="text" value="太刀" style="border:none;border-bottom:1px solid #aaa;width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
+      <td class="sk-base" data-base>5</td>
+      <td class="sk-inp"><input type="number" class="job-inp" value="${sd.job||''}" oninput="skillChanged(this)"></td>
+      <td class="sk-inp"><input type="number" class="int-inp" value="${sd.int||''}" oninput="skillChanged(this)"></td>
+      <td class="sk-inp"><input type="number" class="grw-inp" value="${sd.grw||''}" oninput="skillChanged(this)"></td>
+      <td class="sk-inp"><input type="number" class="oth-inp" value="${sd.oth||''}" oninput="skillChanged(this)"></td>
+      <td class="sk-total">5</td>
+      <td class="sk-del"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+    tbody.appendChild(tr);
+  }
+
+  // SAN現在値
+  if(sanNow)sv('san_now',sanNow);
+
+  // 計算更新
+  calc();
+  updateStickyHeader();
+
+  alert(`✅ スプレッドシートの取込が完了しました！\nPC名: ${pcname||'(未取得)'}\n\n取込内容:\n・パーソナルデータ\n・ステータス (STR〜EDU)\n・技能値 (職業P/興味P/成長/その他)\n\n技能の初期値・合計は自動再計算されます。`);
+}
 
 // 初期化
 populateJobs();populateTokucho();buildSkillTables();initWeaponRows();initItemRows();

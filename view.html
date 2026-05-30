@@ -102,6 +102,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
   </div>
   <div id="sticky-actions">
     <span style="font-size:11px;color:#aaa;padding:2px 8px;border-radius:2px;background:#444">閲覧モード</span>
+    <button id="coco_btn" onclick="openCocofoliaCopyDialog()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px;display:none">🐔駒出力</button>
   </div>
 </div>
 <div class="sheet">
@@ -1222,6 +1223,9 @@ document.querySelectorAll('th:last-child:empty, th:last-child').forEach(el => {
   if (el.textContent.trim() === '') el.style.display = 'none';
 });
 
+  // ococofolia駒出力ボタンを表示（閲覧モード完了後）
+  const cocoBtn = document.getElementById('coco_btn');
+  if (cocoBtn) cocoBtn.style.display = 'inline-block';
 }
 
 function unlockViewSecret(btn) {
@@ -1258,6 +1262,265 @@ function unlockViewSecret(btn) {
 populateJobs(); populateTokucho(); buildSkillTables(); initWeaponRows(); initItemRows();
 addSecretItem('', '1234'); addRelGroup(); addAERow('tbody_kouisho'); addAERow('tbody_af'); addAERow('tbody_spell');
 initViewMode();
+
+
+/* ===== ここからコマコピー（閲覧モード） ===== */
+
+const MELEE_DAMAGE = {
+  kick:   '1D6{DB}',
+  kumi:   '特殊',
+  punch:  '1D3{DB}',
+  atama:  '1D4',
+  tousha: '{DB}',
+  ma:     '1D3{DB}',
+};
+const GUN_KEYS = ['gun','smg','sg','mg','rifle'];
+const MA_COMBO_KEYS = ['kick','punch','atama','kumi'];
+
+const SKILL_LABEL = {
+  kaihi:'回避', kick:'キック', kumi:'組みつき', punch:'こぶし(パンチ)', atama:'頭突き',
+  tousha:'投擲', ma:'武道(MA)', gun:'拳銃', smg:'サブマシンガン', sg:'ショットガン',
+  mg:'マシンガン', rifle:'ライフル',
+  firstaid:'応急手当', keylock:'鍵開け', kakusu:'隠す', hide:'隠れる',
+  kikiimi:'聞き耳', sneak:'忍び歩き', photo:'写真術', psych:'精神分析',
+  track:'追跡', climb:'登攀', lib:'図書館', meboshi:'目星',
+  drive:'運転', mech:'機械修理', heavymach:'重機械操作', horse:'乗馬',
+  swim:'水泳', make:'製作', operate:'操縦', jump:'跳躍',
+  elec:'電気修理', navi:'ナビゲート', hensou:'変装',
+  ii:'言いくるめ', shin:'信用', settoku:'説得', negiri:'値切り',
+  kokugo:'母国語', gaikokugo:'外国語',
+  ika:'医学', occult:'オカルト', chem:'化学', mythos:'クトゥルフ神話',
+  art:'芸術', keiri:'経理', kouko:'考古学', pc:'コンピューター',
+  shinri:'心理学', jinrui:'人類学', bio:'生物学', chishitsu:'地質学',
+  denshi:'電子工学', tenmon:'天文学', hakubutsu:'博物学', butsuri:'物理学',
+  law:'法律', yakugaku:'薬学', rekishi:'歴史',
+};
+
+function getSkillDisplayName(tr, key) {
+  const nameCell = tr.querySelector('.sk-name');
+  if (!nameCell) return SKILL_LABEL[key] || key;
+  const freeInp = nameCell.querySelector('input[type=text]');
+  const baseLabel = SKILL_LABEL[key] || key;
+  if (freeInp && freeInp.value) {
+    return baseLabel.replace(/\(.*?\)/, '') + '(' + freeInp.value + ')';
+  }
+  return baseLabel;
+}
+
+function getSkillBase_coco(tr, key) {
+  const c = getCur();
+  if (key === 'kaihi') return c.dex * 2;
+  if (key === 'kokugo') return c.edu * 5;
+  return parseInt(tr.querySelector('[data-base]')?.textContent) || 0;
+}
+
+function getSkillTotal_coco(tr) {
+  return parseInt(tr.querySelector('.sk-total')?.textContent) || 0;
+}
+
+function getGunJamNo(skillTotal) {
+  let found = null;
+  document.querySelectorAll('#weapon_rows tr').forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    if (cells.length < 8) return;
+    const skillPct = parseInt(cells[1]?.querySelector('input')?.value);
+    const jamNo    = cells[7]?.querySelector('input')?.value?.trim();
+    if (!jamNo) return;
+    if (skillPct === skillTotal) found = jamNo;
+  });
+  return found;
+}
+
+function buildChatPalette(c) {
+  const lines = [];
+  lines.push('〇');
+  lines.push(':SAN');
+  lines.push(':HP');
+  lines.push(':MP');
+  lines.push(`CCB<={SAN} 【SANチェック】`);
+  lines.push(`CCB<=${c.int*5} 【アイデア】`);
+  lines.push(`CCB<=${c.pow*5} 【幸運】`);
+  lines.push(`CCB<=${c.edu*5} 【知識】`);
+
+  let maTotal = 0;
+  const maTr = document.querySelector('[data-skill="ma"]')?.closest('tr');
+  if (maTr) maTotal = getSkillTotal_coco(maTr);
+  const maBase = maTr ? getSkillBase_coco(maTr, 'ma') : 1;
+
+  const alwaysKeys = new Set(['kaihi', 'firstaid']);
+  const comboAlreadyAdded = new Set();
+  const allSections = ['tbody_combat','tbody_search','tbody_action','tbody_talk','tbody_know'];
+
+  allSections.forEach(secId => {
+    document.querySelectorAll(`#${secId} tr`).forEach(tr => {
+      const sc = tr.querySelector('[data-skill]');
+      if (!sc) return;
+      const key = sc.dataset.skill;
+      const base = getSkillBase_coco(tr, key);
+      const total = getSkillTotal_coco(tr);
+      const label = getSkillDisplayName(tr, key);
+      const isGun = GUN_KEYS.includes(key);
+      const isMelee = key in MELEE_DAMAGE;
+      const isMa = key === 'ma';
+      const shouldOutput = total > base || alwaysKeys.has(key);
+      if (!shouldOutput) return;
+
+      lines.push(`CCB<=${total} 【${label}】`);
+
+      if (key === 'firstaid') {
+        lines.push(`1D3 【応急手当】回復`);
+      }
+
+      if (secId === 'tbody_combat' && isMelee && total > base) {
+        const dmg = MELEE_DAMAGE[key];
+        if (dmg && dmg !== '特殊') {
+          lines.push(`${dmg} 【${label}】ダメージ`);
+        }
+      }
+
+      if (isMa && total > base) {
+        lines.push(`1D3{DB} 【武道(MA)】ダメージ`);
+      }
+
+      if (maTotal > maBase && MA_COMBO_KEYS.includes(key) && total > base) {
+        const comboKey = `ma_${key}`;
+        if (!comboAlreadyAdded.has(comboKey)) {
+          comboAlreadyAdded.add(comboKey);
+          lines.push(`CBRB(${maTotal},${total}) 【武道(MA)】+【${label}】`);
+          lines.push(`2D6{DB} 【武道(MA)】+【${label}】ダメージ`);
+        }
+      }
+
+      if (isGun && total > base) {
+        const jamNo = getGunJamNo(total);
+        if (jamNo) {
+          lines[lines.length - 1] = `CCB(${jamNo})<=${total} 【${label}】`;
+        }
+      }
+    });
+  });
+
+  lines.push(`CCB<={STR}*5 【STR】`);
+  lines.push(`CCB<={CON}*5 【CON】`);
+  lines.push(`CCB<={POW}*5 【POW】`);
+  lines.push(`CCB<={DEX}*5 【DEX】`);
+  lines.push(`CCB<={APP}*5 【APP】`);
+  lines.push(`CCB<={SIZ}*5 【SIZ】`);
+  lines.push(`CCB<={INT}*5 【INT】`);
+  lines.push(`CCB<={EDU}*5 【EDU】`);
+
+  return lines.join('\n');
+}
+
+function openCocofoliaCopyDialog() {
+  const old = document.getElementById('cocofolia_modal');
+  if (old) old.remove();
+
+  const c = getCur();
+  const pcname = document.getElementById('pcname')?.value || 'キャラクター';
+  const color  = document.getElementById('txtcolor')?.value || '#000000';
+  const hpMax  = parseInt(document.getElementById('hp_c')?.textContent) || 0;
+  const mpMax  = parseInt(document.getElementById('mp_c')?.textContent) || 0;
+  const sanNow = parseInt(document.getElementById('san_now')?.value) || (c.pow*5);
+  const sanMax = parseInt(document.getElementById('max_san')?.textContent) || 99;
+  const dbVal  = document.getElementById('db')?.textContent || '0';
+
+  const palette = buildChatPalette(c);
+
+  const modal = document.createElement('div');
+  modal.id = 'cocofolia_modal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center';
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:6px;padding:16px;width:92%;max-width:680px;max-height:90vh;overflow-y:auto;font-family:inherit">
+      <div style="font-weight:bold;font-size:13px;margin-bottom:8px;color:#333">🐔 ココフォリア駒出力</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;font-size:11px">
+        <div style="background:#f8f8f8;border:1px solid #ddd;border-radius:3px;padding:8px">
+          <div style="font-weight:bold;color:#555;margin-bottom:4px">📊 ステータス（確認）</div>
+          <div>PC名: <b>${pcname}</b></div>
+          <div>イニシアチブ: <b>${c.dex}</b>（DEX）</div>
+          <div>HP: ${hpMax} / ${hpMax} &nbsp; MP: ${mpMax} / ${mpMax}</div>
+          <div>SAN: ${sanNow} / ${sanMax}</div>
+          <div>DB: ${dbVal}</div>
+          <div>カラー: <span style="background:${color};color:#fff;padding:0 6px;border-radius:2px">${color}</span></div>
+        </div>
+        <div style="background:#f8f8f8;border:1px solid #ddd;border-radius:3px;padding:8px">
+          <div style="font-weight:bold;color:#555;margin-bottom:4px">📋 パラメータ（STR〜DB）</div>
+          ${['str','con','pow','dex','app','siz','int_v','edu'].map(k=>`<span style="background:#eee;border-radius:2px;padding:0 4px;margin:1px;display:inline-block">${k.replace('_v','').toUpperCase()}: ${c[k]||0}</span>`).join('')}
+          <span style="background:#eee;border-radius:2px;padding:0 4px;margin:1px;display:inline-block">DB: ${dbVal}</span>
+        </div>
+      </div>
+
+      <div style="font-weight:bold;font-size:11px;color:#555;margin-bottom:3px">📝 チャットパレット（プレビュー・編集可）</div>
+      <textarea id="coco_palette_preview" style="width:100%;height:220px;font-size:11px;font-family:monospace;border:1px solid #aaa;padding:4px;resize:vertical;background:#fafafa">${palette}</textarea>
+
+      <div id="coco_copy_msg" style="font-size:11px;color:#2a7;display:none;margin:6px 0">✓ クリップボードにコピーしました！</div>
+
+      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px">
+        <button onclick="document.getElementById('cocofolia_modal').remove()"
+          style="font-size:11px;padding:3px 12px;cursor:pointer;background:#aaa;color:#fff;border:none;border-radius:2px">閉じる</button>
+        <button onclick="doCocofolicaCopy()"
+          style="font-size:11px;padding:3px 16px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px;font-weight:bold">📋 コマJSONをコピー</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+function doCocofolicaCopy() {
+  const c = getCur();
+  const pcname = document.getElementById('pcname')?.value || 'キャラクター';
+  const color  = document.getElementById('txtcolor')?.value || '#000000';
+  const hpMax  = parseInt(document.getElementById('hp_c')?.textContent) || 0;
+  const mpMax  = parseInt(document.getElementById('mp_c')?.textContent) || 0;
+  const sanNow = parseInt(document.getElementById('san_now')?.value) || (c.pow*5);
+  const sanMax = parseInt(document.getElementById('max_san')?.textContent) || 99;
+  const dbVal  = document.getElementById('db')?.textContent || '0';
+
+  const palette = document.getElementById('coco_palette_preview')?.value || buildChatPalette(c);
+
+  const paramOrder = ['str','con','pow','dex','app','siz','int_v','edu'];
+  const paramLabels = ['STR','CON','POW','DEX','APP','SIZ','INT','EDU'];
+  const params = paramOrder.map((k,i) => ({ label: paramLabels[i], value: String(c[k]||0) }));
+  params.push({ label:'DB', value: dbVal });
+
+  const cocoJSON = {
+    kind: 'character',
+    data: {
+      name: pcname,
+      initiative: c.dex,
+      externalUrl: '',
+      status: [
+        { label:'HP',  value: hpMax,  max: hpMax  },
+        { label:'MP',  value: mpMax,  max: mpMax  },
+        { label:'SAN', value: sanNow, max: sanMax },
+      ],
+      params: params,
+      commands: palette,
+      secret: false,
+      invisible: false,
+      hideStatus: false,
+      color: color,
+    }
+  };
+
+  const jsonStr = JSON.stringify(cocoJSON);
+
+  navigator.clipboard.writeText(jsonStr).then(() => {
+    const msg = document.getElementById('coco_copy_msg');
+    if (msg) { msg.style.display='block'; setTimeout(()=>msg.style.display='none',3000); }
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = jsonStr;
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+    document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand('copy'); ta.remove();
+    const msg = document.getElementById('coco_copy_msg');
+    if (msg) { msg.style.display='block'; setTimeout(()=>msg.style.display='none',3000); }
+  });
+}
+/* ===== コマコピーここまで ===== */
 
 </script>
 </body>
