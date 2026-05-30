@@ -135,7 +135,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
           </div>
         </td>
       </tr>
-      <tr><td class="hdr">職業</td><td colspan="3"><input type="text" id="job"></td></tr>
+      <tr><td class="hdr">職業</td><td colspan="3"><input type="text" id="job" style="text-align:left"></td></tr>
       <tr><td class="hdr">年齢</td><td><input type="text" id="age"></td><td class="hdr">性別</td><td><input type="text" id="gender"></td></tr>
       <tr><td class="hdr">身長</td><td><input type="text" id="height"></td><td class="hdr">体重</td><td><input type="text" id="weight"></td></tr>
       <tr><td class="hdr">誕生日</td><td><input type="text" id="birthday"></td><td class="hdr">出身</td><td><input type="text" id="origin"></td></tr>
@@ -556,6 +556,16 @@ function recalcAllSkills(){
   const mythosTotal=parseInt(document.querySelector('[data-skill="mythos"]')?.closest('tr')?.querySelector('.sk-total')?.textContent)||0;
   tx('max_san',99-mythosTotal);updatePointBar();
 }
+
+// 自由入力欄の自動幅伸縮
+function autoResize(inp){
+  inp.style.width='0';
+  const minW=44;
+  inp.style.width=Math.max(minW,inp.scrollWidth+4)+'px';
+}
+function autoResizeAll(){
+  document.querySelectorAll('.free-inp-auto').forEach(autoResize);
+}
 function skillChanged(inp){
   inp.dataset.manual='1';
   const tr=inp.closest('tr');
@@ -577,7 +587,7 @@ function makeSkillRow(name,base,key,hasFree,freeVal,isDefault){
   const tr=document.createElement('tr');
   if(isDefault)tr.classList.add('skill-default-row');
   let nameHtml=name;
-  if(hasFree)nameHtml=`${name}(<input type="text" value="${freeVal||''}" style="border:none;border-bottom:1px solid #aaa;width:44px;font-size:11px;outline:none;background:transparent;text-align:left">)`;
+  if(hasFree)nameHtml=`${name}(<input type="text" value="${freeVal||''}" class="free-inp-auto" style="border:none;border-bottom:1px solid #aaa;min-width:44px;width:44px;font-size:11px;outline:none;background:transparent;text-align:left" oninput="autoResize(this)">)`;
   if(key==='operate')nameHtml=`操縦(<input type="text" style="border:none;border-bottom:1px solid #aaa;width:50px;font-size:11px;outline:none;background:transparent;text-align:left" placeholder="種類">)`;
   const isDyn=key==='kaihi'||key==='kokugo';
   const bAttr=isDyn?`data-basekey="${key}"`:`data-base`;
@@ -934,7 +944,7 @@ function addWeaponRow(){document.getElementById('weapon_rows').appendChild(makeW
 
 function makeItemTr(){
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td style="padding:0 1px"><input class="item-input" type="text"></td><td style="padding:0 1px"><input class="item-input" type="number" style="text-align:center"></td><td style="padding:0 1px"><input class="item-input" type="text"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  tr.innerHTML=`<td style="padding:0 1px"><input class="item-input" type="text" style="text-align:left"></td><td style="padding:0 1px"><input class="item-input" type="number" style="text-align:center"></td><td style="padding:0 1px"><input class="item-input" type="text" style="text-align:left"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
   return tr;
 }
 function initItemRows(){const tbody=document.getElementById('item_rows');for(let i=0;i<6;i++)tbody.appendChild(makeItemTr());}
@@ -1069,7 +1079,7 @@ function collectData(){
   const skills=[];
   document.querySelectorAll('.skill-table tbody tr').forEach(tr=>{
     const key=tr.querySelector('[data-skill]')?.dataset?.skill||'';if(!key)return;
-    skills.push({key,chk:tr.querySelector('input[type=checkbox]')?.checked||false,job:tr.querySelector('.job-inp')?.value||'',int:tr.querySelector('.int-inp')?.value||'',grw:tr.querySelector('.grw-inp')?.value||'',oth:tr.querySelector('.oth-inp')?.value||''});
+    const fv=tr.querySelector('.sk-name .free-inp-auto')?.value||tr.querySelector('.sk-name input[type=text]')?.value||'';skills.push({key,chk:tr.querySelector('input[type=checkbox]')?.checked||false,job:tr.querySelector('.job-inp')?.value||'',int:tr.querySelector('.int-inp')?.value||'',grw:tr.querySelector('.grw-inp')?.value||'',oth:tr.querySelector('.oth-inp')?.value||'',freeVal:fv});
   });
 
   // ネタバレ管理を保存
@@ -1099,8 +1109,10 @@ function applyData(json){
     const ii=tr.querySelector('.int-inp');if(ii)ii.value=s.int;
     const gi=tr.querySelector('.grw-inp');if(gi)gi.value=s.grw;
     const oi=tr.querySelector('.oth-inp');if(oi)oi.value=s.oth;
+    if(s.freeVal){const fi=tr.querySelector('.sk-name .free-inp-auto')||tr.querySelector('.sk-name input[type=text]');if(fi){fi.value=s.freeVal;}}
   });
   calc();
+  setTimeout(autoResizeAll,100);
 }
 // 保存ボタン
 let currentCharId = null;
@@ -1715,21 +1727,35 @@ function parseSpreadsheetHTML(html){
         if(!tokucho1)tokucho1=v;
         else if(!tokucho2&&v!==tokucho1)tokucho2=v;
       }
-      // 職業計算式: EDU*20形式
-      if(/^EDU/.test(v)&&!jobFormula){jobFormula=v;}
+      // 職業計算式: EDU*20形式 ─ 特記事項エリア（Row38付近）のみ取得
+      // 特記事項エリアは「特記事項」または「参照：」が同じ行か前行にある
+      if(/^(EDU|STR|CON|POW|DEX|APP|SIZ|INT)/.test(v)&&v.includes('*')&&!jobFormula){
+        // 能力値ロール列のCCB<=...*5 形式は除外
+        if(!v.startsWith('CCB')){
+          // 正規化: 空白除去
+          jobFormula=v.trim().replace(/\s/g,'');
+        }
+      }
       // 職業参照名: 「参照：」直後の非数値セル（職業一覧に対応する名称）
       if((v==='参照：'||v==='参照:')&&!jobRefName){
         for(let d=1;d<=3;d++){
           const t=(row[ci+d]?.text||'').trim();
-          // 数値（年度）は無視し、職業名らしき文字列を取得
           if(t&&!/^\d+$/.test(t)&&t!=='-'){jobRefName=t;break;}
         }
-        // 参照先が同じ行にない場合は次行を探す（列が異なる場合）
       }
-      // 「参照：」の次の行に職業名がある場合（列ズレ対応）
       if(v.startsWith('参照：')||v.startsWith('参照:')){
         const refName=v.replace(/^参照[：:]\s*/,'').trim();
         if(refName&&!/^\d+$/.test(refName)&&!jobRefName)jobRefName=refName;
+      }
+      // 特記事項エリアで cs=5 のセルが2つ並んでいる行（職業名＋計算式）を検出
+      // Row39形式: [ci]=職業名(cs5), [ci+1]=計算式(cs5)
+      if(c.colspan===5&&v&&!v.includes('選択技能')&&!v.includes('(D)')&&!v.includes('特記')&&!v.includes('その他')&&!v.startsWith('CCB')&&!v.startsWith('###')&&!/^（/.test(v)){
+        // 同じ行に計算式(cs>=5)があるか確認
+        const formulaCell=row.find((x,xi)=>xi!==ci&&x.colspan>=5&&x.text&&/^(EDU|STR|CON|POW|DEX|APP|SIZ|INT)/.test(x.text)&&!x.text.startsWith('CCB'));
+        if(formulaCell){
+          if(!jobRefName)jobRefName=v.trim();
+          if(!jobFormula)jobFormula=formulaCell.text.trim().replace(/\s/g,'');
+        }
       }
       // 選択技能: '選択技能'行のみ取得（チャパレ文字列・ラベル類を除外）
       if(v==='選択技能'){
@@ -1748,16 +1774,27 @@ function parseSpreadsheetHTML(html){
       // Dボーナス: '(D)ボーナス'行から数値を抽出
       // 形式: [数字P] / +数字P / 数字 (いずれかに対応)
       if(v==='(D)ボーナス'||v==='Dボーナス'||v==='Dボーナス(興味Pに加算)'){
-        for(let d=1;d<=6;d++){
-          const t=(row[ci+d]?.text||'').trim();
-          // [数字P] または +数字P または 数字P または 純数値
-          const m=t.match(/\[?(\+)?(\d+)P?\]?/);
-          if(m&&parseInt(m[2])>0){
-            const pts=parseInt(m[2]);
-            if(!dBonus1Set){dBonus1=pts;dBonus1Set=true;}
-            else if(!dBonus2Set&&pts!==dBonus1){dBonus2=pts;dBonus2Set=true;}
-          }
-        }
+        // 同じ行・次行も含めて数値を探す（「D:名称」「1d6→N [NP]」形式に対応）
+        const scanRows=[row, rows[ri+1]].filter(Boolean);
+        scanRows.forEach(scanRow=>{
+          scanRow.forEach((sc,si)=>{
+            if(si===ci&&scanRow===row)return; // 自セルスキップ
+            const t=(sc.text||'').trim();
+            if(!t||t==='-')return;
+            // 「[NP]」「NP」「+NP」「N」形式から数値抽出
+            // 優先: [NP] または →N [NP] 形式
+            let m=t.match(/\[(\d+)P\]/);
+            if(!m)m=t.match(/→(\d+)/);
+            if(!m)m=t.match(/^\+?(\d+)P?$/);
+            if(m){
+              const pts=parseInt(m[1]);
+              if(pts>0&&[10,20,30,40,50,60].includes(pts)){
+                if(!dBonus1Set){dBonus1=pts;dBonus1Set=true;}
+                else if(!dBonus2Set&&pts!==dBonus1){dBonus2=pts;dBonus2Set=true;}
+              }
+            }
+          });
+        });
       }
       // その他特記: 「その他特記」行＋次数行にある長文セルを全取得
       if(v==='その他特記'&&!otherNote){
@@ -2079,6 +2116,18 @@ function parseSpreadsheetHTML(html){
         }
       }
       onJobRefChange();
+      // スプシ指定の計算式があれば、jobData由来の式を上書き
+      if(jobFormula){
+        const fs2=document.getElementById('job_formula_sel');
+        if(fs2){
+          const norm=jobFormula.replace(/\s/g,'').toUpperCase();
+          for(let i=0;i<fs2.options.length;i++){
+            if(fs2.options[i].value.replace(/\s/g,'').toUpperCase()===norm){
+              fs2.selectedIndex=i;calcJobPts();break;
+            }
+          }
+        }
+      }
     }
   }
   // 選択技能を自動入力
@@ -2246,11 +2295,14 @@ function parseSpreadsheetHTML(html){
     secretText?'秘匿情報: ✓':'',
   ].filter(Boolean).join('\n');
 
+  setTimeout(autoResizeAll,200);
+
   alert('✅ スプレッドシート取込完了！\n\n'+summary);
 }
 
 // 初期化
 populateJobs();populateTokucho();buildSkillTables();initWeaponRows();initItemRows();
+  setTimeout(autoResizeAll,200);
 addSecretItem('','1234');addRelGroup();addAERow('tbody_kouisho');addAERow('tbody_af');addAERow('tbody_spell');
 </script>
 </body>
