@@ -1652,8 +1652,9 @@ function parseSpreadsheetHTML(html){
   // カスタム技能（スプレッドシート固有技能・太刀など）
   const customSkillRows=[];
 
-  // セクション判定用: 左[3], 中[12], 右[21]
-  function extractSkillFromCells(row, nameIdx){
+  // セクション判定用: 左[3]=combat, 中[12]=action, 右[21or22]=know
+  // section: 'combat' | 'action' | 'know'
+  function extractSkillFromCells(row, nameIdx, section){
     const nameCell=row[nameIdx];
     if(!nameCell)return;
     const name=nameCell.text;
@@ -1664,7 +1665,7 @@ function parseSpreadsheetHTML(html){
 
     if(isFree){
       // 自由入力: [nameIdx]=技名(cs1), [nameIdx+1]=種類(cs2), [nameIdx+2]=初期値,
-      //           [nameIdx+3]=職P, [nameIdx+4]=興P, [nameIdx+5]=成長, [nameIdx+6]=他
+      //           [nameIdx+3]=職P, [nameIdx+4]=興P, [nameIdx+5]=成長, [nameIdx+6]=他, [nameIdx+7]=合計(無視)
       freeVal=row[nameIdx+1]?.text||'';
       jobV=row[nameIdx+3]?.text||'';
       intV=row[nameIdx+4]?.text||'';
@@ -1682,17 +1683,24 @@ function parseSpreadsheetHTML(html){
     const toNum=v=>/^-?\d+$/.test(v)?v:'';
     const key=skillNameToKey[name];
 
+    // セクションに対応するtbodyId
+    const sectionTbody={
+      combat:'tbody_combat',
+      action:'tbody_action',
+      know:'tbody_know',
+    }[section]||'tbody_combat';
+
     if(key){
       // 同名技能が複数ある場合（芸術など）は複数エントリ保存
       if(!skillData[key]){
         skillData[key]={key,job:toNum(jobV),int:toNum(intV),grw:toNum(grwV),oth:toNum(othV),freeVal};
       } else if(name==='芸術'||name==='外国語'||name==='製作'){
-        // 2つ目以降はカスタムとして追加
-        customSkillRows.push({name:name+(freeVal?'('+freeVal+')':''),job:toNum(jobV),int:toNum(intV),grw:toNum(grwV),oth:toNum(othV)});
+        // 2つ目以降はカスタムとして追加（セクション情報付き）
+        customSkillRows.push({name:name+(freeVal?'('+freeVal+')':''),job:toNum(jobV),int:toNum(intV),grw:toNum(grwV),oth:toNum(othV),tbodyId:sectionTbody});
       }
     } else if(name && !/^(成長|技能|初期値|職業P|興味P|成長分|その他|合計|＜|選択技能)/.test(name)){
-      // スプレッドシート固有のカスタム技能
-      customSkillRows.push({name:name+(freeVal?'('+freeVal+')':''),job:toNum(jobV),int:toNum(intV),grw:toNum(grwV),oth:toNum(othV)});
+      // スプレッドシート固有のカスタム技能（セクション情報付き）
+      customSkillRows.push({name:name+(freeVal?'('+freeVal+')':''),job:toNum(jobV),int:toNum(intV),grw:toNum(grwV),oth:toNum(othV),tbodyId:sectionTbody});
     }
   }
 
@@ -1705,20 +1713,23 @@ function parseSpreadsheetHTML(html){
     // 左列（戦闘・探索技能）: cell[3]に技能名があるパターン
     const c3=row[3];
     if(c3&&c3.text&&(c3.colspan===3||freeInputSkills.has(c3.text))){
-      extractSkillFromCells(row,3);
+      extractSkillFromCells(row,3,'combat');
     }
     // 中列（行動・交渉技能）: cell[12]に技能名
     const c12=row[12];
-    if(c12&&c12.text&&skillNameToKey[c12.text]!==undefined||
-       (c12&&freeInputSkills.has(c12.text))){
-      extractSkillFromCells(row,12);
-    } else if(c12&&c12.text&&(c12.colspan===3)){
-      extractSkillFromCells(row,12);
+    if(c12&&c12.text&&(skillNameToKey[c12.text]!==undefined||freeInputSkills.has(c12.text)||c12.colspan===3)){
+      extractSkillFromCells(row,12,'action');
     }
-    // 右列（知識技能）: cell[21]に技能名
-    const c21=row[21];
-    if(c21&&c21.text&&(c21.colspan===3||c21.colspan===1&&skillNameToKey[c21.text])){
-      extractSkillFromCells(row,21);
+    // 右列（知識技能）: cell[21]または[22]に技能名（行によってインデックスがずれる場合がある）
+    let knowIdx=-1;
+    for(const ki of [21,22]){
+      const ck=row[ki];
+      if(ck&&ck.text&&(skillNameToKey[ck.text]!==undefined||freeInputSkills.has(ck.text))){
+        knowIdx=ki; break;
+      }
+    }
+    if(knowIdx>=0){
+      extractSkillFromCells(row,knowIdx,'know');
     }
   });
 
@@ -1867,9 +1878,11 @@ function parseSpreadsheetHTML(html){
     skillChanged(tr.querySelector('.job-inp')||tr.querySelector('.int-inp')||tr.querySelector('.grw-inp')||tr.querySelector('.oth-inp'));
   });
 
-  // カスタム技能を戦闘セクションに追加
+  // カスタム技能を適切なセクションに追加
   customSkillRows.forEach(sd=>{
-    const tbody=document.getElementById('tbody_combat');
+    const tbodyId=sd.tbodyId||'tbody_combat';
+    const tbody=document.getElementById(tbodyId);
+    if(!tbody)return;
     const key='ss_'+Date.now()+'_'+Math.random().toString(36).slice(2);
     const tr=document.createElement('tr');
     const hasVal=(+sd.job||0)+(+sd.int||0)+(+sd.grw||0)+(+sd.oth||0)>0;
