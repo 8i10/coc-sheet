@@ -1176,8 +1176,8 @@ async function initViewMode() {
     });
   }
 
-  // 全inputをreadonlyにする
-  document.querySelectorAll('input, textarea, select').forEach(el => {
+  // 全inputをreadonlyにする（passwordは除く）
+  document.querySelectorAll('input:not([type=password]):not([type=checkbox]), textarea, select').forEach(el => {
     el.setAttribute('readonly', true);
     el.setAttribute('disabled', true);
     el.style.pointerEvents = 'none';
@@ -1189,16 +1189,12 @@ async function initViewMode() {
     el.style.pointerEvents = 'none';
   });
 
-  // ボタン行を非表示
-  // 全てのボタンを非表示（閲覧モード表示以外）
-document.querySelectorAll('button').forEach(el => {
-  // ネタバレ管理の解除・施錠ボタンは残す
-  if (el.onclick && el.getAttribute('onclick') && 
-      (el.getAttribute('onclick').includes('unlock') || 
-       el.getAttribute('onclick').includes('lock') ||
-       el.getAttribute('onclick').includes('toggle'))) return;
-  el.style.display = 'none';
-});
+  // 全てのボタンを非表示（unlockViewSecretとtoggle系は残す）
+  document.querySelectorAll('button').forEach(el => {
+    const oc = el.getAttribute('onclick') || '';
+    if (oc.includes('unlockViewSecret') || oc.includes('toggle')) return;
+    el.style.display = 'none';
+  });
 
 
 // sk-del列を非表示
