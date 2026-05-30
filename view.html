@@ -17,8 +17,8 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:11px;ba
 #sticky-actions{display:flex;gap:4px;margin-left:auto}
 .sticky-pt-block{display:flex;align-items:center;gap:5px;background:#444;border-radius:3px;padding:2px 8px;font-size:11px;color:#fff}
 table{border-collapse:collapse;width:100%}
-td,th{border:1px solid #888;padding:1px 3px}
-th{background:#444;color:#fff;text-align:center;font-weight:normal;font-size:11px}
+td,th{border:1px solid #888;padding:0 3px;height:20px}
+th{background:#444;color:#fff;text-align:center;font-weight:normal;font-size:10px}
 input[type=text],input[type=number],input[type=password]{border:none;background:transparent;width:100%;font-size:11px;font-family:inherit;text-align:center;outline:none;padding:0}
 input[type=number]::-webkit-inner-spin-button{display:none}
 select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:none;font-family:inherit}
@@ -82,18 +82,16 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 <body>
 <div id="sticky-header">
   <div id="sticky-pcname">キャラクターシート</div>
-  <div id="sticky-pts">
-    <div class="sticky-pt-block">
-      <span style="font-size:10px;font-weight:bold">職業P</span>
-      <span style="font-size:9px;opacity:0.8">上限<span id="sticky-job-max">0</span>pt</span>
-      <span style="font-size:9px;opacity:0.8">使用<span id="sticky-job-used">0</span>pt</span>
-      <span id="sticky-job-remain" style="font-weight:bold;font-size:11px">残0</span>
+  <div id="sticky-pts" style="display:flex;gap:6px;align-items:center">
+    <div class="sticky-pt-block" style="gap:3px;padding:2px 6px;border-radius:3px">
+      <div><div style="font-weight:bold;font-size:10px">職業P</div><div style="font-size:9px;opacity:0.8">上限 <span id="job_max_disp">0</span>pt</div></div>
+      <div class="pts-bar" style="background:#666"><div class="pts-bar-fill" id="job_bar" style="width:0%;background:#88bbff"></div></div>
+      <div><div style="font-size:9px;opacity:0.8">使用 <span id="job_used_disp">0</span>pt</div><div class="pts-remain ok" id="job_remain" style="font-size:11px">残0</div></div>
     </div>
-    <div class="sticky-pt-block">
-      <span style="font-size:10px;font-weight:bold">興味P</span>
-      <span style="font-size:9px;opacity:0.8">上限<span id="sticky-int-max">0</span>pt</span>
-      <span style="font-size:9px;opacity:0.8">使用<span id="sticky-int-used">0</span>pt</span>
-      <span id="sticky-int-remain" style="font-weight:bold;font-size:11px">残0</span>
+    <div class="sticky-pt-block" style="gap:3px;padding:2px 6px;border-radius:3px">
+      <div><div style="font-weight:bold;font-size:10px">興味P</div><div style="font-size:9px;opacity:0.8">上限 <span id="int_max_disp">0</span>pt</div></div>
+      <div class="pts-bar" style="background:#666"><div class="pts-bar-fill" id="int_bar" style="width:0%;background:#88ddaa"></div></div>
+      <div><div style="font-size:9px;opacity:0.8">使用 <span id="int_used_disp">0</span>pt</div><div class="pts-remain ok" id="int_remain" style="font-size:11px">残0</div></div>
     </div>
   </div>
   <div id="sticky-actions">
@@ -136,8 +134,8 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <thead>
         <tr>
           <th style="width:62px;vertical-align:bottom"><div style="font-size:9px;color:#ccc;font-weight:normal" id="stat_total_disp">合計: 0</div></th>
-          <th>STR</th><th>CON</th><th>POW</th><th>DEX</th><th>APP</th><th>SIZ</th><th>INT</th><th>EDU</th>
-          <th style="width:36px">HP</th><th style="width:36px">MP</th>
+          <th style="font-size:10px">STR</th><th style="font-size:10px">CON</th><th style="font-size:10px">POW</th><th style="font-size:10px">DEX</th><th style="font-size:10px">APP</th><th style="font-size:10px">SIZ</th><th style="font-size:10px">INT</th><th style="font-size:10px">EDU</th>
+          <th style="width:36px;font-size:10px">HP</th><th style="width:36px;font-size:10px">MP</th>
           <th style="width:36px;font-size:9px">初期SAN</th><th style="width:36px;font-size:9px">アイデア</th>
           <th style="width:36px;font-size:9px">幸運</th><th style="width:36px;font-size:9px">知識</th>
         </tr>
@@ -194,32 +192,34 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       &nbsp;&nbsp;
       <span style="background:#444;color:#fff;padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:8px">0</span>
     </div>
-    <div style="padding:2px 4px;border-top:1px solid #ccc;background:#555">
-      <div style="font-size:10px;color:#fff;font-weight:bold;margin-bottom:1px">＜不定＞</div>
+    <div style="border-top:1px solid #ccc;background:#f8f8f8">
+      <div style="background:#444;color:#fff;font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
+      <div style="padding:2px 4px">
       <table style="width:100%;border-collapse:collapse;margin-bottom:2px">
         <tr>
-          <td style="background:#555;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
-          <td style="border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-          <td style="background:#555;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
-          <td style="width:90px;border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
+          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
+          <td style="width:90px;border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
         <tr>
-          <td style="background:#555;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
-          <td colspan="3" style="border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:#444;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
+          <td colspan="3" style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
       </table>
       <table style="width:100%;border-collapse:collapse">
         <tr>
-          <td style="background:#555;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
-          <td style="border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-          <td style="background:#555;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
-          <td style="width:90px;border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
+          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
+          <td style="width:90px;border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
         <tr>
-          <td style="background:#555;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
-          <td colspan="3" style="border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:#444;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
+          <td colspan="3" style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
       </table>
+    </div>
     </div>
   </div>
 </div>
@@ -248,21 +248,6 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
       <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
       <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
-    </div>
-    <!-- FIX4: 職業P・興味Pブロックを職業特記幅(378px)に揃える -->
-    <div style="background:#f0f0f0;border:1px solid #ddd;border-radius:3px;padding:3px 2px;box-sizing:border-box">
-      <div style="display:flex;gap:4px">
-        <div class="pts-block">
-          <div><div style="font-weight:bold;color:#333;font-size:10px">職業P</div><div style="font-size:9px;color:#777">上限 <span id="job_max_disp">0</span>pt</div></div>
-          <div class="pts-bar"><div class="pts-bar-fill" id="job_bar" style="width:0%;background:#5588cc"></div></div>
-          <div><div style="font-size:9px;color:#777">使用 <span id="job_used_disp">0</span>pt</div><div class="pts-remain ok" id="job_remain">残0</div></div>
-        </div>
-        <div class="pts-block">
-          <div><div style="font-weight:bold;color:#333;font-size:10px">興味P</div><div style="font-size:9px;color:#777">上限 <span id="int_max_disp">0</span>pt</div></div>
-          <div class="pts-bar"><div class="pts-bar-fill" id="int_bar" style="width:0%;background:#55aa77"></div></div>
-          <div><div style="font-size:9px;color:#777">使用 <span id="int_used_disp">0</span>pt</div><div class="pts-remain ok" id="int_remain">残0</div></div>
-        </div>
-      </div>
     </div>
   </div>
   <!-- 特徴表①② -->
@@ -1222,13 +1207,6 @@ async function initViewMode() {
   const pcname = document.getElementById('pcname')?.value || 'キャラクターシート';
   const sn = document.getElementById('sticky-pcname');
   if(sn) sn.textContent = pcname;
-  const set = (sid, src) => { const el=document.getElementById(sid); if(el) el.textContent=document.getElementById(src)?.textContent||'-'; };
-  set('sticky-job-max','job_max_disp');
-  set('sticky-job-used','job_used_disp');
-  set('sticky-job-remain','job_remain');
-  set('sticky-int-max','int_max_disp');
-  set('sticky-int-used','int_used_disp');
-  set('sticky-int-remain','int_remain');
 
 // sk-del列を非表示
 document.querySelectorAll('.sk-del').forEach(el => el.style.display = 'none');
