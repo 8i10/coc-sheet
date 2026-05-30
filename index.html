@@ -140,10 +140,10 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <tr><td class="hdr">身長</td><td><input type="text" id="height"></td><td class="hdr">体重</td><td><input type="text" id="weight"></td></tr>
       <tr><td class="hdr">誕生日</td><td><input type="text" id="birthday"></td><td class="hdr">出身</td><td><input type="text" id="origin"></td></tr>
       <tr><td class="hdr">髪の色</td><td><input type="text" id="hair"></td><td class="hdr">瞳の色</td><td><input type="text" id="eye"></td></tr>
-      <tr style="height:18px"><td class="hdr">時代</td><td colspan="3"><input type="text" id="era" placeholder="例: 1920年代"></td></tr>
       <tr style="height:18px">
+        <td class="hdr">時代</td><td><input type="text" id="era" placeholder="例: 1920年代"></td>
         <td class="hdr">状態</td>
-        <td colspan="3">
+        <td>
           <select id="pc_status" style="width:100%">
             <option value="alive">生存</option>
             <option value="lost">ロスト</option>
@@ -276,6 +276,8 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
       <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
     </div>
+    <div style="font-size:11px;color:#555;margin-bottom:1px;margin-top:4px">その他特記</div>
+    <textarea id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;height:44px;font-size:11px;border:1px solid #aaa;resize:vertical;padding:2px;background:#fff"></textarea>
 
   </div>
   <!-- 特徴表①② -->
@@ -1628,9 +1630,11 @@ function parseSpreadsheetHTML(html){
   let height='',weight='',origin='',hair='',eye='',birthday='';
   let stats={str:'',con:'',pow:'',dex:'',app:'',siz:'',int_v:'',edu:''};
   let sanNow='';
-  let tokucho1='', tokucho2='';  // 特徴表ラベル
-  let jobFormula='', jobTokki=''; // 職業計算式・特記
-  let selectSkills=[]; // 選択技能
+  let tokucho1='', tokucho2='';
+  let jobFormula='', jobTokki='';
+  let selectSkills=[];
+  let dBonus1=0,dBonus2=0,dBonus1Set=false,dBonus2Set=false;
+  let otherNote='';
 
   rows.forEach((row,ri)=>{
     row.forEach((c,ci)=>{
@@ -1702,19 +1706,33 @@ function parseSpreadsheetHTML(html){
         if(!tokucho1)tokucho1=v;
         else if(!tokucho2&&v!==tokucho1)tokucho2=v;
       }
-      // 職業計算式（参照）: 特記欄
-      if(v==='参照：'||v==='参照'){
-        const t=row[ci+1]?.text||'';
-        if(t)jobTokki=t; // 年代（時代）
-      }
       // 職業計算式: EDU*20形式
       if(/^EDU/.test(v)&&!jobFormula){jobFormula=v;}
-      // 選択技能
+      // 選択技能: col[20]='選択技能' の行で col[21]以降を取得
       if(v==='選択技能'){
+        for(let d=1;d<=8;d++){
+          const t=row[ci+d]?.text||'';
+          if(t&&t!=='-'&&t!=='選択技能'&&t!=='─'&&t!=='―')selectSkills.push(t);
+        }
+      }
+      // Dボーナス: col[20]='(D)ボーナス' の行から [XXP] を抽出
+      if(v==='(D)ボーナス'||v==='Dボーナス'){
+        // col21,22,23,24から「[数字P]」を探す
         for(let d=1;d<=6;d++){
           const t=row[ci+d]?.text||'';
-          if(t&&t!=='-'&&t!=='選択技能')selectSkills.push(t);
+          const m=t.match(/\[(\d+)P\]/);
+          if(m){
+            const pts=parseInt(m[1]);
+            if(!dBonus1Set){dBonus1=pts;dBonus1Set=true;}
+            else if(!dBonus2Set){dBonus2=pts;dBonus2Set=true;}
+          }
         }
+      }
+      // その他特記: col[4]='その他特記' の右セル群を結合
+      if(v==='その他特記'&&!otherNote){
+        const parts=[];
+        for(let d=1;d<=6;d++){const t=row[ci+d]?.text||'';if(t)parts.push(t);}
+        if(parts.length)otherNote=parts.join(' ');
       }
     });
   });
@@ -1866,18 +1884,38 @@ function parseSpreadsheetHTML(html){
 
   // ---- メモ・通過シナリオ・秘匿情報抽出 ----
   let memoText='',scenarioText='',secretText='';
+  let inMemo=false,inScenario=false;
   rows.forEach((row,ri)=>{
+    const texts=row.map(c=>c.text);
+    // 「その他メモ」ヘッダー行を検出
+    if(texts.some(t=>t==='その他メモ')){inMemo=true;return;}
+    // 「通過シナリオ」ヘッダー行を検出
+    if(texts.some(t=>t==='通過シナリオ'||t.includes('通過シナリオ'))){inMemo=false;inScenario=true;return;}
+    // 秘匿情報
     row.forEach((c,ci)=>{
-      // 大きなテキストブロック（rs>=5, cs>=10, 長文）
-      if(c.rowspan>=5&&c.colspan>=10&&c.text&&c.text.length>10){
-        if(ri>=44&&ri<=55&&!memoText)memoText=c.text.replace(/ /g,'\n');
-        else if(ri>=55&&ri<=75&&!scenarioText)scenarioText=c.text.replace(/ /g,'\n');
-      }
       if(c.text&&c.text.startsWith('▼以下秘匿')){
         const nextRow=rows[ri+1];
-        if(nextRow){const bigCell=nextRow.find(cl=>cl.colspan>=10&&cl.text&&cl.text.length>50);if(bigCell)secretText=bigCell.text;}
+        if(nextRow){
+          const bigCell=nextRow.find(cl=>cl.colspan>=3&&cl.text&&cl.text.length>20);
+          if(bigCell)secretText=bigCell.text;
+        }
       }
     });
+    // メモテキストの収集: その他メモ行の後、colspan>=2かつtext>=5文字のセルを収集
+    if(inMemo&&!memoText){
+      row.forEach(c=>{
+        if(c.colspan>=2&&c.text&&c.text.length>=5&&!memoText){
+          memoText=c.text.replace(/ /g,'\n');
+        }
+      });
+    }
+    if(inScenario&&!scenarioText){
+      row.forEach(c=>{
+        if(c.colspan>=2&&c.text&&c.text.length>=5&&!scenarioText){
+          scenarioText=c.text.replace(/ /g,'\n');
+        }
+      });
+    }
   });
 
   // ==== シートに反映 ====
@@ -1938,12 +1976,20 @@ function parseSpreadsheetHTML(html){
     }
   }
 
-  // 職業参照を自動選択
+  // 職業参照を自動選択（jobNameでマッチ。完全一致→部分一致の順）
   if(jobName){
     const jsel=document.getElementById('job_ref_sel');
     if(jsel){
+      let matched=false;
+      // 完全一致
       for(let i=0;i<jsel.options.length;i++){
-        if(jsel.options[i].value===jobName||jsel.options[i].text===jobName){jsel.selectedIndex=i;break;}
+        if(jsel.options[i].value===jobName||jsel.options[i].text===jobName){jsel.selectedIndex=i;matched=true;break;}
+      }
+      // 部分一致（例「殺し屋」→リストにない場合はそのまま）
+      if(!matched){
+        for(let i=0;i<jsel.options.length;i++){
+          if(jsel.options[i].text.includes(jobName)||jobName.includes(jsel.options[i].text)){jsel.selectedIndex=i;matched=true;break;}
+        }
       }
       onJobRefChange();
     }
@@ -1953,6 +1999,30 @@ function parseSpreadsheetHTML(html){
   selectSkills.slice(0,4).forEach((sk,i)=>{
     sv('sel_skill'+(i+1),sk);
   });
+
+  // Dボーナスを特徴表①②に自動選択
+  if(dBonus1Set){
+    const sel=document.getElementById('t1_bonus');
+    if(sel){
+      const target=String(dBonus1);
+      for(let i=0;i<sel.options.length;i++){if(sel.options[i].value===target){sel.selectedIndex=i;break;}}
+      calcJobPts();
+    }
+  }
+  if(dBonus2Set){
+    const sel=document.getElementById('t2_bonus');
+    if(sel){
+      const target=String(dBonus2);
+      for(let i=0;i<sel.options.length;i++){if(sel.options[i].value===target){sel.selectedIndex=i;break;}}
+      calcJobPts();
+    }
+  }
+
+  // その他特記を自動入力
+  if(otherNote){
+    const el=document.getElementById('job_other_note');
+    if(el)el.value=otherNote;
+  }
 
   // 技能値を反映
   Object.values(skillData).forEach(sd=>{
@@ -2063,10 +2133,15 @@ function parseSpreadsheetHTML(html){
 
   const summary=[
     `PC名: ${pcname||'(未取得)'}`,
+    `職業: ${jobName||'(未取得)'}`,
     `ステータス: ${Object.values(stats).filter(Boolean).length}/8項目`,
     `技能: ${Object.keys(skillData).length}件 + カスタム${customSkillRows.length}件`,
     `武器: ${weapons.length}件`,
     `所持品: ${items.length}件`,
+    selectSkills.length?`選択技能: ${selectSkills.slice(0,4).join('・')}`:'',
+    dBonus1Set?`Dボーナス①: +${dBonus1}P`:'',
+    dBonus2Set?`Dボーナス②: +${dBonus2}P`:'',
+    otherNote?`その他特記: ✓`:'',
     memoText?'その他メモ: ✓':'',
     scenarioText?'通過シナリオ: ✓':'',
     secretText?'秘匿情報: ✓':'',
