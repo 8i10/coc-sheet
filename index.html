@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>CoC6版 キャラクターシート</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:11px;background:#d8d8d8;color:#111}
+.sheet{background:#f4f4f4;padding:6px;width:980px;margin:0 auto}
+table{border-collapse:collapse;width:100%}
+td,th{border:1px solid #888;padding:1px 3px}
+th{background:#444;color:#fff;text-align:center;font-weight:normal;font-size:11px}
+input[type=text],input[type=number],input[type=password]{border:none;background:transparent;width:100%;font-size:11px;font-family:inherit;text-align:center;outline:none;padding:0}
+input[type=number]::-webkit-inner-spin-button{display:none}
+select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:none;font-family:inherit}
+textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;resize:vertical;padding:2px}
+.hdr{background:#444;color:#fff;font-size:11px;padding:2px 5px;font-weight:bold}
+.personal-data td.hdr{text-align:center}
+.section{border:1px solid #777;margin-bottom:5px;background:#fff}
+.derived{background:#e8e8e8;text-align:center;min-width:28px}
+.row-label{background:#444;color:#fff;font-size:11px;text-align:center;padding:1px 3px;white-space:nowrap}
+/* FIX5: pts-block を職業特記幅に合わせるため width:100% の親で包む */
+.pts-block{display:flex;align-items:center;gap:3px;padding:2px 4px;border:1px solid #bbb;border-radius:3px;background:#fff;font-size:11px;flex:1;min-width:0}
+.pts-remain{font-size:11px;font-weight:bold;min-width:36px;text-align:right}
+.pts-remain.ok{color:#2a7}
+.pts-remain.warn{color:#e60}
+.pts-remain.over{color:#c00;animation:blink .6s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.pts-bar{height:5px;border-radius:3px;background:#ddd;width:40px;overflow:hidden;border:1px solid #ccc;flex-shrink:0}
+.pts-bar-fill{height:100%;border-radius:3px;transition:width .2s,background .2s}
+.acc-header{background:#333;color:#fff;padding:3px 8px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.acc-header:hover{background:#222}
+.acc-body{display:none}
+.acc-body.open{display:block}
+.sub-acc-header{background:#555;color:#fff;padding:2px 6px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;border-bottom:1px solid #444}
+.sub-acc-header:hover{background:#444}
+.sub-acc-body{display:none;padding:4px}
+.sub-acc-body.open{display:block}
+.sub2-acc-header{background:#666;color:#fff;padding:2px 5px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;margin-bottom:1px}
+.sub2-acc-header:hover{background:#555}
+.sub2-acc-body{display:none;padding:3px}
+.sub2-acc-body.open{display:block}
+.skill-sec-hdr{background:#555;color:#fff;font-size:11px;padding:2px 4px}
+.skill-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.skill-table td,.skill-table th{border:1px solid #aaa;padding:1px 2px;font-size:11px;overflow:hidden}
+.skill-table th{background:#666;color:#fff;text-align:center;white-space:nowrap}
+.sk-chk{width:18px;text-align:center}
+.sk-name{background:#f8f8f8;text-align:left;padding-left:3px}
+.sk-base{width:28px;text-align:center;color:#666}
+.sk-inp{width:28px}
+.sk-inp input{text-align:center;width:100%;border:none;outline:none;background:#fff}
+.sk-total{width:30px;text-align:center;font-weight:bold;background:#eee}
+/* FIX5: 合計列右の余白（sk-del列）を幅0・border無しで消す */
+.sk-del{width:0;padding:0;border:none;overflow:visible}
+.add-row-btn{font-size:11px;padding:1px 7px;cursor:pointer;margin:2px 2px 2px 0;background:#eee;border:1px solid #aaa;border-radius:2px}
+.del-btn{font-size:8px;padding:0 2px;cursor:pointer;background:#fee;border:1px solid #e99;border-radius:2px;color:#933;line-height:11px;min-width:14px;height:14px}
+.right-panel{display:flex;flex-direction:column;gap:5px}
+.secret-item{border:1px solid #ccc;border-radius:3px;margin-bottom:4px;overflow:hidden}
+.secret-item-header{background:#555;color:#fff;padding:2px 6px;display:flex;align-items:center;gap:4px;font-size:11px}
+.secret-item-body{display:none;padding:0}
+.secret-item-body.open{display:block}
+.secret-pass-row{background:#f5f5f5;padding:3px 6px;border-bottom:1px solid #ddd;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+/* FIX1: 技能初期値トグル対象は skill-default-row のみ */
+.skill-table tbody tr.skill-default-row.hidden{display:none}
+.item-input{height:22px;line-height:22px;border:none;outline:none;background:#fff;width:100%;font-size:11px;font-family:inherit;padding:0 2px;text-align:left}
+/* FIX2: うちよそグループ header */
+.relg-header{background:#666;color:#fff;padding:2px 5px;font-size:11px;display:flex;align-items:center;gap:4px;user-select:none;margin-bottom:1px}
+.relg-header:hover{background:#555}
+.relg-name-inp{background:transparent;border:none;color:#fff;font-size:11px;outline:none;width:50%;min-width:0;text-align:left}
+.relg-toggle-zone{flex:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:2px 0}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- FIX3: 保存ボタン行を最上部へ -->
+<div style="display:flex;gap:4px;justify-content:flex-end;padding:4px 0 6px;align-items:center">
+  <div id="save_msg" style="font-size:10px;color:#2a7;display:none">✓ 保存しました</div>
+  <button onclick="saveToStorage()" style="padding:2px 12px;font-size:11px;cursor:pointer;background:#2a7;color:#fff;border:none;border-radius:2px">💾 保存</button>
+  <button onclick="copyViewURL()" style="padding:2px 12px;font-size:11px;cursor:pointer;background:#a72;color:#fff;border:none;border-radius:2px">🔗 閲覧URL</button>
+  <button onclick="loadFromStorage()" style="padding:2px 12px;font-size:11px;cursor:pointer;background:#558;color:#fff;border:none;border-radius:2px">📂 読込</button>
+  <button onclick="exportJSON()" style="padding:2px 12px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">⬇ JSON出力</button>
+  <button onclick="importJSON()" style="padding:2px 12px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">⬆ JSON入力</button>
+  <button onclick="window.print()" style="padding:2px 12px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">🖨 印刷</button>
+</div>
+
+<!-- ===== 行1 ===== -->
+<div class="section">
+<div style="display:flex">
+  <div style="width:378px;min-width:378px;border-right:1px solid #888" class="personal-data">
+    <div class="hdr">パーソナルデータ</div>
+    <table>
+      <colgroup><col style="width:52px"><col style="width:140px"><col style="width:52px"><col style="width:140px"></colgroup>
+      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana"></td></tr>
+      <tr>
+        <td class="hdr" style="vertical-align:middle">PC名</td>
+        <td colspan="3"><input type="text" id="pcname" style="font-size:15px;font-weight:bold;height:52px;text-align:center;padding:2px 4px;display:block;width:100%"></td>
+      </tr>
+      <tr>
+        <td class="hdr">文字色</td>
+        <td colspan="3">
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="color" id="txtcolor" value="#000000" oninput="updateColorCode()" style="width:36px;height:16px;border:none;cursor:pointer">
+            <span id="color_code" style="font-size:10px;color:#666">#000000 / RGB(0,0,0)</span>
+          </div>
+        </td>
+      </tr>
+      <tr><td class="hdr">職業</td><td colspan="3"><input type="text" id="job"></td></tr>
+      <tr><td class="hdr">年齢</td><td><input type="text" id="age"></td><td class="hdr">性別</td><td><input type="text" id="gender"></td></tr>
+      <tr><td class="hdr">身長</td><td><input type="text" id="height"></td><td class="hdr">体重</td><td><input type="text" id="weight"></td></tr>
+      <tr><td class="hdr">誕生日</td><td><input type="text" id="birthday"></td><td class="hdr">出身</td><td><input type="text" id="origin"></td></tr>
+      <tr><td class="hdr">髪の色</td><td><input type="text" id="hair"></td><td class="hdr">瞳の色</td><td><input type="text" id="eye"></td></tr>
+    </table>
+  </div>
+  <div style="flex:1;overflow-x:auto">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:62px;vertical-align:bottom"><div style="font-size:9px;color:#ccc;font-weight:normal" id="stat_total_disp">合計: 0</div></th>
+          <th>STR</th><th>CON</th><th>POW</th><th>DEX</th><th>APP</th><th>SIZ</th><th>INT</th><th>EDU</th>
+          <th style="width:36px">HP</th><th style="width:36px">MP</th>
+          <th style="width:36px;font-size:9px">初期SAN</th><th style="width:36px;font-size:9px">アイデア</th>
+          <th style="width:36px;font-size:9px">幸運</th><th style="width:36px;font-size:9px">知識</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label">能力値</td>
+          <td><input type="number" id="str" min="0" max="99" oninput="calc()"></td>
+          <td><input type="number" id="con" min="0" max="99" oninput="calc()"></td>
+          <td><input type="number" id="pow" min="0" max="99" oninput="calc()"></td>
+          <td><input type="number" id="dex" min="0" max="99" oninput="calc()"></td>
+          <td><input type="number" id="app" min="0" max="99" oninput="calc()"></td>
+          <td><input type="number" id="siz" min="0" max="99" oninput="calc()"></td>
+          <td><input type="number" id="int_v" min="0" max="99" oninput="calc()"></td>
+          <td><input type="number" id="edu" min="0" max="99" oninput="calc()"></td>
+          <td class="derived" id="hp">0</td><td class="derived" id="mp">0</td>
+          <td class="derived" id="san0">0</td><td class="derived" id="idea">0</td>
+          <td class="derived" id="luck">0</td><td class="derived" id="know">0</td>
+        </tr>
+        <tr>
+          <td class="row-label" style="font-size:9px">その他修加分</td>
+          <td><input type="number" id="str_m" oninput="calc()"></td><td><input type="number" id="con_m" oninput="calc()"></td>
+          <td><input type="number" id="pow_m" oninput="calc()"></td><td><input type="number" id="dex_m" oninput="calc()"></td>
+          <td><input type="number" id="app_m" oninput="calc()"></td><td><input type="number" id="siz_m" oninput="calc()"></td>
+          <td><input type="number" id="int_m" oninput="calc()"></td><td><input type="number" id="edu_m" oninput="calc()"></td>
+          <td><input type="number" id="hp_m" oninput="calc()"></td><td><input type="number" id="mp_m" oninput="calc()"></td>
+          <td><input type="number" id="san_m" oninput="calc()"></td><td><input type="number" id="idea_m" oninput="calc()"></td>
+          <td><input type="number" id="luck_m" oninput="calc()"></td><td><input type="number" id="know_m" oninput="calc()"></td>
+        </tr>
+        <tr>
+          <td class="row-label" style="font-size:9px">一時的増減</td>
+          <td><input type="number" id="str_t" oninput="calc()"></td><td><input type="number" id="con_t" oninput="calc()"></td>
+          <td><input type="number" id="pow_t" oninput="calc()"></td><td><input type="number" id="dex_t" oninput="calc()"></td>
+          <td><input type="number" id="app_t" oninput="calc()"></td><td><input type="number" id="siz_t" oninput="calc()"></td>
+          <td><input type="number" id="int_t" oninput="calc()"></td><td><input type="number" id="edu_t" oninput="calc()"></td>
+          <td><input type="number" id="hp_t" oninput="calc()"></td><td><input type="number" id="mp_t" oninput="calc()"></td>
+          <td><input type="number" id="san_t" oninput="calc()"></td><td><input type="number" id="idea_t" oninput="calc()"></td>
+          <td><input type="number" id="luck_t" oninput="calc()"></td><td><input type="number" id="know_t" oninput="calc()"></td>
+        </tr>
+        <tr>
+          <td class="row-label">現在値</td>
+          <td class="derived" id="str_c">0</td><td class="derived" id="con_c">0</td><td class="derived" id="pow_c">0</td><td class="derived" id="dex_c">0</td>
+          <td class="derived" id="app_c">0</td><td class="derived" id="siz_c">0</td><td class="derived" id="int_c">0</td><td class="derived" id="edu_c">0</td>
+          <td class="derived" id="hp_c">0</td><td class="derived" id="mp_c">0</td>
+          <td class="derived" id="san_c">0</td><td class="derived" id="idea_c">0</td>
+          <td class="derived" id="luck_c">0</td><td class="derived" id="know_c">0</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;padding:3px 4px;border-top:1px solid #ccc;font-size:11px;align-items:center;background:#f8f8f8">
+      <span style="background:#444;color:#fff;padding:1px 4px">SAN</span>
+      現在<input type="number" id="san_now" style="width:36px;border:1px solid #aaa" oninput="updateSanLine()">
+      / <span id="max_san">99</span>（不定：<span id="hutel_line" style="font-weight:bold">—</span>）
+      &nbsp;&nbsp;
+      <span style="background:#444;color:#fff;padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:8px">0</span>
+    </div>
+    <div style="padding:2px 4px;border-top:1px solid #ccc;background:#fafafa">
+      <div style="font-size:10px;color:#000;font-weight:bold;margin-bottom:1px">＜不定＞</div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:2px">
+        <tr>
+          <td style="background:#555;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
+          <td style="border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:#555;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
+          <td style="width:90px;border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+        </tr>
+        <tr>
+          <td style="background:#555;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
+          <td colspan="3" style="border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+        </tr>
+      </table>
+      <table style="width:100%;border-collapse:collapse">
+        <tr>
+          <td style="background:#555;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
+          <td style="border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:#555;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
+          <td style="width:90px;border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+        </tr>
+        <tr>
+          <td style="background:#555;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
+          <td colspan="3" style="border:1px solid #bbb;padding:1px 2px"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== 行2 ===== -->
+<div class="section">
+<div style="display:flex">
+  <!-- 職業特記 378px固定 -->
+  <div style="width:378px;min-width:378px;border-right:1px solid #aaa;padding:3px">
+    <div class="hdr" style="margin-bottom:3px">職業特記</div>
+    <select id="job_ref_sel" onchange="onJobRefChange()" style="width:100%;margin-bottom:3px"></select>
+    <div style="font-size:11px;color:#444;margin-bottom:1px">技能P計算式</div>
+    <select id="job_formula_sel" onchange="calcJobPts()" style="width:100%;margin-bottom:3px">
+      <option value="EDU*20">EDU×20</option>
+      <option value="EDU*10+STR*10">EDU×10＋STR×10</option>
+      <option value="EDU*10+CON*10">EDU×10＋CON×10</option>
+      <option value="EDU*10+POW*10">EDU×10＋POW×10</option>
+      <option value="EDU*10+DEX*10">EDU×10＋DEX×10</option>
+      <option value="EDU*10+APP*10">EDU×10＋APP×10</option>
+    </select>
+    <div id="job_tokki" style="font-size:11px;color:#333;min-height:36px;padding:2px;line-height:1.7;background:#fafafa;border:1px solid #e0e0e0;margin-bottom:4px">職業参照を選択してください</div>
+    <div style="font-size:11px;color:#555;margin-bottom:2px">選択技能（職業P対象・自由入力）</div>
+    <div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px">
+      <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
+    </div>
+    <!-- FIX4: 職業P・興味Pブロックを職業特記幅(378px)に揃える -->
+    <div style="background:#f0f0f0;border:1px solid #ddd;border-radius:3px;padding:3px 2px;box-sizing:border-box">
+      <div style="display:flex;gap:4px">
+        <div class="pts-block">
+          <div><div style="font-weight:bold;color:#333;font-size:10px">職業P</div><div style="font-size:9px;color:#777">上限 <span id="job_max_disp">0</span>pt</div></div>
+          <div class="pts-bar"><div class="pts-bar-fill" id="job_bar" style="width:0%;background:#5588cc"></div></div>
+          <div><div style="font-size:9px;color:#777">使用 <span id="job_used_disp">0</span>pt</div><div class="pts-remain ok" id="job_remain">残0</div></div>
+        </div>
+        <div class="pts-block">
+          <div><div style="font-weight:bold;color:#333;font-size:10px">興味P</div><div style="font-size:9px;color:#777">上限 <span id="int_max_disp">0</span>pt</div></div>
+          <div class="pts-bar"><div class="pts-bar-fill" id="int_bar" style="width:0%;background:#55aa77"></div></div>
+          <div><div style="font-size:9px;color:#777">使用 <span id="int_used_disp">0</span>pt</div><div class="pts-remain ok" id="int_remain">残0</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 特徴表①② -->
+  <div style="flex:1;display:flex">
+    <div style="flex:1;border-right:1px solid #aaa;padding:3px">
+      <div class="hdr" style="margin-bottom:3px">特徴表①</div>
+      <select id="t1_sel" onchange="showTokucho(1)" style="width:100%;margin-bottom:3px"><option value="">-- 特徴を選択 --</option></select>
+      <div style="font-size:10px;color:#555;margin-bottom:2px">Dボーナス（興味Pに加算）</div>
+      <select id="t1_bonus" onchange="calcJobPts()" style="width:100%;margin-bottom:3px">
+        <option value="0">なし</option><option value="10">+10P</option><option value="20">+20P</option>
+        <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
+      </select>
+      <div id="t1_desc" style="font-size:11px;color:#333;min-height:36px;background:#fafafa;border:1px solid #e0e0e0;padding:2px;line-height:1.6;margin-bottom:3px"></div>
+      <input type="text" id="t1_memo" placeholder="メモ..." style="border:none;border-top:1px solid #ddd;font-size:11px;text-align:left;padding:1px 2px;width:100%;background:#fff">
+    </div>
+    <div style="flex:1;padding:3px">
+      <div class="hdr" style="margin-bottom:3px">特徴表②</div>
+      <select id="t2_sel" onchange="showTokucho(2)" style="width:100%;margin-bottom:3px"><option value="">-- 特徴を選択 --</option></select>
+      <div style="font-size:10px;color:#555;margin-bottom:2px">Dボーナス（興味Pに加算）</div>
+      <select id="t2_bonus" onchange="calcJobPts()" style="width:100%;margin-bottom:3px">
+        <option value="0">なし</option><option value="10">+10P</option><option value="20">+20P</option>
+        <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
+      </select>
+      <div id="t2_desc" style="font-size:11px;color:#333;min-height:36px;background:#fafafa;border:1px solid #e0e0e0;padding:2px;line-height:1.6;margin-bottom:3px"></div>
+      <input type="text" id="t2_memo" placeholder="メモ..." style="border:none;border-top:1px solid #ddd;font-size:11px;text-align:left;padding:1px 2px;width:100%;background:#fff">
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== メイン ===== -->
+<div style="display:flex;gap:5px;align-items:flex-start">
+  <!-- 技能列 -->
+  <div style="flex:0 0 370px;width:370px">
+    <div style="display:flex;align-items:center;gap:6px;padding:2px 6px;background:#444;color:#fff;margin-bottom:2px;border-radius:2px">
+      <span style="font-size:11px;font-weight:bold;flex:1">技能表</span>
+      <button onclick="toggleAllDefault()" id="tog_all" style="font-size:10px;padding:1px 8px;background:#ccc;border:1px solid #999;border-radius:2px;cursor:pointer">初期値を隠す</button>
+    </div>
+    <div style="margin-bottom:2px">
+      <div class="skill-sec-hdr">戦闘技能</div>
+      <table class="skill-table" id="tbl_combat">
+        <thead><tr><th class="sk-chk">✓</th><th class="sk-name" style="text-align:left;padding-left:3px">技能名</th><th class="sk-base">初期</th><th class="sk-inp">職P</th><th class="sk-inp">興P</th><th class="sk-inp">成長</th><th class="sk-inp">他</th><th class="sk-total">計</th><th class="sk-del"></th></tr></thead>
+        <tbody id="tbody_combat"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addCustomSkill('tbody_combat')">＋追加</button>
+    </div>
+    <div style="margin-bottom:2px">
+      <div class="skill-sec-hdr">探索技能</div>
+      <table class="skill-table" id="tbl_search">
+        <thead><tr><th class="sk-chk">✓</th><th class="sk-name" style="text-align:left;padding-left:3px">技能名</th><th class="sk-base">初期</th><th class="sk-inp">職P</th><th class="sk-inp">興P</th><th class="sk-inp">成長</th><th class="sk-inp">他</th><th class="sk-total">計</th><th class="sk-del"></th></tr></thead>
+        <tbody id="tbody_search"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addCustomSkill('tbody_search')">＋追加</button>
+    </div>
+    <div style="margin-bottom:2px">
+      <div class="skill-sec-hdr">行動技能</div>
+      <table class="skill-table" id="tbl_action">
+        <thead><tr><th class="sk-chk">✓</th><th class="sk-name" style="text-align:left;padding-left:3px">技能名</th><th class="sk-base">初期</th><th class="sk-inp">職P</th><th class="sk-inp">興P</th><th class="sk-inp">成長</th><th class="sk-inp">他</th><th class="sk-total">計</th><th class="sk-del"></th></tr></thead>
+        <tbody id="tbody_action"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addCustomSkill('tbody_action')">＋追加</button>
+    </div>
+    <div style="margin-bottom:2px">
+      <div class="skill-sec-hdr">交渉技能</div>
+      <table class="skill-table" id="tbl_talk">
+        <thead><tr><th class="sk-chk">✓</th><th class="sk-name" style="text-align:left;padding-left:3px">技能名</th><th class="sk-base">初期</th><th class="sk-inp">職P</th><th class="sk-inp">興P</th><th class="sk-inp">成長</th><th class="sk-inp">他</th><th class="sk-total">計</th><th class="sk-del"></th></tr></thead>
+        <tbody id="tbody_talk"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addCustomSkill('tbody_talk')">＋追加</button>
+    </div>
+    <div style="margin-bottom:2px">
+      <div class="skill-sec-hdr">知識技能</div>
+      <table class="skill-table" id="tbl_know">
+        <thead><tr><th class="sk-chk">✓</th><th class="sk-name" style="text-align:left;padding-left:3px">技能名</th><th class="sk-base">初期</th><th class="sk-inp">職P</th><th class="sk-inp">興P</th><th class="sk-inp">成長</th><th class="sk-inp">他</th><th class="sk-total">計</th><th class="sk-del"></th></tr></thead>
+        <tbody id="tbody_know"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addCustomSkill('tbody_know')">＋追加</button>
+    </div>
+  </div>
+
+  <!-- 右側パネル -->
+  <div class="right-panel" style="flex:1;min-width:0">
+    <div class="section">
+      <div class="acc-header" onclick="toggleAcc('combat_acc')"><span>▮ 戦闘・武器</span><span id="arr_combat_acc">▶</span></div>
+      <div class="acc-body" id="combat_acc">
+        <div style="padding:4px;overflow-x:auto">
+          <table>
+            <thead><tr><th style="min-width:80px">武器名</th><th style="min-width:40px">技能(%)</th><th>ダメージ</th><th>射程</th><th>攻撃回数</th><th>装弾数</th><th>耐久</th><th>故障No.</th><th style="min-width:80px">備考</th><th style="width:18px"></th></tr></thead>
+            <tbody id="weapon_rows"></tbody>
+          </table>
+          <button class="add-row-btn" onclick="addWeaponRow()">＋追加</button>
+          <div style="margin-top:5px;font-size:11px">装甲: <input type="text" placeholder="-" style="border:1px solid #aaa;width:180px;font-size:11px;padding:1px 4px;text-align:left;background:#fff"></div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="acc-header" onclick="toggleAcc('items_acc')"><span>▮ 所持品</span><span id="arr_items_acc">▶</span></div>
+      <div class="acc-body" id="items_acc">
+        <div style="padding:4px">
+          <table style="table-layout:fixed">
+            <colgroup><col style="width:130px"><col style="width:36px"><col><col style="width:16px"></colgroup>
+            <thead><tr><th>品名</th><th>個数</th><th>備考</th><th></th></tr></thead>
+            <tbody id="item_rows"></tbody>
+          </table>
+          <button class="add-row-btn" onclick="addItemRow()">＋追加</button>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="acc-header" onclick="toggleAcc('memo_acc')"><span>▮ その他メモ</span><span id="arr_memo_acc">▶</span></div>
+      <div class="acc-body" id="memo_acc">
+        <div style="padding:4px">
+          <div id="memo_rows">
+            <div style="position:relative;margin-bottom:4px">
+              <textarea style="width:100%;height:80px" placeholder="メモを入力..."></textarea>
+            </div>
+          </div>
+          <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
+          <div style="margin-top:6px;border:1px solid #777;border-radius:2px">
+            <div class="sub-acc-header" onclick="toggleSubAcc('rel_acc')"><span>▮ 人間関係</span><span id="arr_rel_acc">▶</span></div>
+            <div class="sub-acc-body" id="rel_acc">
+              <div id="rel_groups_wrap"></div>
+              <button class="add-row-btn" onclick="addRelGroup()">＋追加</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="acc-header" onclick="toggleAcc('secret_outer')"><span>▮ ネタバレ管理</span><span id="arr_secret_outer">▶</span></div>
+      <div class="acc-body" id="secret_outer">
+        <div style="padding:4px">
+          <div id="secret_items_wrap"></div>
+          <button class="add-row-btn" onclick="addSecretItem()">＋追加</button>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="acc-header" onclick="toggleAcc('aftereffect_outer')"><span>▮ 後遺症・AF・呪文</span><span id="arr_aftereffect_outer">▶</span></div>
+      <div class="acc-body" id="aftereffect_outer">
+        <div style="padding:4px">
+          <div style="border:1px solid #ccc;border-radius:2px;margin-bottom:4px">
+            <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_kouisho')"><span>後遺症</span><span id="arr_ae_kouisho">▶</span></div>
+            <div class="sub2-acc-body" id="ae_kouisho">
+              <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
+                <thead><tr><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">後遺症名</th><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#666;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <tbody id="tbody_kouisho"></tbody>
+              </table>
+              <button class="add-row-btn" onclick="addAERow('tbody_kouisho')">＋追加</button>
+            </div>
+          </div>
+          <div style="border:1px solid #ccc;border-radius:2px;margin-bottom:4px">
+            <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_af')"><span>AF</span><span id="arr_ae_af">▶</span></div>
+            <div class="sub2-acc-body" id="ae_af">
+              <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
+                <thead><tr><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">AF名</th><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#666;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <tbody id="tbody_af"></tbody>
+              </table>
+              <button class="add-row-btn" onclick="addAERow('tbody_af')">＋追加</button>
+            </div>
+          </div>
+          <div style="border:1px solid #ccc;border-radius:2px;margin-bottom:4px">
+            <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_spell')"><span>呪文</span><span id="arr_ae_spell">▶</span></div>
+            <div class="sub2-acc-body" id="ae_spell">
+              <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
+                <thead><tr><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">呪文名</th><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#666;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <tbody id="tbody_spell"></tbody>
+              </table>
+              <button class="add-row-btn" onclick="addAERow('tbody_spell')">＋追加</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="acc-header" onclick="toggleAcc('scenario_outer')"><span>▮ 通過シナリオ</span><span id="arr_scenario_outer">▶</span></div>
+      <div class="acc-body" id="scenario_outer">
+        <div style="padding:4px">
+          <div id="scenario_rows"><div style="position:relative;margin-bottom:4px"><textarea style="width:100%;height:80px" placeholder="通過シナリオを入力..."></textarea></div></div>
+          <button class="add-row-btn" onclick="addScenarioRow()">＋追加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /sheet -->
+
+<!-- ログインUI -->
+<div id="auth_modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:6px;padding:20px;min-width:300px">
+    <div style="font-weight:bold;font-size:14px;margin-bottom:12px;text-align:center">ログイン / 新規登録</div>
+    <div style="margin-bottom:8px">
+      <label style="font-size:11px">メールアドレス</label>
+      <input type="email" id="auth_email" style="border:1px solid #aaa;width:100%;font-size:12px;padding:4px;margin-top:2px;box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px">パスワード</label>
+      <input type="password" id="auth_pass" style="border:1px solid #aaa;width:100%;font-size:12px;padding:4px;margin-top:2px;box-sizing:border-box">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="authLogin()" style="flex:1;padding:6px;background:#558;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:12px">ログイン</button>
+      <button onclick="authSignup()" style="flex:1;padding:6px;background:#2a7;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:12px">新規登録</button>
+    </div>
+    <div id="auth_msg" style="font-size:11px;color:#c00;margin-top:8px;text-align:center"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://cicodhxebyqewfnngfwt.supabase.co/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpY29kaHhlYnlxZXdmbm5nZnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzM4NDYsImV4cCI6MjA5NTY0OTg0Nn0.huLOglTPbW1CcGDbDB_yf5ftqEkqmtJ1HBY9WTx9J8E';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+const AB=['str','con','pow','dex','app','siz','int_v','edu'];
+function vn(id){return parseInt(document.getElementById(id)?.value)||0;}
+function tx(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function getCur(){
+  const c={};
+  AB.forEach(a=>{c[a]=vn(a)+vn(a+'_m')+vn(a+'_t');});
+  c.int=c.int_v;
+  return c;
+}
+function calc(){
+  const c=getCur();
+  AB.forEach(a=>tx(a+'_c',c[a]||0));
+  const baseHP=Math.floor((c.con+c.siz)/2);
+  const baseMP=c.pow,baseSAN=c.pow*5,baseIDEA=c.int*5,baseLUCK=c.pow*5,baseKNOW=c.edu*5;
+  tx('hp',baseHP);tx('mp',baseMP);tx('san0',baseSAN);tx('idea',baseIDEA);tx('luck',baseLUCK);tx('know',baseKNOW);
+  tx('hp_c',baseHP+vn('hp_m')+vn('hp_t'));
+  tx('mp_c',baseMP+vn('mp_m')+vn('mp_t'));
+  tx('san_c',baseSAN+vn('san_m')+vn('san_t'));
+  tx('idea_c',baseIDEA+vn('idea_m')+vn('idea_t'));
+  tx('luck_c',baseLUCK+vn('luck_m')+vn('luck_t'));
+  tx('know_c',baseKNOW+vn('know_m')+vn('know_t'));
+  const mythosTotal=parseInt(document.querySelector('[data-skill="mythos"]')?.closest('tr')?.querySelector('.sk-total')?.textContent)||0;
+  tx('max_san',99-mythosTotal);
+  if(!document.getElementById('san_now').value)document.getElementById('san_now').value=baseSAN;
+  updateSanLine();
+  const ss=c.str+c.siz;
+  tx('db',ss<=12?'-1D6':ss<=16?'-1D4':ss<=24?'0':ss<=32?'+1D4':ss<=40?'+1D6':'+2D6');
+  let tot=0;['str','con','pow','dex','app','siz','int_v','edu'].forEach(k=>tot+=c[k]||0);
+  tx('stat_total_disp','合計: '+tot);
+  calcJobPts();updateDynBases(c);updatePointBar();
+}
+function updateSanLine(){const cur=vn('san_now')||(getCur().pow*5);tx('hutel_line',Math.floor(cur*0.8));}
+function updateColorCode(){
+  const hex=document.getElementById('txtcolor').value;
+  const r=parseInt(hex.substr(1,2),16),g=parseInt(hex.substr(3,2),16),b=parseInt(hex.substr(5,2),16);
+  document.getElementById('color_code').textContent=`${hex.toUpperCase()} / RGB(${r}, ${g}, ${b})`;
+}
+function updateDynBases(c){
+  document.querySelectorAll('[data-basekey=kaihi]').forEach(el=>el.textContent=c.dex*2);
+  document.querySelectorAll('[data-basekey=kokugo]').forEach(el=>el.textContent=c.edu*5);
+  recalcAllSkills();
+}
+function recalcAllSkills(){
+  document.querySelectorAll('.skill-table tbody tr').forEach(tr=>{
+    const sc=tr.querySelector('[data-skill]');if(!sc)return;
+    const key=sc.dataset.skill;
+    const baseEl=tr.querySelector('[data-base]');
+    let base=parseInt(baseEl?.textContent)||0;
+    if(key==='kaihi')base=getCur().dex*2;
+    if(key==='kokugo')base=getCur().edu*5;
+    const j=parseInt(tr.querySelector('.job-inp')?.value)||0;
+    const i=parseInt(tr.querySelector('.int-inp')?.value)||0;
+    const g=parseInt(tr.querySelector('.grw-inp')?.value)||0;
+    const o=parseInt(tr.querySelector('.oth-inp')?.value)||0;
+    const t=tr.querySelector('.sk-total');if(t)t.textContent=base+j+i+g+o;
+  });
+  const mythosTotal=parseInt(document.querySelector('[data-skill="mythos"]')?.closest('tr')?.querySelector('.sk-total')?.textContent)||0;
+  tx('max_san',99-mythosTotal);updatePointBar();
+}
+function skillChanged(inp){
+  inp.dataset.manual='1';
+  const tr=inp.closest('tr');
+  const sc=tr?.querySelector('[data-skill]');const key=sc?.dataset?.skill||'';
+  let base=parseInt(tr?.querySelector('[data-base]')?.textContent)||0;
+  if(key==='kaihi')base=getCur().dex*2;
+  if(key==='kokugo')base=getCur().edu*5;
+  const j=parseInt(tr?.querySelector('.job-inp')?.value)||0;
+  const i=parseInt(tr?.querySelector('.int-inp')?.value)||0;
+  const g=parseInt(tr?.querySelector('.grw-inp')?.value)||0;
+  const o=parseInt(tr?.querySelector('.oth-inp')?.value)||0;
+  const t=tr?.querySelector('.sk-total');if(t)t.textContent=base+j+i+g+o;
+  if(key==='mythos')tx('max_san',99-(base+j+i+g+o));
+  updatePointBar();
+}
+
+// FIX1: makeSkillRow — isDefault=true のみ skill-default-row を付与
+function makeSkillRow(name,base,key,hasFree,freeVal,isDefault){
+  const tr=document.createElement('tr');
+  if(isDefault)tr.classList.add('skill-default-row');
+  let nameHtml=name;
+  if(hasFree)nameHtml=`${name}(<input type="text" value="${freeVal||''}" style="border:none;border-bottom:1px solid #aaa;width:44px;font-size:11px;outline:none;background:transparent;text-align:left">)`;
+  if(key==='operate')nameHtml=`操縦(<input type="text" style="border:none;border-bottom:1px solid #aaa;width:50px;font-size:11px;outline:none;background:transparent;text-align:left" placeholder="種類">)`;
+  const isDyn=key==='kaihi'||key==='kokugo';
+  const bAttr=isDyn?`data-basekey="${key}"`:`data-base`;
+  const bVal=isDyn?(key==='kaihi'?getCur().dex*2:getCur().edu*5):base;
+  tr.innerHTML=`
+    <td class="sk-chk"><input type="checkbox"></td>
+    <td class="sk-name" data-skill="${key}">${nameHtml}</td>
+    <td class="sk-base" ${bAttr}>${bVal}</td>
+    <td class="sk-inp"><input type="number" class="job-inp" oninput="skillChanged(this)"></td>
+    <td class="sk-inp"><input type="number" class="int-inp" oninput="skillChanged(this)"></td>
+    <td class="sk-inp"><input type="number" class="grw-inp" oninput="skillChanged(this)"></td>
+    <td class="sk-inp"><input type="number" class="oth-inp" oninput="skillChanged(this)"></td>
+    <td class="sk-total">${bVal}</td>
+    <td class="sk-del">${isDefault?'':'<button class="del-btn" onclick="delRow(this)">✕</button>'}</td>`;
+  return tr;
+}
+// FIX1: addCustomSkill — skill-default-row なし → 初期値トグルで隠れない
+function addCustomSkill(tbodyId){
+  const tbody=document.getElementById(tbodyId);
+  const key='custom_'+Date.now();
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td class="sk-chk"><input type="checkbox"></td>
+    <td class="sk-name" data-skill="${key}"><input type="text" placeholder="技能名" style="border:none;border-bottom:1px solid #aaa;width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
+    <td class="sk-base" data-base>0</td>
+    <td class="sk-inp"><input type="number" class="job-inp" oninput="skillChanged(this)"></td>
+    <td class="sk-inp"><input type="number" class="int-inp" oninput="skillChanged(this)"></td>
+    <td class="sk-inp"><input type="number" class="grw-inp" oninput="skillChanged(this)"></td>
+    <td class="sk-inp"><input type="number" class="oth-inp" oninput="skillChanged(this)"></td>
+    <td class="sk-total">0</td>
+    <td class="sk-del"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+// FIX1: 初期値トグル — skill-default-row かつ未入力のみ非表示
+let allDefaultHidden=false;
+function toggleAllDefault(){
+  allDefaultHidden=!allDefaultHidden;
+  document.querySelectorAll('.skill-table tbody tr.skill-default-row').forEach(tr=>{
+    const hasInput=
+      (parseInt(tr.querySelector('.job-inp')?.value)||0)!==0||
+      (parseInt(tr.querySelector('.int-inp')?.value)||0)!==0||
+      (parseInt(tr.querySelector('.grw-inp')?.value)||0)!==0||
+      (parseInt(tr.querySelector('.oth-inp')?.value)||0)!==0||
+      tr.querySelector('input[type=checkbox]')?.checked;
+    if(allDefaultHidden&&!hasInput)tr.classList.add('hidden');
+    else tr.classList.remove('hidden');
+  });
+  document.getElementById('tog_all').textContent=allDefaultHidden?'初期値を表示':'初期値を隠す';
+}
+
+const SKILLS={
+  combat:[
+    {n:'回避',b:0,k:'kaihi'},{n:'キック',b:25,k:'kick'},{n:'組みつき',b:25,k:'kumi'},
+    {n:'こぶし(パンチ)',b:50,k:'punch'},{n:'頭突き',b:10,k:'atama'},{n:'投擲',b:25,k:'tousha'},
+    {n:'武道(MA)',b:1,k:'ma'},{n:'拳銃',b:20,k:'gun'},{n:'サブマシンガン',b:15,k:'smg'},
+    {n:'ショットガン',b:30,k:'sg'},{n:'マシンガン',b:15,k:'mg'},{n:'ライフル',b:25,k:'rifle'},
+  ],
+  search:[
+    {n:'応急手当',b:30,k:'firstaid'},{n:'鍵開け',b:1,k:'keylock'},{n:'隠す',b:15,k:'kakusu'},
+    {n:'隠れる',b:10,k:'hide'},{n:'聞き耳',b:25,k:'kikiimi'},{n:'忍び歩き',b:10,k:'sneak'},
+    {n:'写真術',b:10,k:'photo'},{n:'精神分析',b:1,k:'psych'},{n:'追跡',b:10,k:'track'},
+    {n:'登攀',b:40,k:'climb'},{n:'図書館',b:25,k:'lib'},{n:'目星',b:25,k:'meboshi'},
+  ],
+  action:[
+    {n:'運転',b:20,k:'drive',f:true},{n:'機械修理',b:20,k:'mech'},{n:'重機械操作',b:1,k:'heavymach'},
+    {n:'乗馬',b:5,k:'horse'},{n:'水泳',b:25,k:'swim'},{n:'製作',b:5,k:'make',f:true},
+    {n:'操縦',b:1,k:'operate'},{n:'跳躍',b:25,k:'jump'},{n:'電気修理',b:10,k:'elec'},
+    {n:'ナビゲート',b:10,k:'navi'},{n:'変装',b:1,k:'hensou'},
+  ],
+  talk:[
+    {n:'言いくるめ',b:5,k:'ii'},{n:'信用',b:15,k:'shin'},{n:'説得',b:15,k:'settoku'},
+    {n:'値切り',b:5,k:'negiri'},{n:'母国語',b:0,k:'kokugo',f:true},{n:'外国語',b:1,k:'gaikokugo',f:true},
+  ],
+  know:[
+    {n:'医学',b:5,k:'ika'},{n:'オカルト',b:5,k:'occult'},{n:'化学',b:1,k:'chem'},
+    {n:'クトゥルフ神話',b:0,k:'mythos'},{n:'芸術',b:5,k:'art',f:true},{n:'経理',b:10,k:'keiri'},
+    {n:'考古学',b:1,k:'kouko'},{n:'コンピューター',b:1,k:'pc'},{n:'心理学',b:5,k:'shinri'},
+    {n:'人類学',b:1,k:'jinrui'},{n:'生物学',b:1,k:'bio'},{n:'地質学',b:1,k:'chishitsu'},
+    {n:'電子工学',b:1,k:'denshi'},{n:'天文学',b:1,k:'tenmon'},{n:'博物学',b:10,k:'hakubutsu'},
+    {n:'物理学',b:1,k:'butsuri'},{n:'法律',b:5,k:'law'},{n:'薬学',b:1,k:'yakugaku'},
+    {n:'歴史',b:20,k:'rekishi'},
+  ],
+};
+function buildSkillTables(){
+  const mp={combat:'tbody_combat',search:'tbody_search',action:'tbody_action',talk:'tbody_talk',know:'tbody_know'};
+  Object.entries(SKILLS).forEach(([s,list])=>{
+    const tbody=document.getElementById(mp[s]);
+    list.forEach(sk=>tbody.appendChild(makeSkillRow(sk.n,sk.b,sk.k,!!sk.f,'',true)));
+  });
+}
+
+function updatePointBar(){
+  const jobMax=parseInt(document.getElementById('job_max_disp').textContent)||0;
+  const intMax=parseInt(document.getElementById('int_max_disp').textContent)||0;
+  let jobUsed=0,intUsed=0;
+  document.querySelectorAll('.job-inp').forEach(el=>{jobUsed+=parseInt(el.value)||0;});
+  document.querySelectorAll('.int-inp').forEach(el=>{intUsed+=parseInt(el.value)||0;});
+  tx('job_used_disp',jobUsed);tx('int_used_disp',intUsed);
+  const jr=jobMax-jobUsed,ir=intMax-intUsed;
+  const jEl=document.getElementById('job_remain'),iEl=document.getElementById('int_remain');
+  jEl.textContent=jr>=0?'残'+jr:'超過'+(jr*-1)+'!';
+  iEl.textContent=ir>=0?'残'+ir:'超過'+(ir*-1)+'!';
+  jEl.className='pts-remain '+(jr<0?'over':jr<20?'warn':'ok');
+  iEl.className='pts-remain '+(ir<0?'over':ir<10?'warn':'ok');
+  const jPct=jobMax>0?Math.min(100,Math.round(jobUsed/jobMax*100)):0;
+  const iPct=intMax>0?Math.min(100,Math.round(intUsed/intMax*100)):0;
+  const jb=document.getElementById('job_bar'),ib=document.getElementById('int_bar');
+  if(jb){jb.style.width=jPct+'%';jb.style.background=jobUsed>jobMax?'#c00':jPct>80?'#e77':'#5588cc';}
+  if(ib){ib.style.width=iPct+'%';ib.style.background=intUsed>intMax?'#c00':iPct>80?'#6c6':'#55aa77';}
+}
+
+const jobData=[
+{name:'アニマルセラピスト',formula:'EDU*20',tokki:'動物がなつきやすい。'},
+{name:'看護師',formula:'EDU*20',tokki:'〈信用〉の技能値に+10％のボーナス。患者に対する〈説得〉に+10%のボーナス。'},
+{name:'救急救命士',formula:'EDU*20',tokki:'人間や自然界の動物の死体などを見ても正気度ポイントを失わない。ただし、超自然的な原因で死に至ったことがわかれば通常通り正気度ポイントを失う。'},
+{name:'形成外科医',formula:'EDU*20',tokki:'APP+1'},
+{name:'外科医・歯科医',formula:'EDU*20',tokki:'DEX+1'},
+{name:'精神科医',formula:'EDU*20',tokki:'1件の狂気において〈精神分析〉のロールに失敗しても、環境を整えたり、投薬を行ったりすることで再度〈精神分析〉のロールを行うことができる。'},
+{name:'闇医者',formula:'EDU*20',tokki:'不十分な器具や設備でも、有り合わせの道具で十分な応急手当ができる。'},
+{name:'海上保安官',formula:'EDU*20',tokki:'〈目星〉に+10％のボーナス。'},
+{name:'科学捜査研究員',formula:'EDU*20',tokki:'人間や自然界の動物の死体などを見ても正気度ポイントを失わない。ただし、超自然的な原因で死に至ったことがわかれば通常通り正気度ポイントを失う。'},
+{name:'山岳救助隊員',formula:'EDU*20',tokki:'高所恐怖症でないかぎり。高所で恐怖を感じることはない。'},
+{name:'消防士',formula:'EDU*20',tokki:'STR+1またはCON+1。炎に対する恐怖心を克服している。'},
+{name:'芸術家(基本)',formula:'EDU*20',tokki:'専門とする分野の〈芸術〉または〈製作〉技能に+10%のボーナス。'},
+{name:'ダンサー',formula:'EDU*20',tokki:'〈芸術(ダンス)〉に+10%のボーナス。〈回避〉に+10%のボーナス。'},
+{name:'デザイナー',formula:'EDU*20',tokki:'流行に敏感。感受性が高く、絵画や彫刻などに込められた暗喩に気付きやすい。'},
+{name:'ファッション系芸術家',formula:'EDU*20',tokki:'流行に敏感。相手の服装を見ただけで、社会的な地位や収入などがわかる。さりげないアクセサリーの価値もわかる。'},
+{name:'自衛官(共通)',formula:'EDU*20',tokki:'幹部自衛官(士官)は軍事や戦闘に関する〈説得〉に10%。その他の自衛官(下士官・兵)はSTR+1またはCON+1。'},
+{name:'民間軍事社会メンバー',formula:'EDU*20',tokki:'〈人類学〉に+10%のボーナス。'},
+{name:'スポーツ選手',formula:'EDU*20',tokki:'CON、STR、SIZ、DEXのいずれかに+1。EDUに-1。'},
+{name:'冒険家教授',formula:'EDU*20',tokki:'研究分野における〈目星〉に+20%のボーナス。'},
+{name:'評論家',formula:'EDU*20',tokki:'専門分野における〈説得〉に+10%のボーナス。'},
+{name:'アイドル・音楽タレント',formula:'EDU*20',tokki:'ファンに対して〈説得〉に+20%のボーナス。'},
+{name:'アナウンサー',formula:'EDU*20',tokki:'本心を隠すのがうまい。相手の〈心理学〉に-10%のペナルティー。'},
+{name:'コメディアン',formula:'EDU*20',tokki:'〈言いくるめ〉に+10%のボーナス。'},
+{name:'スポーツタレント',formula:'EDU*20',tokki:'CON+1または〈回避〉に+10%のボーナス。EDU-1。'},
+{name:'テレビ・コメンテーター',formula:'EDU*20',tokki:'本心を隠すのがうまい。相手の〈心理学〉に-10%のペナルティー。'},
+{name:'ネットタレント',formula:'EDU*20',tokki:'APP+1またはCON+1。ネット上のうわさ話に関する〈図書館〉に+10%ボーナス。'},
+{name:'俳優',formula:'EDU*20',tokki:'APP+1。ファンに対して〈信用〉+10%のボーナス。'},
+{name:'プロデューサー・マネージャー',formula:'EDU*20',tokki:'テレビ局にコネを持っており、自由に出入りできる。うまくすれば、有名人にも近づける。'},
+{name:'ゴーストハンター',formula:'EDU*20',tokki:'超常現象に関する〈目星〉に+10%のボーナス。'},
+{name:'占い師・スピリチュアリスト・霊媒師',formula:'EDU*20',tokki:'オカルトを信じている人に対する〈言いくるめ〉〈説得〉に+10%のボーナス。'},
+{name:'執事・メイド',formula:'EDU*20',tokki:'主人のそばに控えていれば、主人の〈言いくるめ〉と〈信用〉に+10%のボーナスを与える。'},
+{name:'セールスマン',formula:'EDU*20',tokki:'自分の商材に関する〈言いくるめ〉と〈説得〉に+10%のボーナス。'},
+{name:'ホスト・ホステス',formula:'EDU*20',tokki:'勤務時など、完ぺきな身だしなみを整えている際はAPP+2(技能ポイントは増えない)。'},
+{name:'メカニック',formula:'EDU*20',tokki:'自分の専門分野の構造物や製品であれば、一通り見れば、その構造や不自然な点に気づくことができる。'},
+{name:'料理人',formula:'EDU*20',tokki:'専門のサービスを提供し、かつ芸術/製作(料理)に成功すれば、〈信用〉〈説得〉などに+10%のボーナス。'},
+{name:'ギャンブラー',formula:'EDU*20',tokki:'ギャンブルの際、〈幸運〉に+10%のボーナス'},
+{name:'経済犯罪者',formula:'EDU*20',tokki:'年収が50%アップ。'},
+{name:'ストリート・ローグ',formula:'EDU*20',tokki:'地元の裏道や地元の裏のルールに精通している。'},
+{name:'ネット犯罪者',formula:'EDU*20',tokki:'CON-1。ネット上のうわさ話に関する〈図書館〉と製作(コンピューター・ウイルス)に+10%のボーナス。'},
+{name:'用心棒',formula:'EDU*20',tokki:'人間や自然界の動物の死体などを見ても正気度ポイントを失わない。ただし、超自然的な原因で死に至ったことがわかれば通常通り正気度ポイントを失う。'},
+{name:'公選職',formula:'EDU*20',tokki:'〈信用〉に+10%のボーナス。自分の選挙区であれば+20%のボーナス。'},
+{name:'自宅警備員',formula:'EDU*20',tokki:'CON-1。ネット上のうわさ話に関する〈図書館〉に+20%のボーナス。'},
+{name:'人間山脈',formula:'EDU*20',tokki:'SIZ+1。〈回避〉〈隠れる〉〈忍び歩き〉に-20%のペナルティー。'},
+{name:'ビデオ・ゲーム・テスター',formula:'EDU*20',tokki:'仕事で携わったゲームのファンに対して〈言いくるめ〉と〈信用〉に+10%のボーナス。'},
+{name:'ビデオ・ジャーナリスト',formula:'EDU*20',tokki:'自分のビデオの視聴者に対する〈言いくるめ〉と〈心理学〉に+10%のボーナス。'},
+{name:'医師',formula:'EDU*20',tokki:'〈信用〉に+10%のボーナス。'},
+{name:'エンジニア',formula:'EDU*20',tokki:'自分の専門分野の構造物や製品であれば、歴史上の古いものでも遺構、遺物、図面などから、その構造や設計思想などを理解することができる。'},
+{name:'警官・刑事',formula:'EDU*20',tokki:'制服を着ているか、警察手帳を提示すれば〈信用〉と〈説得〉に+20%のボーナス。ただし、何らかの理由で警察に敵意を抱いている者に対してはその限りではない。'},
+{name:'古物研究家',formula:'EDU*20',tokki:'古物に関する〈言いくるめ〉と〈説得〉に+10%のボーナス。'},
+{name:'コンピューター技術者',formula:'EDU*20',tokki:'〈コンピューター〉に+10%のボーナス。'},
+{name:'作家',formula:'EDU*20',tokki:'作品の得意分野(歴史、SF、法廷、心理サスペンスなど)としている技能に+10%のボーナス。'},
+{name:'ジャーナリスト',formula:'EDU*20',tokki:'真実が隠蔽された報道を目ざとく見分けることができる。'},
+{name:'宗教家',formula:'EDU*20',tokki:'支援者に対する〈信用〉に+10%のボーナス。'},
+{name:'商店主・店員',formula:'EDU*20',tokki:'交渉の際、相手の〈言いくるめ〉〈値切り〉に-10%のペナルティー。'},
+{name:'私立探偵',formula:'EDU*20',tokki:'隠密行動が得意。〈隠れる〉に+10%のボーナス。'},
+{name:'水産業従事者',formula:'EDU*20',tokki:'CONに+1。'},
+{name:'大学教授',formula:'EDU*20',tokki:'〈信用〉に+10%のボーナス。大学の関係者に対しては〈信用〉に+20%のボーナス。'},
+{name:'タレント',formula:'EDU*20',tokki:'ファンに対して〈説得〉に+20%のボーナス。テレビ局の人間にコネがある。芸能人に顔が広い。'},
+{name:'超心理学者',formula:'EDU*20',tokki:'オカルトを信じている人に対する〈言いくるめ〉〈説得〉に+10%のボーナス。'},
+{name:'ディレッタント',formula:'EDU*20',tokki:'〈信用〉に+10%のボーナス。地元のさまざまな同好会やクラブの会員だったり、コネがある。'},
+{name:'ドライバー',formula:'EDU*20',tokki:'熟練の「スタント」行為を成功させることができる。衝突や横転を比較的制御しながら安全に行うこともできる。'},
+{name:'農林業従事者',formula:'EDU*20',tokki:'CON+1またはSTR+1。'},
+{name:'パイロット',formula:'EDU*20',tokki:'異性に対してAPP+1。'},
+{name:'ビジネスマン',formula:'EDU*20',tokki:'〈経理〉に+10%のボーナス。'},
+{name:'法律家',formula:'EDU*20',tokki:'〈信用〉および〈法律〉に+10%のボーナス。'},
+{name:'暴力団組員',formula:'EDU*20',tokki:'EDU-1、STR+1。'},
+{name:'放浪者',formula:'EDU*20',tokki:'子供に対する〈言いくるめ〉と〈心理学〉に+10%のボーナス。'},
+{name:'ミュージシャン',formula:'EDU*20',tokki:'パフォーマンスを行い、専門の〈芸術〉または〈製作〉に成功したら、〈言いくるめ〉と〈説得〉に+10%のボーナス。ファンに対してはさらに+10%のボーナス。'},
+{name:'メンタルセラピスト',formula:'EDU*20',tokki:'自分の患者に対する〈説得〉に+20%のボーナス。'},
+{name:'軍士官',formula:'EDU*20',tokki:'-'},
+{name:'兵士',formula:'EDU*20',tokki:'-'},
+];
+function populateJobs(){
+  const sel=document.getElementById('job_ref_sel');
+  const o=document.createElement('option');o.value='';o.textContent='-- 職業参照 --';sel.appendChild(o);
+  jobData.forEach(j=>{const op=document.createElement('option');op.value=j.name;op.textContent=j.name;sel.appendChild(op);});
+}
+function onJobRefChange(){
+  const name=document.getElementById('job_ref_sel').value;
+  const j=jobData.find(x=>x.name===name);
+  if(!j){tx('job_tokki','職業参照を選択してください');return;}
+  tx('job_tokki',j.tokki);
+  const fs=document.getElementById('job_formula_sel');
+  for(let i=0;i<fs.options.length;i++){if(fs.options[i].value===j.formula){fs.selectedIndex=i;break;}}
+  calcJobPts();
+}
+function calcJobPts(){
+  const c=getCur();
+  const f=document.getElementById('job_formula_sel').value;
+  let pts=0;
+  if(f==='EDU*20')pts=c.edu*20;
+  else if(f==='EDU*10+STR*10')pts=c.edu*10+c.str*10;
+  else if(f==='EDU*10+CON*10')pts=c.edu*10+c.con*10;
+  else if(f==='EDU*10+POW*10')pts=c.edu*10+c.pow*10;
+  else if(f==='EDU*10+DEX*10')pts=c.edu*10+c.dex*10;
+  else if(f==='EDU*10+APP*10')pts=c.edu*10+c.app*10;
+  const b1=parseInt(document.getElementById('t1_bonus').value)||0;
+  const b2=parseInt(document.getElementById('t2_bonus').value)||0;
+  tx('job_max_disp',pts);
+  tx('int_max_disp',c.int*10+b1+b2);
+  updatePointBar();
+}
+
+const tokuchoList=[
+  {label:'（1-1）君は風邪を引かない',desc:'君は難しいことなど考えず、元気いっぱいに育った。INT-1　CON+2'},
+{label:'（1-2）大きな体',desc:'生まれつき大きな体に恵まれている。SIZ＋１'},
+{label:'（1-3）素早い',desc:'柔軟さと軽快さを併せ持っている。DEX+1　ただしSIZが9以下の場合、素早い上に小柄であるため、DEX+2'},
+{label:'（1-4）オシャレ',desc:'いつも身だしなみに気を使っている。APP+1'},
+{label:'（1-5）天才',desc:'生まれつき頭の回転が速い。INT+1'},
+{label:'（1-6）強固な意志',desc:'何事にも動じない強靭な精神の持ち主だ。能力値POWおよびSANは変動しないが、現在正気度ポイントに＋５．ただし増加する上限は、最大正気度ポイント(99-(クトゥルフ神話))となる。'},
+{label:'（1-7）勉強家',desc:'あなたは日々学ぶことに精進している。EDU+1.また、EDUによる年齢の下限は適用されない。'},
+{label:'（1-8）幸運のお守り',desc:'幸運のお守り（どんなものかはキーパーと相談して決める）を持っている。身に着けている限りPOW+1。もし手放したり紛失すれば不運を招きPOW-1。POWの増減により＜幸運＞は変化するが、正気度ポイントは変化しない。'},
+{label:'（1-9）一族伝来の宝物',desc:'絵画、本、武器。家具などの個人的な宝物で、探索者やキャンペーンにとって特別な価値をもつ品を所有している。宝物は、魔術的な力をもつアーティファクトかもしれない。'},
+{label:'（1-10）予期せぬ協力者',desc:'探索者には、いかなる理由か自分に忠誠を尽くし、援助に来るかもしれない協力者がいる。キーパーが協力者の正体を決める。また、協力者の影響力をD100ロールで決める。(数字が大きいほど影響力が高い）'},
+{label:'（2-1）手先が器用',desc:'任意の＜製作＞１つの基本成功率が50%となる。プレイヤーは分野を決めること。さらに＜機械修理＞および＜電気修理＞に+10%'},
+{label:'（2-2）影が薄い',desc:'生まれつき目立たない。＜忍び歩き＞および＜隠れる＞に+20%'},
+{label:'（2-3）親の七光り',desc:'名家の出身、または親が有名人かもしれない。＜信用＞に+20%'},
+{label:'（2-4）愛書家',desc:'あらゆるジャンルの蔵書を持っている。＜図書館＞に+20%。さらに図書館に出かけなくても、自宅の書庫で＜図書館＞ロールが可能となる。'},
+{label:'（2-5）鋭い洞察力',desc:'優れた感覚の持ち主であるため＜目星＞に+30%'},
+{label:'（2-6）アウトドア派',desc:'暇さえあれば季節を問わず、野外活動に繰り出している。＜ナビゲート＞＜博物学＞＜追跡＞にそれぞれ+20%'},
+{label:'（2-7）珍しい技能',desc:'探索者は【INT×5】%の日常生活には役立たないが特定の人を感心させるような技能を１つ、キーパーと相談した上で持つことができる。例：＜製作：プラモデル＞＜芸術：対戦格闘ゲーム＞＜ほかの言語：インターネットスラング＞など。'},
+{label:'（2-8）芸銃的才能',desc:'稽古事を小さい頃に倣っていたか、実用ブログなどで人気を博している。任意の＜芸術＞１つに【INT×3%】を加える。プレイヤーは音楽、著述などの専門分野の指定をする。'},
+{label:'（2-9）バイリンガル',desc:'日本以外の国で生活したことがある。【EDU×５】%を、最大３つまでの＜ほかの言語＞技能に割り当てることが出来る。'},
+{label:'（2-10）前職',desc:'以前は別の職に付いていたか、幼少期に何か得難い体験をしている。【EDU×３】%を前職としてプレイヤーが決めた、職業の技能に割り振ることができる。'},
+{label:'（3-1）天気予報士',desc:'外を見て＜アイデア＞ロールに成功すれば、短い期間【1d6+1】時間の正確な天気を予想できる。降水確率や風の向き、強さ、嵐の時間帯、雷の落下しやすい場所なども予測可能だ。'},
+{label:'（3-2）プロ・ドライバー',desc:'小さい頃から乗り物で遊んでいた。あらゆる＜運転＞技能の基本成功率は50%である。'},
+{label:'（3-3）飛ばし屋',desc:'空間把握能力に優れている。あらゆる＜操縦＞技能の基本成功率は50%である。'},
+{label:'（3-4）戦士',desc:'周囲の物はすべて武器だと考えている。あらゆる近接戦闘武器(肉体を使った技能はのぞく）の基本成功率は50%である。'},
+{label:'（3-5）銃火器の達人',desc:'銃火器とは何かの縁があり、普段から親しんでいる。火器技能5つ＜拳銃＞＜サブマシンガン＞＜ショットガン＞＜マシンガン＞＜ライフル＞の基本成功率は50%である。'},
+{label:'（3-6）格闘センスの持ち主',desc:'幼い時から道場で教えられてきた。素手の戦闘技能３つ＜キック＞＜組付＞＜頭突き＞の基本成功率は50%である。'},
+{label:'（3-7）俊敏',desc:'どんな時でも鋭く素早く状況を把握できる。＜回避＞の基本成功率は、通常の【DEX×2】ではなく【DEX×5】である。'},
+{label:'（3-8）信頼のおける人',desc:'探索者は自分の家族や友人などの仲間を見捨てたり粗末にせず、可能な限り助けようとする人間だ。その評判が今後も続く限り、任意のコミュニケーション技能3つにそれぞれ+10%'},
+{label:'（3-9）スポーツ万能',desc:'1つの技能に+20%、3つの技能に+10%、合計4つの任意の運動系技能にボーナスを加える。'},
+{label:'（3-10）平凡な容姿',desc:'平凡な顔のため、他人の印象に残りにくい。＜変装＞に+20%。加えて、1度しか会ったことのない相手ならば、相手が＜アイデア＞ロールに失敗すれば「よくある顔です」と言い訳するだけで、別人として誤魔化せる。'},
+{label:'（4-1）目つきが悪い(D)',desc:'目つきが悪すぎて、知り合い以外から怖がられる。APP-1　更に＜信用＞-10%'},
+{label:'（4-2）方向音痴(D)',desc:'＜ナビゲート＞の基本成功率が1%になる。加えて、経験ロールで成長させることはできない。'},
+{label:'（4-3）異性が苦手（D)',desc:'どうしても異性とうまく話ができない。異性に対する＜言いくるめ＞＜説得＞＜信用＞にそれぞれ-10%'},
+{label:'（4-4）動物に嫌われる(D)',desc:'独特のたたずまいのせいで、たいていの動物は探索者を見るなり威嚇してくる。'},
+{label:'（4-5）不思議ちゃん(D)',desc:'時折突拍子もない言動で周囲を騒がせることがある。別の世界から来た精神交換者か、妄想が生み出した人格がしばしば表面に出ているのかもしれない。'},
+{label:'（4-6）寄せ餌(D)',desc:'人間以外の怪物に好かれやすい。誘拐されれば殺されずに監禁されるか、もっとひどい目に遭うこともある。'},
+{label:'（4-7）眼鏡をかけている(D)',desc:'探索者は常時眼鏡を必要とする。眼鏡を失えば、視覚に関連する技能はキーパーの判断で20%減少することもある。'},
+{label:'（4-8）大切なもの(D)',desc:'他人には価値の無いものだが、大切な品物をいくつも身に着けている。失った時には1/1d8正気度ポイントを失う。'},
+{label:'（4-9）暗黒の祖先(D)',desc:'邪悪な一族、カルティスト、人肉嗜食者、もしくは超自然のクリーチャーの子孫である。d100をロールし、結果が大きいほど、より邪悪な存在になる。'},
+{label:'（4-10）夜に弱い(D)',desc:'夜には、すぐ眠くなる体質である。深夜0時を過ぎても活動しようとすれば、＜アイデア＞および＜知識＞ロールの成功の範囲がそれぞれ2分の1（端数切り上げ）となる。ただし、早起きは得意である。'},
+{label:'（5-1）動物に好かれる',desc:'独特のたたずまいのおかげか、たいていの動物がなついてくる。'},
+{label:'（5-2）斜め上からの発想',desc:'狂気に陥った場合、探索者は独特の感性に寄り、原因となった恐怖に対して秘められた真実を見抜くことができる。キーパーはクライマックスで宇宙的恐怖の一端を教えてくれるだろう。ただしクライマックス以外の場面では何も教えてくれない可能性がある。'},
+{label:'（5-3）失敗は発明の母',desc:'技能ロールに「96」以上の目を出して「失敗」した場合、ただちに特別な経験ロールを行う。失敗すれば0ポイント、成功すれば1ポイントの技能ポイントを得る。'},
+{label:'（5-4）ペット',desc:'探索者には、最愛の犬、猫、鳥などがいる。シナリオとシナリオの間、一緒に触れ合うことで、正気度ポイントを1d3ポイント増加させてもよい。ただし増加する上限は能力値SAN(99-クトゥルフ神話)のうち、どちらか低い方となる。'},
+{label:'（5-5）おおらか',desc:'嫌な事をすぐに忘れられる。精神科クリニックや療養所などでの正気度ポイントの回復が+1増加する。'},
+{label:'（5-6）異物への耐性',desc:'体内の免疫力が発達している。毒（POT）を抵抗表で競う際に、成功の範囲に+20%'},
+{label:'（5-7）潜水の名人',desc:'長時間、息を止めていられる。窒息に対するCONロールの成功の範囲に+20%'},
+{label:'（5-8）大酒飲み',desc:'酒にはめっぽう強く、酔いにくい。アルコールを毒のように扱う場合、探索者は全てのアルコール関連のPOTを2分の1（端数切り上げ）にする。'},
+{label:'（5-9）ド根性',desc:'根性がある。あらゆる抵抗表を使用したロールで、成功する範囲に+5%'},
+{label:'（5-10）受け身',desc:'どんなときでも、きちんと受け身を取って被害を最小限に抑えることができる。ショックのCONロール（クトゥルフ神話TRPG61ページ）の成功の範囲に+20%'},
+{label:'（6-1）奇妙な幸運',desc:'クトゥルフ神話の神性や怪物がランダムに目標を攻撃する際、その対象からは除外される。ただし単独で攻撃される場合や範囲攻撃の中にいた場合は、対象とする。'},
+{label:'（6-2）投擲の才能',desc:'＜投擲＞で投げることのできる武器のダメージ・ボーナスは通常の2分の1ではなく、通常のダメージ・ボーナスとなる。'},
+{label:'（6-3）鋼の筋力',desc:'ダメージ・ボーナスが1段階向上する（"例：ー1d4なら+0に、+0なら1d4に)ただしダメージ・ボーナスが1d6以上ある場合は、1段階向上する代わりにダメージ・ボーナスに更に+1'},
+{label:'（6-4）実は生きていた',desc:'生き残るすべに長けている。死からの生還(クトゥルフ神話TRPG64ページ)のチャンスが通常の次ラウンド以内ではなく、5ラウンド以内に伸びる。'},
+{label:'（6-5）急所を見抜く',desc:'狩人の素質を持っている。貫通の確率は通常の５分の１ではなく、２分の１になる。ただし最大４０％である。'},
+{label:'（6-6）急速な回復力',desc:'新陳代謝能力に優れている。耐久力を回復するロールの結果に＋１'},
+{label:'（6-7）不屈の精神力',desc:'気絶しても、次の各ラウンドの最初に【CON×２】ロールを行う。成功なら治療を受けずとも自分で目覚めて、そのラウンドから再び行動が可能となる。'},
+{label:'（6-8）マニア・コレクター',desc:'コイン、本、昆虫、芸術、宝石、歴史的な遺物などを収集している。任意のコレクションを１つ決めること、その筋では有名人であり＜幸運＞ロールに成功すれば相手にも共感を得られて、感動を与えられるかもしれない。'},
+{label:'（6-9）行方不明の家族',desc:'探索者には行方不明の家族がおり、キャンペーンの間に現れるかもしれない。（例えば、海で遭難した、異国で死んだと思われている、他の親類に連れ去られた、等）'},
+{label:'（6-10）好意を寄せられている',desc:'シナリオに登場する誰かに好意を持たれる。キーパーの裁量で、誰が、なぜ好きなのかを決定する。どれほど好意を寄せているかはD100ロールで決める（数字が大きいほど好き）'},
+];
+function populateTokucho(){
+  [1,2].forEach(n=>{
+    const sel=document.getElementById('t'+n+'_sel');
+    tokuchoList.forEach((t,i)=>{const o=document.createElement('option');o.value=i;o.textContent=t.label;sel.appendChild(o);});
+  });
+}
+function showTokucho(n){
+  const idx=document.getElementById('t'+n+'_sel').value;
+  document.getElementById('t'+n+'_desc').textContent=idx!==''?(tokuchoList[parseInt(idx)]?.desc||''):'';
+}
+
+function toggleAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';}
+function toggleSubAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';}
+function toggleSub2Acc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';}
+
+function makeWeaponTr(){
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td><input type="text" style="text-align:left;background:#fff"></td><td><input type="number" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="number" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="text-align:left;background:#fff"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>';
+  return tr;
+}
+function initWeaponRows(){const tbody=document.getElementById('weapon_rows');for(let i=0;i<6;i++)tbody.appendChild(makeWeaponTr());}
+function addWeaponRow(){document.getElementById('weapon_rows').appendChild(makeWeaponTr());}
+
+function makeItemTr(){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="padding:0 1px"><input class="item-input" type="text"></td><td style="padding:0 1px"><input class="item-input" type="number" style="text-align:center"></td><td style="padding:0 1px"><input class="item-input" type="text"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  return tr;
+}
+function initItemRows(){const tbody=document.getElementById('item_rows');for(let i=0;i<6;i++)tbody.appendChild(makeItemTr());}
+function addItemRow(){document.getElementById('item_rows').appendChild(makeItemTr());}
+
+function addMemoRow(){
+  const div=document.getElementById('memo_rows');
+  const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:4px';
+  w.innerHTML='<textarea style="width:100%;height:60px" placeholder="メモを入力..."></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  div.appendChild(w);
+}
+
+// FIX2: うちよそグループ — 名前入力(左50%) + 中央バー(開閉) + 削除ボタン(右)
+let relGroupCounter=0;
+function addRelGroup(){
+  const id='relg_'+relGroupCounter++;
+  const wrap=document.createElement('div');
+  wrap.className='secret-item';
+
+  wrap.innerHTML=`
+    <div class="secret-item-header">
+      <input type="text" placeholder="うちよそ・関係名"
+        style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;flex:1;text-align:left">
+      <button onclick="toggleRelGroup('${id}')"
+        style="font-size:10px;padding:0 5px;background:#666;border:none;color:#fff;cursor:pointer;border-radius:2px">▶ 開く</button>
+      <button onclick="this.closest('.secret-item').remove()"
+        class="del-btn" style="margin-left:4px">✕</button>
+    </div>
+    <div class="secret-item-body" id="${id}">
+      <div style="position:relative;margin:4px">
+        <textarea style="width:100%;height:60px"></textarea>
+        <button class="del-btn" onclick="delRow(this)"
+          style="position:absolute;top:2px;right:2px">✕</button>
+      </div>
+      <button class="add-row-btn" style="margin:0 4px 4px"
+        onclick="addRelSubRow('${id}')">＋追加</button>
+    </div>`;
+
+  document.getElementById('rel_groups_wrap').appendChild(wrap);
+}
+function toggleRelGroup(id) {
+  const body = document.getElementById(id);
+  const btn = body?.closest('.secret-item')?.querySelector('button[onclick*="toggleRelGroup"]');
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  if (btn) btn.textContent = isOpen ? '▼ 閉じる' : '▶ 開く';
+}
+function addRelSubRow(bodyId){
+  const body=document.getElementById(bodyId);const addBtn=body.querySelector('.add-row-btn');
+  const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:3px';
+  w.innerHTML='<textarea style="width:100%;height:50px" placeholder="関係・経緯など"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  body.insertBefore(w,addBtn);
+}
+
+function addAERow(tbodyId){
+  const tbody=document.getElementById(tbodyId);const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="padding:0 1px"><input class="item-input" type="text"></td><td style="padding:0 1px"><input class="item-input" type="text"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function addScenarioRow(){
+  const div=document.getElementById('scenario_rows');const w=document.createElement('div');
+  w.style.cssText='position:relative;margin-bottom:4px';
+  w.innerHTML='<textarea style="width:100%;height:60px" placeholder="通過シナリオを入力..."></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  div.appendChild(w);
+}
+
+function delRow(btn){
+  const target=btn.closest('tr')||btn.closest('div[style]')||btn.parentElement;
+  target.remove();
+}
+
+let secretCounter=0;
+function addSecretItem(title,pass){
+  const id='si_'+secretCounter++;
+  const wrap=document.createElement('div');wrap.className='secret-item';wrap.id=id;
+  wrap.innerHTML=`
+    <div class="secret-item-header">
+      <input type="text" value="${title||''}" placeholder="ネタバレタイトル" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;flex:1;text-align:left">
+      <button onclick="toggleSecretItem('${id}')" style="font-size:10px;padding:0 5px;background:#666;border:none;color:#fff;cursor:pointer;border-radius:2px" id="arr_${id}">▶ 開く</button>
+      <button onclick="document.getElementById('${id}').remove()" class="del-btn" style="margin-left:4px">✕</button>
+    </div>
+    <div class="secret-item-body" id="body_${id}">
+      <div style="padding:3px 6px;background:#fafafa;border-bottom:1px solid #ddd">
+        <input type="text" placeholder="何のネタバレか（概要）" style="border:1px solid #aaa;width:100%;font-size:11px;padding:2px 4px;text-align:left;background:#fff">
+      </div>
+      <div class="secret-pass-row">
+        <span style="font-size:10px;color:#666">PASS:</span>
+        <input type="password" id="pass_${id}" placeholder="パスワード" style="border:1px solid #aaa;width:100px;font-size:11px;padding:1px 4px;text-align:left">
+        <button onclick="unlockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid #aaa;background:#eee">解除</button>
+        <button onclick="lockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid #fcc;background:#fee;margin-left:4px">🔒</button>
+        <span style="font-size:10px;color:#888;margin-left:4px">変更後PASS:</span>
+        <input type="password" id="newpass_${id}" placeholder="新PASS" style="border:1px solid #aaa;width:80px;font-size:11px;padding:1px 4px;text-align:left">
+        <button onclick="changeSecretPass('${id}')" style="font-size:11px;padding:1px 6px;cursor:pointer;border:1px solid #aaa;background:#eee">変更</button>
+      </div>
+      <div id="content_${id}" style="display:none;padding:4px">
+        <select style="width:120px;margin-bottom:4px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select>
+        <textarea style="width:100%;height:70px" placeholder="KP秘匿情報・後遺症など"></textarea>
+        <button class="add-row-btn" onclick="addSecretContentRow('content_${id}')">＋欄追加</button>
+      </div>
+    </div>`;
+  wrap.dataset.pass=pass||'1234';
+  document.getElementById('secret_items_wrap').appendChild(wrap);
+}
+function toggleSecretItem(id){
+  const body=document.getElementById('body_'+id);const arr=document.getElementById('arr_'+id);
+  const isOpen=body.classList.toggle('open');arr.textContent=isOpen?'▼ 閉じる':'▶ 開く';
+  if(!isOpen)document.getElementById('content_'+id).style.display='none';
+}
+function unlockSecretItem(id){
+  const inp=document.getElementById('pass_'+id).value;const wrap=document.getElementById(id);
+  if(inp===wrap.dataset.pass){document.getElementById('content_'+id).style.display='block';document.getElementById('pass_'+id).value='';}
+  else alert('パスワードが違います');
+}
+function lockSecretItem(id){document.getElementById('content_'+id).style.display='none';document.getElementById('pass_'+id).value='';}
+function changeSecretPass(id){
+  const np=document.getElementById('newpass_'+id).value;
+  if(!np){alert('新しいPASSを入力してください');return;}
+  if(document.getElementById('content_'+id).style.display==='none'){alert('先に現在のPASSで解除してください');return;}
+  document.getElementById(id).dataset.pass=np;document.getElementById('newpass_'+id).value='';alert('PASSを変更しました');
+}
+function addSecretContentRow(contentId){
+  const div=document.getElementById(contentId);const w=document.createElement('div');w.style.marginTop='4px';
+  w.innerHTML='<select style="width:120px;margin-bottom:2px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select><div style="display:flex;gap:4px"><textarea style="flex:1;height:50px" placeholder="追加情報..."></textarea><button class="del-btn" onclick="this.closest(\'div[style]\').remove()">✕</button></div>';
+  div.insertBefore(w,div.querySelector('.add-row-btn'));
+}
+
+const SAVE_KEY='coc6_sheet_data';
+function collectData(){
+  const inputs={};
+  document.querySelectorAll('input[id],textarea[id]').forEach(el=>{if(el.id)inputs[el.id]=el.type==='checkbox'?el.checked:el.value;});
+  const skills=[];
+  document.querySelectorAll('.skill-table tbody tr').forEach(tr=>{
+    const key=tr.querySelector('[data-skill]')?.dataset?.skill||'';if(!key)return;
+    skills.push({key,chk:tr.querySelector('input[type=checkbox]')?.checked||false,job:tr.querySelector('.job-inp')?.value||'',int:tr.querySelector('.int-inp')?.value||'',grw:tr.querySelector('.grw-inp')?.value||'',oth:tr.querySelector('.oth-inp')?.value||''});
+  });
+
+  // ネタバレ管理を保存
+  const secrets=[];
+  document.querySelectorAll('#secret_items_wrap .secret-item').forEach(wrap=>{
+    const id=wrap.id;
+    const title=wrap.querySelector('.secret-item-header input[type=text]')?.value||'';
+    const pass=wrap.dataset.pass||'1234';
+    const summary=wrap.querySelector('#body_'+id+' input[type=text]')?.value||'';
+    const contents=[];
+    wrap.querySelectorAll('#content_'+id+' textarea').forEach(ta=>contents.push(ta.value));
+    const cats=[];
+    wrap.querySelectorAll('#content_'+id+' select').forEach(sel=>cats.push(sel.value));
+    secrets.push({id,title,pass,summary,contents,cats});
+  });
+
+  return JSON.stringify({inputs,skills,secrets,ts:Date.now()});
+}
+
+function applyData(json){
+  let data;try{data=JSON.parse(json);}catch(e){alert('データが壊れています');return;}
+  if(data.inputs)Object.entries(data.inputs).forEach(([id,val])=>{const el=document.getElementById(id);if(!el)return;if(el.type==='checkbox')el.checked=val;else el.value=val;});
+  if(data.skills)data.skills.forEach(s=>{
+    const tr=document.querySelector(`[data-skill="${s.key}"]`)?.closest('tr');if(!tr)return;
+    const chk=tr.querySelector('input[type=checkbox]');if(chk)chk.checked=s.chk;
+    const ji=tr.querySelector('.job-inp');if(ji)ji.value=s.job;
+    const ii=tr.querySelector('.int-inp');if(ii)ii.value=s.int;
+    const gi=tr.querySelector('.grw-inp');if(gi)gi.value=s.grw;
+    const oi=tr.querySelector('.oth-inp');if(oi)oi.value=s.oth;
+  });
+  calc();
+}
+// 保存ボタン
+let currentCharId = null;
+
+async function saveToStorage() {
+  const data = collectData();
+  const name = document.getElementById('pcname').value || '名無し';
+  try {
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) { alert('ログインしてください'); return; }
+
+    const { data: existing } = await db
+      .from('character_sheets')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('char_name', name)
+      .single();
+
+    if (existing) {
+      await db.from('character_sheets')
+        .update({ data: data, updated_at: new Date() })
+        .eq('id', existing.id);
+      currentCharId = existing.id;
+    } else {
+      const { data: inserted } = await db.from('character_sheets')
+        .insert({ user_id: user.id, char_name: name, data: data })
+        .select('id')
+        .single();
+      if (inserted) currentCharId = inserted.id;
+    }
+    showSaveMsg();
+  } catch(e) {
+    alert('保存エラー: ' + e.message);
+  }
+}
+
+function copyViewURL() {
+  if (!currentCharId) {
+    alert('先に保存してください');
+    return;
+  }
+  const url = 'https://dazzling-semolina-ee8493.netlify.app/view.html?id=' + currentCharId;
+  navigator.clipboard.writeText(url).then(() => {
+    alert('閲覧URLをコピーしました！\n' + url);
+  });
+}
+
+async function loadFromStorage() {
+  try {
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) { alert('ログインしてください'); return; }
+
+    const { data: list } = await db
+      .from('character_sheets')
+      .select('id, char_name, updated_at')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
+
+    showCharSelectUI(list || []);
+  } catch(e) {
+    alert('読込エラー: ' + e.message);
+  }
+}
+
+function showCharSelectUI(list) {
+  const old = document.getElementById('char_select_modal');
+  if (old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'char_select_modal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:4px;padding:16px;min-width:300px;max-width:480px;width:90%">
+      <div style="font-weight:bold;font-size:13px;margin-bottom:8px">キャラクターを選択</div>
+      <div id="char_list_inner" style="max-height:240px;overflow-y:auto;margin-bottom:8px">
+        ${list.length === 0
+          ? '<div style="font-size:11px;color:#888;padding:8px">保存データがありません</div>'
+          : list.map(c => `
+            <div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #eee">
+              <span style="flex:1;font-size:12px">${c.char_name}</span>
+              <span style="font-size:10px;color:#888">${new Date(c.updated_at).toLocaleDateString()}</span>
+              <button onclick="loadCharById('${c.id}')"
+                style="font-size:11px;padding:1px 8px;cursor:pointer;background:#558;color:#fff;border:none;border-radius:2px">読込</button>
+              <button onclick="deleteCharById('${c.id}', this)"
+                style="font-size:11px;padding:1px 6px;cursor:pointer;background:#fee;color:#933;border:1px solid #e99;border-radius:2px">削除</button>
+            </div>`).join('')
+        }
+      </div>
+      <div style="text-align:right">
+        <button onclick="document.getElementById('char_select_modal').remove()"
+          style="font-size:11px;padding:2px 12px;cursor:pointer;background:#aaa;color:#fff;border:none;border-radius:2px">閉じる</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+
+async function loadCharById(id) {
+  try {
+    const { data } = await db
+      .from('character_sheets')
+      .select('data')
+      .eq('id', id)
+      .single();
+    if (data) applyData(data.data);
+  } catch(e) {
+    alert('読込エラー: ' + e.message);
+  }
+  document.getElementById('char_select_modal')?.remove();
+}
+
+async function deleteCharById(id, btn) {
+  if (!confirm('削除しますか？')) return;
+  try {
+    await db.from('character_sheets').delete().eq('id', id);
+    btn.closest('div[style]').remove();
+  } catch(e) {
+    alert('削除エラー: ' + e.message);
+  }
+}
+
+function exportJSON(){
+  const data=collectData();const pcname=document.getElementById('pcname')?.value||'character';
+  const blob=new Blob([data],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=pcname+'.json';a.click();
+}
+function importJSON(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>applyData(ev.target.result);reader.readAsText(file);};
+  input.click();
+}
+function showSaveMsg(){const el=document.getElementById('save_msg');el.style.display='block';setTimeout(()=>el.style.display='none',2000);}
+
+async function authLogin() {
+  const email = document.getElementById('auth_email').value;
+  const pass = document.getElementById('auth_pass').value;
+  const { error } = await db.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    document.getElementById('auth_msg').textContent = 'エラー: ' + error.message;
+  } else {
+    document.getElementById('auth_modal').style.display = 'none';
+  }
+}
+
+async function authSignup() {
+  const email = document.getElementById('auth_email').value;
+  const pass = document.getElementById('auth_pass').value;
+  const { error } = await db.auth.signUp({ email, password: pass });
+  if (error) {
+    document.getElementById('auth_msg').textContent = 'エラー: ' + error.message;
+  } else {
+    document.getElementById('auth_msg').style.color = '#2a7';
+    document.getElementById('auth_msg').textContent = '確認メールを送信しました。メールを確認してください。';
+  }
+}
+
+// ログイン状態を確認して非表示にする
+db.auth.getSession().then(({ data: { session } }) => {
+  if (session) document.getElementById('auth_modal').style.display = 'none';
+});
+
+// 初期化
+populateJobs();populateTokucho();buildSkillTables();initWeaponRows();initItemRows();
+addSecretItem('','1234');addRelGroup();addAERow('tbody_kouisho');addAERow('tbody_af');addAERow('tbody_spell');
+</script>
+</body>
+</html>
