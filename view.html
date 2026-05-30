@@ -1200,6 +1200,17 @@ document.querySelectorAll('button').forEach(el => {
   el.style.display = 'none';
 });
 
+
+// sk-del列を非表示
+document.querySelectorAll('.sk-del').forEach(el => el.style.display = 'none');
+
+// 削除ボタン列のthを非表示
+document.querySelectorAll('th:last-child:empty, th:last-child').forEach(el => {
+  if (el.textContent.trim() === '') el.style.display = 'none';
+});
+
+}
+
 function unlockViewSecret(btn) {
   const item = btn.closest('.secret-item');
   const body = item.querySelector('.secret-item-body');
@@ -1229,17 +1240,6 @@ function unlockViewSecret(btn) {
   body.style.display = 'none';
   if (openBtn) openBtn.textContent = '▶ 開く';
 }
-
-}
-
-// sk-del列を非表示
-document.querySelectorAll('.sk-del').forEach(el => el.style.display = 'none');
-
-// 削除ボタン列のthを非表示
-document.querySelectorAll('th:last-child:empty, th:last-child').forEach(el => {
-  if (el.textContent.trim() === '') el.style.display = 'none';
-});
-
 
 // 通常の初期化を上書き
 populateJobs(); populateTokucho(); buildSkillTables(); initWeaponRows(); initItemRows();
