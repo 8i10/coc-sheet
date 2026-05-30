@@ -525,12 +525,21 @@ function skillChanged(inp){
   updatePointBar();
 }
 
+// 自由入力欄の自動幅伸縮
+function autoResize(inp){
+  inp.style.width='0';
+  inp.style.width=Math.max(44,inp.scrollWidth+4)+'px';
+}
+function autoResizeAll(){
+  document.querySelectorAll('.free-inp-auto').forEach(autoResize);
+}
+
 // FIX1: makeSkillRow — isDefault=true のみ skill-default-row を付与
 function makeSkillRow(name,base,key,hasFree,freeVal,isDefault){
   const tr=document.createElement('tr');
   if(isDefault)tr.classList.add('skill-default-row');
   let nameHtml=name;
-  if(hasFree)nameHtml=`${name}(<input type="text" value="${freeVal||''}" style="border:none;border-bottom:1px solid #aaa;width:44px;font-size:11px;outline:none;background:transparent;text-align:left">)`;
+  if(hasFree)nameHtml=`${name}(<input type="text" value="${freeVal||''}" class="free-inp-auto" style="border:none;border-bottom:1px solid #aaa;min-width:44px;width:44px;font-size:11px;outline:none;background:transparent;text-align:left" oninput="autoResize(this)">)`;
   if(key==='operate')nameHtml=`操縦(<input type="text" style="border:none;border-bottom:1px solid #aaa;width:50px;font-size:11px;outline:none;background:transparent;text-align:left" placeholder="種類">)`;
   const isDyn=key==='kaihi'||key==='kokugo';
   const bAttr=isDyn?`data-basekey="${key}"`:`data-base`;
@@ -968,7 +977,7 @@ function collectData(){
   const skills=[];
   document.querySelectorAll('.skill-table tbody tr').forEach(tr=>{
     const key=tr.querySelector('[data-skill]')?.dataset?.skill||'';if(!key)return;
-    skills.push({key,chk:tr.querySelector('input[type=checkbox]')?.checked||false,job:tr.querySelector('.job-inp')?.value||'',int:tr.querySelector('.int-inp')?.value||'',grw:tr.querySelector('.grw-inp')?.value||'',oth:tr.querySelector('.oth-inp')?.value||''});
+    skills.push({key,chk:tr.querySelector('input[type=checkbox]')?.checked||false,job:tr.querySelector('.job-inp')?.value||'',int:tr.querySelector('.int-inp')?.value||'',grw:tr.querySelector('.grw-inp')?.value||'',oth:tr.querySelector('.oth-inp')?.value||'',freeVal:tr.querySelector('.sk-name .free-inp-auto')?.value||tr.querySelector('.sk-name input[type=text]')?.value||''});
   });
   return JSON.stringify({inputs,skills,ts:Date.now()});
 }
@@ -982,8 +991,10 @@ function applyData(json){
     const ii=tr.querySelector('.int-inp');if(ii)ii.value=s.int;
     const gi=tr.querySelector('.grw-inp');if(gi)gi.value=s.grw;
     const oi=tr.querySelector('.oth-inp');if(oi)oi.value=s.oth;
+    if(s.freeVal){const fi=tr.querySelector('.sk-name .free-inp-auto')||tr.querySelector('.sk-name input[type=text]');if(fi)fi.value=s.freeVal;}
   });
   calc();
+  setTimeout(autoResizeAll,100);
 }
 // 保存ボタン
 let currentCharId = null;
@@ -1260,6 +1271,7 @@ function unlockViewSecret(btn) {
 
 // 通常の初期化を上書き
 populateJobs(); populateTokucho(); buildSkillTables(); initWeaponRows(); initItemRows();
+setTimeout(autoResizeAll,200);
 addSecretItem('', '1234'); addRelGroup(); addAERow('tbody_kouisho'); addAERow('tbody_af'); addAERow('tbody_spell');
 initViewMode();
 
@@ -1299,6 +1311,11 @@ const SKILL_LABEL = {
 function getSkillDisplayName(tr, key) {
   const nameCell = tr.querySelector('.sk-name');
   if (!nameCell) return SKILL_LABEL[key] || key;
+  // カスタム技能（custom_xxx）の場合はinput[type=text]の値を返す
+  if (key.startsWith('custom_')) {
+    const inp = nameCell.querySelector('input[type=text]');
+    return (inp && inp.value.trim()) ? inp.value.trim() : '(カスタム技能)';
+  }
   const freeInp = nameCell.querySelector('input[type=text]');
   const baseLabel = SKILL_LABEL[key] || key;
   if (freeInp && freeInp.value) {
