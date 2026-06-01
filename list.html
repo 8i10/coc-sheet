@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>キャラクター一覧 - CoC6版</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;background:#d8d8d8;color:#111;min-height:100vh}
+
+/* ヘッダー */
+#header{position:fixed;top:0;left:0;width:100%;background:#333;color:#fff;z-index:999;display:flex;align-items:center;gap:10px;padding:6px 16px;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
+#header h1{font-size:14px;font-weight:bold;flex:1}
+.header-btn{padding:3px 12px;font-size:11px;cursor:pointer;border:none;border-radius:2px;color:#fff}
+
+/* メイン */
+.container{max-width:900px;margin:0 auto;padding:54px 12px 24px}
+
+/* 認証エリア */
+#auth_area{background:#fff;border-radius:6px;padding:20px;margin-bottom:16px;border:1px solid #ccc}
+#auth_area h2{font-size:13px;margin-bottom:10px;color:#444}
+.auth-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.auth-inp{border:1px solid #aaa;padding:4px 8px;font-size:12px;font-family:inherit;border-radius:2px;width:200px}
+.auth-btn{padding:4px 14px;font-size:12px;cursor:pointer;border:none;border-radius:2px;color:#fff;font-family:inherit}
+#auth_msg{font-size:11px;margin-top:4px}
+#logged_in_bar{background:#2a7;color:#fff;border-radius:4px;padding:6px 12px;margin-bottom:12px;font-size:12px;display:flex;align-items:center;gap:10px;display:none}
+
+/* カード一覧 */
+#char_grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.char-card{background:#fff;border-radius:6px;border:1px solid #ccc;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);transition:box-shadow .2s}
+.char-card:hover{box-shadow:0 3px 8px rgba(0,0,0,0.18)}
+.card-header{padding:10px 12px;border-bottom:1px solid #eee;display:flex;align-items:flex-start;gap:8px}
+.card-color-bar{width:6px;border-radius:3px;align-self:stretch;flex-shrink:0;min-height:36px}
+.card-names{flex:1;min-width:0}
+.card-pcname{font-size:14px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-furigana{font-size:10px;color:#888;margin-top:1px}
+.card-body{padding:8px 12px;font-size:11px;color:#555;line-height:1.8}
+.card-body .row{display:flex;gap:4px;align-items:baseline}
+.card-body .lbl{color:#888;flex-shrink:0;min-width:44px}
+.card-body .val{color:#111;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-status{display:inline-block;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:bold}
+.status-alive{background:#d4f5e4;color:#1a7a45}
+.status-lost{background:#fde8e8;color:#b03030}
+.status-retired{background:#e8eef5;color:#3a5a8a}
+.status-missing{background:#fff3d4;color:#8a6000}
+.status-dead{background:#e8e8e8;color:#555}
+.status-insane{background:#f0e4ff;color:#6a1a9a}
+.card-footer{padding:6px 12px;border-top:1px solid #f0f0f0;display:flex;gap:6px;justify-content:flex-end;background:#fafafa}
+.card-btn{padding:2px 10px;font-size:11px;cursor:pointer;border:none;border-radius:2px;font-family:inherit}
+.card-date{font-size:10px;color:#aaa;margin-right:auto;align-self:center}
+
+/* 新規作成ボタン */
+#new_btn{display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;border:2px dashed #aaa;border-radius:6px;padding:20px;cursor:pointer;color:#888;font-size:13px;transition:border-color .2s,color .2s}
+#new_btn:hover{border-color:#5588cc;color:#5588cc}
+
+/* ローディング・空状態 */
+#loading{text-align:center;padding:40px;color:#888;font-size:13px}
+#empty{text-align:center;padding:40px;color:#aaa;font-size:13px;display:none}
+
+/* ステータスラベルマップ */
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>📋 キャラクター一覧</h1>
+  <button class="header-btn" style="background:#5a3a8a" onclick="location.href='index.html'">＋ 新規作成</button>
+  <button id="logout_btn" class="header-btn" style="background:#888;display:none" onclick="doLogout()">ログアウト</button>
+</div>
+
+<div class="container">
+
+  <!-- 認証エリア -->
+  <div id="auth_area">
+    <h2>🔑 ログイン / アカウント登録</h2>
+    <div class="auth-row">
+      <input class="auth-inp" type="email" id="auth_email" placeholder="メールアドレス">
+      <input class="auth-inp" type="password" id="auth_pass" placeholder="パスワード">
+      <button class="auth-btn" style="background:#2a7" onclick="doLogin()">ログイン</button>
+      <button class="auth-btn" style="background:#558" onclick="doSignup()">新規登録</button>
+    </div>
+    <div id="auth_msg" style="color:#c00"></div>
+  </div>
+
+  <!-- ログイン済みバー -->
+  <div id="logged_in_bar">
+    <span>✅ ログイン中: <span id="logged_email"></span></span>
+    <span style="font-size:10px;color:#cfc">データはクラウドに自動保存されます</span>
+  </div>
+
+  <!-- ローディング -->
+  <div id="loading">読込中...</div>
+
+  <!-- キャラ一覧グリッド -->
+  <div id="char_grid" style="display:none"></div>
+  <div id="empty">保存されたキャラクターはありません。<br>「新規作成」から作ってみましょう！</div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://cicodhxebyqewfnngfwt.supabase.co/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpY29kaHhlYnlxZXdmbm5nZnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzM4NDYsImV4cCI6MjA5NTY0OTg0Nn0.huLOglTPbW1CcGDbDB_yf5ftqEkqmtJ1HBY9WTx9J8E';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const STATUS_LABEL = {
+  alive:'生存', lost:'ロスト', retired:'引退',
+  missing:'行方不明', dead:'死亡', insane:'永久狂気'
+};
+const STATUS_CLASS = {
+  alive:'status-alive', lost:'status-lost', retired:'status-retired',
+  missing:'status-missing', dead:'status-dead', insane:'status-insane'
+};
+
+// ログイン状態確認
+db.auth.getSession().then(({ data: { session } }) => {
+  if (session) {
+    onLoggedIn(session.user);
+    loadList();
+  } else {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('char_grid').style.display = 'none';
+  }
+});
+
+function onLoggedIn(user) {
+  document.getElementById('auth_area').style.display = 'none';
+  const bar = document.getElementById('logged_in_bar');
+  bar.style.display = 'flex';
+  document.getElementById('logged_email').textContent = user.email;
+  document.getElementById('logout_btn').style.display = 'inline-block';
+}
+
+async function doLogin() {
+  const email = document.getElementById('auth_email').value.trim();
+  const pass  = document.getElementById('auth_pass').value;
+  const msg   = document.getElementById('auth_msg');
+  msg.textContent = '';
+  const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+  if (error) { msg.textContent = 'エラー: ' + error.message; return; }
+  onLoggedIn(data.user);
+  loadList();
+}
+
+async function doSignup() {
+  const email = document.getElementById('auth_email').value.trim();
+  const pass  = document.getElementById('auth_pass').value;
+  const msg   = document.getElementById('auth_msg');
+  msg.textContent = '';
+  const { error } = await db.auth.signUp({ email, password: pass });
+  if (error) { msg.textContent = 'エラー: ' + error.message; return; }
+  msg.style.color = '#2a7';
+  msg.textContent = '確認メールを送信しました。メールをご確認ください。';
+}
+
+async function doLogout() {
+  await db.auth.signOut();
+  location.reload();
+}
+
+// キャラ一覧を読み込む
+async function loadList() {
+  const loadEl = document.getElementById('loading');
+  const gridEl = document.getElementById('char_grid');
+  const emptyEl = document.getElementById('empty');
+  loadEl.style.display = 'block';
+  gridEl.style.display = 'none';
+  emptyEl.style.display = 'none';
+
+  try {
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) return;
+
+    const { data: list, error } = await db
+      .from('character_sheets')
+      .select('id, char_name, data, updated_at')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+
+    loadEl.style.display = 'none';
+
+    if (!list || list.length === 0) {
+      emptyEl.style.display = 'block';
+      // 新規作成カードだけ表示
+      gridEl.innerHTML = '';
+      gridEl.appendChild(makeNewCard());
+      gridEl.style.display = 'grid';
+      return;
+    }
+
+    gridEl.innerHTML = '';
+    gridEl.appendChild(makeNewCard());
+    list.forEach(char => gridEl.appendChild(makeCharCard(char)));
+    gridEl.style.display = 'grid';
+
+  } catch(e) {
+    loadEl.textContent = '読込エラー: ' + e.message;
+  }
+}
+
+// 新規作成カード
+function makeNewCard() {
+  const div = document.createElement('div');
+  div.id = 'new_btn';
+  div.innerHTML = '<span style="font-size:20px">＋</span><span>新規キャラクター作成</span>';
+  div.onclick = () => {
+    // 新規用: localStorageに「新規」フラグを立ててindex.htmlへ
+    sessionStorage.setItem('coc_new_char', '1');
+    location.href = 'index.html';
+  };
+  return div;
+}
+
+// キャラカード生成
+function makeCharCard(char) {
+  let sheet = {};
+  try { sheet = JSON.parse(char.data); } catch(e) {}
+  const inputs = sheet.inputs || {};
+
+  const pcname   = inputs.pcname   || char.char_name || '名無し';
+  const furigana = inputs.furigana || '';
+  const job      = inputs.job      || '';
+  const age      = inputs.age      || '';
+  const gender   = inputs.gender   || '';
+  const era      = inputs.era      || '';
+  const status   = inputs.pc_status || 'alive';
+  const color    = inputs.txtcolor  || '#555555';
+  const jobRef   = inputs.job_ref_sel || '';
+  const t1       = inputs.t1_sel !== undefined && inputs.t1_sel !== '' ? '①あり' : '';
+  const t2       = inputs.t2_sel !== undefined && inputs.t2_sel !== '' ? '②あり' : '';
+
+  // ステータス数値
+  const hp = (() => {
+    const el = sheet.inputs;
+    if (!el) return '?';
+    const con = parseInt(el.con||0), siz = parseInt(el.siz||0);
+    return Math.floor((con+siz)/2)||'?';
+  })();
+  const san = inputs.san_now || (parseInt(inputs.pow||0)*5) || '?';
+
+  const updDate = new Date(char.updated_at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  const card = document.createElement('div');
+  card.className = 'char-card';
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="card-color-bar" style="background:${color}"></div>
+      <div class="card-names">
+        <div class="card-pcname">${esc(pcname)}</div>
+        ${furigana ? `<div class="card-furigana">${esc(furigana)}</div>` : ''}
+      </div>
+      <span class="card-status ${STATUS_CLASS[status]||'status-alive'}">${STATUS_LABEL[status]||status}</span>
+    </div>
+    <div class="card-body">
+      ${job ? `<div class="row"><span class="lbl">職業</span><span class="val">${esc(job)}</span></div>` : ''}
+      ${jobRef ? `<div class="row"><span class="lbl">参照</span><span class="val">${esc(jobRef)}</span></div>` : ''}
+      <div class="row">
+        ${age ? `<span class="lbl">年齢</span><span class="val">${esc(age)}歳</span>&nbsp;&nbsp;` : ''}
+        ${gender ? `<span class="lbl">性別</span><span class="val">${esc(gender)}</span>` : ''}
+      </div>
+      ${era ? `<div class="row"><span class="lbl">時代</span><span class="val">${esc(era)}</span></div>` : ''}
+      <div class="row"><span class="lbl">HP/SAN</span><span class="val">${hp} / ${san}</span></div>
+      ${(t1||t2) ? `<div class="row"><span class="lbl">特徴</span><span class="val">${[t1,t2].filter(Boolean).join('　')}</span></div>` : ''}
+    </div>
+    <div class="card-footer">
+      <span class="card-date">更新: ${updDate}</span>
+      <button class="card-btn" style="background:#558;color:#fff" onclick="openChar('${char.id}')">✏️ 編集</button>
+      <button class="card-btn" style="background:#7755aa;color:#fff" onclick="viewChar('${char.id}')">👁 閲覧</button>
+      <button class="card-btn" style="background:#fee;color:#933;border:1px solid #e99" onclick="deleteChar('${char.id}',this)">🗑</button>
+    </div>`;
+  return card;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function openChar(id) {
+  sessionStorage.setItem('coc_load_id', id);
+  location.href = 'index.html';
+}
+
+function viewChar(id) {
+  location.href = 'view.html?id=' + id;
+}
+
+async function deleteChar(id, btn) {
+  if (!confirm('このキャラクターを削除しますか？\n（この操作は元に戻せません）')) return;
+  try {
+    await db.from('character_sheets').delete().eq('id', id);
+    btn.closest('.char-card').remove();
+    // 残りが新規ボタンだけなら空状態表示
+    const cards = document.querySelectorAll('#char_grid .char-card');
+    if (cards.length === 0) document.getElementById('empty').style.display = 'block';
+  } catch(e) {
+    alert('削除エラー: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>
