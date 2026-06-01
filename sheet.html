@@ -23,7 +23,7 @@ input[type=text],input[type=number],input[type=password]{border:none;background:
 input[type=number]::-webkit-inner-spin-button{display:none}
 select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:none;font-family:inherit}
 textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;resize:vertical;padding:2px}
-textarea.auto-h{resize:none;overflow:hidden;min-height:36px;height:auto}
+textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizing:border-box}
 .hdr{background:#444;color:#fff;font-size:11px;padding:2px 5px;font-weight:bold}
 .personal-data td.hdr{text-align:center}
 .personal-data input[type=text],.personal-data input[type=number]{text-align:left}
@@ -582,12 +582,17 @@ function autoResize(inp){
   inp.style.width=Math.max(44,w+8)+'px';
 }
 function autoResizeTA(ta){
-  ta.style.height='auto';
-  ta.style.height=Math.max(36,ta.scrollHeight+2)+'px';
+  if(!ta||ta.offsetParent===null&&!ta.closest('.acc-body.open')&&!ta.closest('.sub-acc-body.open')&&!ta.closest('.secret-item-body.open')&&!ta.closest('[style*="display:block"]'))return;
+  ta.style.height='36px';
+  ta.style.height=ta.scrollHeight+'px';
 }
 function autoResizeAll(){
   document.querySelectorAll('.free-inp-auto').forEach(autoResize);
-  document.querySelectorAll('textarea.auto-h').forEach(autoResizeTA);
+  // 表示中のauto-hテキストエリアを全て再計算
+  document.querySelectorAll('textarea.auto-h').forEach(ta=>{
+    ta.style.height='36px';
+    ta.style.height=ta.scrollHeight+'px';
+  });
 }
 function skillChanged(inp){
   inp.dataset.manual='1';
@@ -953,9 +958,9 @@ function applyHaganeDB(){
   tx('db',dbSteps[baseDb]||'+2D6');
 }
 
-function toggleAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';}
-function toggleSubAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';}
-function toggleSub2Acc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';}
+function toggleAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';if(open)setTimeout(autoResizeAll,50);}
+function toggleSubAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';if(open)setTimeout(autoResizeAll,50);}
+function toggleSub2Acc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';if(open)setTimeout(autoResizeAll,50);}
 
 function makeWeaponTr(){
   const tr=document.createElement('tr');
@@ -1064,9 +1069,8 @@ function addSecretItem(title,pass){
         <button onclick="changeSecretPass('${id}')" style="font-size:11px;padding:1px 6px;cursor:pointer;border:1px solid #aaa;background:#eee">変更</button>
       </div>
       <div id="content_${id}" style="display:none;padding:4px">
-        <select style="width:120px;margin-bottom:4px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select>
         <textarea class="auto-h" style="width:100%" placeholder="KP秘匿情報・後遺症など" oninput="autoResizeTA(this)"></textarea>
-        <button class="add-row-btn" onclick="addSecretContentRow('content_${id}')">＋欄追加</button>
+        <button class="add-row-btn" onclick="addSecretContentRow('content_${id}')">＋追加</button>
       </div>
     </div>`;
   wrap.dataset.pass=pass||'1234';
@@ -1091,7 +1095,7 @@ function changeSecretPass(id){
 }
 function addSecretContentRow(contentId){
   const div=document.getElementById(contentId);const w=document.createElement('div');w.style.marginTop='4px';
-  w.innerHTML='<select style="width:120px;margin-bottom:2px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select><div style="display:flex;gap:4px"><textarea class="auto-h" style="flex:1" placeholder="追加情報..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="this.closest(\'div[style]\').remove()">✕</button></div>';
+  w.innerHTML='<div style="display:flex;gap:4px"><textarea class="auto-h" style="flex:1" placeholder="追加情報..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="this.closest(\'div[style]\').remove()">✕</button></div>';
   div.insertBefore(w,div.querySelector('.add-row-btn'));
 }
 
