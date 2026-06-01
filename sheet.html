@@ -23,10 +23,13 @@ input[type=text],input[type=number],input[type=password]{border:none;background:
 input[type=number]::-webkit-inner-spin-button{display:none}
 select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:none;font-family:inherit}
 textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;resize:vertical;padding:2px}
+textarea.auto-h{resize:none;overflow:hidden;min-height:36px;height:auto}
 .hdr{background:#444;color:#fff;font-size:11px;padding:2px 5px;font-weight:bold}
 .personal-data td.hdr{text-align:center}
 .personal-data input[type=text],.personal-data input[type=number]{text-align:left}
+#furigana{text-align:center !important}
 .personal-data input[type=text],.personal-data input[type=number]{text-align:left}
+#furigana{text-align:center !important}
 .section{border:1px solid #777;margin-bottom:5px;background:#fff}
 .derived{background:#e8e8e8;text-align:center;min-width:28px}
 .row-label{background:#444;color:#fff;font-size:11px;text-align:center;padding:1px 3px;white-space:nowrap}
@@ -82,6 +85,14 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 </style>
 </head>
 <body>
+
+<!-- ≡ メニュー（fixed配置）-->
+<div id="sheet_menu" style="display:none;position:fixed;top:38px;right:10px;background:#fff;border:1px solid #bbb;border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.25);min-width:160px;z-index:99999;overflow:hidden">
+  <div onclick="location.href='index.html';closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid #eee;color:#333;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''"><span>←</span> 一覧に戻る</div>
+  <div onclick="exportJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid #eee;color:#333;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''"><span>⬇</span> JSON出力</div>
+  <div onclick="importJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid #eee;color:#333;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''"><span>⬆</span> JSON読込</div>
+  <div onclick="importSpreadsheetHTML();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;color:#333;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''"><span>📥</span> スプシ取込</div>
+</div>
 <div class="sheet">
 
 <div id="sticky-header">
@@ -110,21 +121,13 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
     <button onclick="copyViewURL()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#a72;color:#fff;border:none;border-radius:2px">🔗閲覧URL</button>
     <button onclick="openCocofoliaCopyDialog()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px">🐔駒出力</button>
     <!-- ≡ メニューボタン -->
-    <div style="position:relative;display:inline-block">
-      <button id="menu_btn" onclick="toggleMenu()" style="padding:2px 10px;font-size:14px;cursor:pointer;background:#555;color:#fff;border:none;border-radius:2px;line-height:1">≡</button>
-      <div id="sheet_menu" style="display:none;position:absolute;right:0;top:100%;margin-top:2px;background:#fff;border:1px solid #aaa;border-radius:3px;box-shadow:0 4px 12px rgba(0,0,0,.2);min-width:150px;z-index:9999">
-        <div onclick="location.href='index.html'" style="padding:8px 14px;cursor:pointer;font-size:11px;border-bottom:1px solid #eee;color:#333" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background=''">← 一覧に戻る</div>
-        <div onclick="exportJSON()" style="padding:8px 14px;cursor:pointer;font-size:11px;border-bottom:1px solid #eee;color:#333" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background=''">⬇ JSON出力</div>
-        <div onclick="importJSON()" style="padding:8px 14px;cursor:pointer;font-size:11px;border-bottom:1px solid #eee;color:#333" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background=''">⬆ JSON読込</div>
-        <div onclick="importSpreadsheetHTML()" style="padding:8px 14px;cursor:pointer;font-size:11px;color:#333" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background=''">📥スプシ取込</div>
-      </div>
-    </div>
+    <button id="menu_btn" onclick="toggleMenu(event)" style="padding:2px 10px;font-size:14px;cursor:pointer;background:#555;color:#fff;border:none;border-radius:2px;line-height:1.2">≡</button>
   </div>
 </div>
 
-<!-- 一覧に戻るバー -->
-<div style="background:#f0f0f0;border-bottom:2px solid #ccc;padding:3px 10px">
-  <button onclick="location.href='index.html'" style="padding:2px 12px;font-size:11px;cursor:pointer;background:#555;color:#fff;border:none;border-radius:2px;font-family:inherit">← 一覧に戻る</button>
+<!-- 一覧に戻るバー（余白のみ）-->
+<div style="background:#f0f0f0;border-bottom:2px solid #ccc;padding:3px 10px;min-height:28px;display:flex;align-items:center">
+  <span style="font-size:10px;color:#999">← メニュー（≡）から一覧に戻れます</span>
 </div>
 
 <!-- ===== 行1 ===== -->
@@ -134,7 +137,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
     <div class="hdr">パーソナルデータ</div>
     <table>
       <colgroup><col style="width:52px"><col style="width:140px"><col style="width:52px"><col style="width:140px"></colgroup>
-      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana" style="text-align:center"></td></tr>
+      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana" style="text-align:center !important"></td></tr>
       <tr>
         <td class="hdr" style="vertical-align:middle">PC名</td>
         <td colspan="3"><input type="text" id="pcname" oninput="updateStickyHeader()" style="font-size:15px;font-weight:bold;height:52px;text-align:center;padding:2px 4px;display:block;width:100%"></td>
@@ -2515,6 +2518,34 @@ function saveDraft() {
 }
 document.addEventListener('input', saveDraft);
 document.addEventListener('change', saveDraft);
+
+// ≡ メニュー制御
+function toggleMenu(e){
+  if(e)e.stopPropagation();
+  const m=document.getElementById('sheet_menu');
+  const btn=document.getElementById('menu_btn');
+  if(!m||!btn)return;
+  if(m.style.display==='none'||m.style.display===''){
+    const r=btn.getBoundingClientRect();
+    m.style.top=(r.bottom+4)+'px';
+    m.style.right=(window.innerWidth-r.right)+'px';
+    m.style.left='auto';
+    m.style.display='block';
+  } else {
+    m.style.display='none';
+  }
+}
+function closeMenu(){
+  const m=document.getElementById('sheet_menu');
+  if(m)m.style.display='none';
+}
+document.addEventListener('click',function(e){
+  const menu=document.getElementById('sheet_menu');
+  const btn=document.getElementById('menu_btn');
+  if(menu&&btn&&!menu.contains(e.target)&&e.target!==btn){
+    menu.style.display='none';
+  }
+});
 </script>
 </body>
 </html>
