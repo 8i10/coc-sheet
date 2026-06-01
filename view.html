@@ -90,6 +90,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
   .sticky-pt-block{padding:2px 4px;gap:2px}
   #sticky-actions{gap:2px}
   #sticky-actions button{padding:2px 6px;font-size:10px}
+  #sticky-actions button img{width:22px;height:22px}
 
   /* 行1: パーソナル＋能力値 → 縦並び */
   #row1_flex{flex-direction:column !important}
@@ -110,37 +111,6 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 
   /* 技能テーブル */
   .skill-table td,.skill-table th{font-size:10px;padding:1px}
-  .sk-inp{width:24px}
-  .sk-total{width:26px}
-}
-  .sheet{width:100%;padding:4px}
-
-  /* ヘッダー：PC名を短く・ボタン類を小さく */
-  #sticky-pcname{font-size:13px;max-width:120px}
-  .sticky-pt-block{padding:2px 4px;gap:2px}
-  #sticky-actions{gap:2px}
-  #sticky-actions button{padding:2px 6px;font-size:10px}
-
-  /* 行1: パーソナル＋能力値 → 縦並び */
-  .section > div[style*="display:flex"]{flex-direction:column !important}
-  .section > div > div[style*="width:378px"]{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
-  .section > div > div[style*="flex:1;overflow"]{width:100% !important;overflow-x:auto}
-
-  /* 行2: 職業特記＋特徴表 → 縦並び */
-  .section > div > div[style*="width:378px;min-width:378px;border-right"]{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
-  .section > div > div[style*="flex:1;display:flex"]{width:100% !important;flex-direction:column !important}
-  .section > div > div[style*="flex:1;display:flex"] > div{border-right:none !important;border-bottom:1px solid #eee}
-
-  /* メイン: 技能表＋右パネル → 縦並び */
-  div[style*="display:flex;gap:5px;align-items:flex-start"]{flex-direction:column !important}
-  div[style*="flex:0 0 370px"]{width:100% !important;flex:none !important}
-  .right-panel{width:100% !important}
-
-  /* 能力値テーブルをスクロール */
-  .section > div > div[style*="flex:1;overflow"] table{min-width:600px}
-
-  /* 技能テーブルのフォント */
-  .skill-table td,.skill-table th{font-size:10px;padding:1px 1px}
   .sk-inp{width:24px}
   .sk-total{width:26px}
 }
