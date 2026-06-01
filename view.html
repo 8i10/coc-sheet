@@ -46,8 +46,8 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 .sub-acc-header:hover{background:#444}
 .sub-acc-body{display:none;padding:4px}
 .sub-acc-body.open{display:block}
-.sub2-acc-header{background:#666;color:#fff;padding:2px 5px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;margin-bottom:1px}
-.sub2-acc-header:hover{background:#555}
+.sub2-acc-header{background:#555;color:#fff;padding:2px 5px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;margin-bottom:1px}
+.sub2-acc-header:hover{background:#444}
 .sub2-acc-body{display:none;padding:3px}
 .sub2-acc-body.open{display:block}
 .skill-sec-hdr{background:#555;color:#fff;font-size:11px;padding:2px 4px}
@@ -63,7 +63,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 /* FIX5: 合計列右の余白（sk-del列）を幅0・border無しで消す */
 .sk-del{width:0;padding:0;border:none;overflow:visible}
 .add-row-btn{font-size:11px;padding:1px 7px;cursor:pointer;margin:2px 2px 2px 0;background:#eee;border:1px solid #aaa;border-radius:2px}
-.del-btn{font-size:8px;padding:0 2px;cursor:pointer;background:#fee;border:1px solid #e99;border-radius:2px;color:#933;line-height:11px;min-width:14px;height:14px}
+.del-btn{font-size:11px;padding:0 3px;cursor:pointer;background:none;border:none;color:#bbb;line-height:1;font-weight:normal;transition:color .15s}.del-btn:hover{color:#933}
 .right-panel{display:flex;flex-direction:column;gap:5px}
 .secret-item{border:1px solid #ccc;border-radius:3px;margin-bottom:4px;overflow:hidden}
 .secret-item-header{background:#555;color:#fff;padding:2px 6px;display:flex;align-items:center;gap:4px;font-size:11px}
@@ -343,7 +343,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <div class="acc-body" id="combat_acc">
         <div style="padding:4px;overflow-x:auto">
           <table>
-            <thead><tr><th style="min-width:80px">武器名</th><th style="min-width:40px">技能(%)</th><th>ダメージ</th><th>射程</th><th>攻撃回数</th><th>装弾数</th><th>耐久</th><th>故障No.</th><th style="min-width:80px">備考</th><th style="width:18px"></th></tr></thead>
+            <thead><tr><th style="min-width:80px">武器名</th><th style="min-width:28px;width:32px;font-size:9px;white-space:nowrap">技能%</th><th>ダメージ</th><th>射程</th><th>攻撃回数</th><th>装弾数</th><th>耐久</th><th>故障No.</th><th style="min-width:80px">備考</th><th style="width:18px"></th></tr></thead>
             <tbody id="weapon_rows"></tbody>
           </table>
           <button class="add-row-btn" onclick="addWeaponRow()">＋追加</button>
@@ -370,7 +370,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
         <div style="padding:4px">
           <div id="memo_rows">
             <div style="position:relative;margin-bottom:4px">
-              <textarea style="width:100%;height:80px" placeholder="メモを入力..."></textarea>
+              <textarea class="auto-h" style="width:100%" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea>
             </div>
           </div>
           <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
@@ -401,7 +401,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_kouisho')"><span>後遺症</span><span id="arr_ae_kouisho">▶</span></div>
             <div class="sub2-acc-body" id="ae_kouisho">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">後遺症名</th><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#666;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">後遺症名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#555;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
                 <tbody id="tbody_kouisho"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_kouisho')">＋追加</button>
@@ -411,7 +411,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_af')"><span>AF</span><span id="arr_ae_af">▶</span></div>
             <div class="sub2-acc-body" id="ae_af">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">AF名</th><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#666;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">AF名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#555;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
                 <tbody id="tbody_af"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_af')">＋追加</button>
@@ -421,7 +421,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_spell')"><span>呪文</span><span id="arr_ae_spell">▶</span></div>
             <div class="sub2-acc-body" id="ae_spell">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">呪文名</th><th style="background:#666;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#666;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">呪文名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#555;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
                 <tbody id="tbody_spell"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_spell')">＋追加</button>
@@ -434,7 +434,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <div class="acc-header" onclick="toggleAcc('scenario_outer')"><span>▮ 通過シナリオ</span><span id="arr_scenario_outer">▶</span></div>
       <div class="acc-body" id="scenario_outer">
         <div style="padding:4px">
-          <div id="scenario_rows"><div style="position:relative;margin-bottom:4px"><textarea style="width:100%;height:80px" placeholder="通過シナリオを入力..."></textarea></div></div>
+          <div id="scenario_rows"><div style="position:relative;margin-bottom:4px"><textarea class="auto-h" style="width:100%" placeholder="通過シナリオを入力..." oninput="autoResizeTA(this)"></textarea></div></div>
           <button class="add-row-btn" onclick="addScenarioRow()">＋追加</button>
         </div>
       </div>
@@ -531,8 +531,16 @@ function autoResize(inp){
   inp.style.width='0';
   inp.style.width=Math.max(44,inp.scrollWidth+4)+'px';
 }
+function autoResizeTA(ta){
+  ta.style.height='36px';
+  ta.style.height=ta.scrollHeight+'px';
+}
 function autoResizeAll(){
   document.querySelectorAll('.free-inp-auto').forEach(autoResize);
+  document.querySelectorAll('textarea.auto-h').forEach(ta=>{
+    ta.style.height='36px';
+    ta.style.height=ta.scrollHeight+'px';
+  });
 }
 
 // FIX1: makeSkillRow — isDefault=true のみ skill-default-row を付与
@@ -829,9 +837,9 @@ function showTokucho(n){
   document.getElementById('t'+n+'_desc').textContent=idx!==''?(tokuchoList[parseInt(idx)]?.desc||''):'';
 }
 
-function toggleAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';}
-function toggleSubAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';}
-function toggleSub2Acc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';}
+function toggleAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';if(open)setTimeout(autoResizeAll,50);}
+function toggleSubAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';if(open)setTimeout(autoResizeAll,50);}
+function toggleSub2Acc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';if(open)setTimeout(autoResizeAll,50);}
 
 function makeWeaponTr(){
   const tr=document.createElement('tr');
@@ -852,7 +860,7 @@ function addItemRow(){document.getElementById('item_rows').appendChild(makeItemT
 function addMemoRow(){
   const div=document.getElementById('memo_rows');
   const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:4px';
-  w.innerHTML='<textarea style="width:100%;height:60px" placeholder="メモを入力..."></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.appendChild(w);
 }
 
@@ -894,20 +902,20 @@ function toggleRelGroup(id) {
 function addRelSubRow(bodyId){
   const body=document.getElementById(bodyId);const addBtn=body.querySelector('.add-row-btn');
   const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:3px';
-  w.innerHTML='<textarea style="width:100%;height:50px" placeholder="関係・経緯など"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="関係・経緯など" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   body.insertBefore(w,addBtn);
 }
 
 function addAERow(tbodyId){
   const tbody=document.getElementById(tbodyId);const tr=document.createElement('tr');
-  tr.innerHTML=`<td style="padding:0 1px"><input class="item-input" type="text"></td><td style="padding:0 1px"><input class="item-input" type="text"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  tr.innerHTML=`<td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:#fff;font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:#fff;font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="width:16px;border:none;text-align:center;vertical-align:middle"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
   tbody.appendChild(tr);
 }
 
 function addScenarioRow(){
   const div=document.getElementById('scenario_rows');const w=document.createElement('div');
   w.style.cssText='position:relative;margin-bottom:4px';
-  w.innerHTML='<textarea style="width:100%;height:60px" placeholder="通過シナリオを入力..."></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="通過シナリオを入力..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.appendChild(w);
 }
 
