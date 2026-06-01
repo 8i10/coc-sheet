@@ -15,7 +15,6 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 #hdr{position:fixed;top:0;left:0;width:100%;background:#333;color:#fff;z-index:999;display:flex;align-items:center;padding:5px 16px;box-shadow:0 2px 5px rgba(0,0,0,.35)}
 #hdr-title{font-size:14px;font-weight:bold;flex:1}
 #hdr-right{display:flex;align-items:center;gap:8px;font-size:11px}
-#hdr-user{color:#ccc;font-size:11px}
 .hbtn{padding:3px 10px;font-size:11px;cursor:pointer;border:none;border-radius:2px;color:#fff;font-family:inherit}
 
 /* コンテナ */
@@ -41,37 +40,16 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 
 /* グリッド2列 */
 #grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-@media(max-width:600px){#grid{grid-template-columns:1fr}}
-
-/* カード */
-.card{background:#fff;border-radius:5px;border:1px solid #ccc;overflow:hidden;transition:box-shadow .15s}
-.card:hover{box-shadow:0 3px 10px rgba(0,0,0,.15)}
-.card-top{display:flex;align-items:stretch;gap:0}
-.card-bar{width:5px;flex-shrink:0}
-.card-info{flex:1;padding:8px 10px;min-width:0}
-.card-tag-row{display:flex;align-items:center;gap:5px;margin-bottom:2px}
-.card-furigana{font-size:10px;color:#888;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.card-pcname{font-size:15px;font-weight:bold;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
-.card-job{font-size:11px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
-.card-meta{display:flex;gap:12px;font-size:11px;color:#666}
-.card-meta span{white-space:nowrap}
-/* ステータスバッジ */
-.badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:bold;white-space:nowrap}
-.s-alive{background:#d4f5e4;color:#1a7a45}
-.s-lost{background:#fde8e8;color:#b03030}
-.s-retired{background:#e8eef5;color:#3a5a8a}
-.s-missing{background:#fff3d4;color:#8a6000}
-.s-dead{background:#e8e8e8;color:#555}
-.s-insane{background:#f0e4ff;color:#6a1a9a}
-/* フッター */
-.card-foot{display:flex;align-items:center;padding:5px 10px;border-top:1px solid #f0f0f0;background:#fafafa;gap:6px}
-.card-date{font-size:10px;color:#bbb;flex:1}
-.cbtn{padding:2px 9px;font-size:11px;cursor:pointer;border:none;border-radius:2px;font-family:inherit}
-
-/* ローディング・空 */
-#loading{text-align:center;padding:50px;color:#aaa;font-size:13px;grid-column:1/-1}
-#empty{text-align:center;padding:40px;color:#bbb;font-size:13px;grid-column:1/-1;display:none}
-#no_result{text-align:center;padding:20px;color:#bbb;font-size:12px;grid-column:1/-1;display:none}
+@media(max-width:600px){
+  body{padding-top:44px}
+  .container{padding:8px 8px 24px}
+  #grid{grid-template-columns:1fr !important}
+  #new_btn{padding:5px 12px}
+  #search_box{max-width:100%}
+  #toolbar{flex-wrap:wrap}
+  #toolbar-right{width:100%}
+  #toolbar-right #search_box{width:100%;max-width:none}
+}
 </style>
 </head>
 <body>
@@ -80,7 +58,6 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 <div id="hdr">
   <div id="hdr-title">📋 キャラクター一覧</div>
   <div id="hdr-right">
-    <span id="hdr-user"></span>
     <button id="logout_btn" class="hbtn" style="background:#666;display:none" onclick="doLogout()">ログアウト</button>
   </div>
 </div>
@@ -137,7 +114,6 @@ db.auth.getSession().then(({data:{session}})=>{
 function onLoggedIn(user){
   document.getElementById('auth_box').style.display='none';
   document.getElementById('toolbar').style.display='flex';
-  document.getElementById('hdr-user').textContent='ログイン中: '+user.email;
   document.getElementById('logout_btn').style.display='inline-block';
 }
 
