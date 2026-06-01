@@ -1271,16 +1271,18 @@ async function initViewMode() {
     });
   }
 
-  // 全inputをreadonlyにする（secret_items_wrap内は除く）
+  // 全inputをreadonly表示にする（secret_items_wrap内は除く）
+  // disabledは使わず、CSSでpointer-eventsを無効化して文字色を変えない
   document.querySelectorAll('input, textarea, select').forEach(el => {
     if (el.closest('#secret_items_wrap')) return;
-    if (el.type === 'checkbox') {
+    if (el.type === 'checkbox') { el.style.pointerEvents = 'none'; return; }
+    if (el.tagName === 'SELECT') {
       el.style.pointerEvents = 'none';
       return;
     }
     el.setAttribute('readonly', true);
-    el.setAttribute('disabled', true);
     el.style.pointerEvents = 'none';
+    el.style.userSelect = 'text';
   });
 
   // 全てのボタンを非表示（secret_items_wrap内とtoggle系は残す）
