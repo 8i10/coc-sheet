@@ -106,7 +106,6 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
   </div>
   <div id="sticky-actions">
     <div id="save_msg" style="font-size:11px;color:#FFF;display:none">✓ 保存しました</div>
-    <button onclick="location.href='list.html'" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#666;color:#fff;border:none;border-radius:2px">📋 一覧</button>
     <button onclick="saveToStorage()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#2a7;color:#fff;border:none;border-radius:2px">💾保存</button>
     <button onclick="loadFromStorage()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#558;color:#fff;border:none;border-radius:2px">📂読込</button>
     <button onclick="copyViewURL()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#a72;color:#fff;border:none;border-radius:2px">🔗閲覧URL</button>
@@ -280,7 +279,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
     </div>
     <div style="font-size:11px;color:#555;margin-bottom:1px;margin-top:4px">その他特記</div>
-    <textarea id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;height:44px;font-size:11px;border:1px solid #aaa;resize:vertical;padding:2px;background:#fff"></textarea>
+    <textarea id="job_other_note" class="auto-h" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;min-height:36px;height:auto;font-size:11px;border:1px solid #aaa;padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
 
   </div>
   <!-- 特徴表①② -->
@@ -395,7 +394,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
         <div style="padding:4px">
           <div id="memo_rows">
             <div style="position:relative;margin-bottom:4px">
-              <textarea style="width:100%;height:80px" placeholder="メモを入力..."></textarea>
+              <textarea class="auto-h" style="width:100%;min-height:36px;height:auto" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea>
             </div>
           </div>
           <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
@@ -459,7 +458,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <div class="acc-header" onclick="toggleAcc('scenario_outer')"><span>▮ 通過シナリオ</span><span id="arr_scenario_outer">▶</span></div>
       <div class="acc-body" id="scenario_outer">
         <div style="padding:4px">
-          <div id="scenario_rows"><div style="position:relative;margin-bottom:4px"><textarea style="width:100%;height:80px" placeholder="通過シナリオを入力..."></textarea></div></div>
+          <div id="scenario_rows"><div style="position:relative;margin-bottom:4px"><textarea class="auto-h" style="width:100%;min-height:36px;height:auto" placeholder="通過シナリオを入力..." oninput="autoResizeTA(this)"></textarea></div></div>
           <button class="add-row-btn" onclick="addScenarioRow()">＋追加</button>
         </div>
       </div>
@@ -563,13 +562,18 @@ function recalcAllSkills(){
 // 自由入力欄の自動幅伸縮（display:none内でも動作するよう文字幅で計算）
 function autoResize(inp){
   const val=inp.value||inp.placeholder||'';
-  // 日本語は2文字幅、ASCII は1文字幅として概算
   let w=0;
   for(const ch of val){w+=(ch.charCodeAt(0)>0x7f)?13:7;}
   inp.style.width=Math.max(44,w+8)+'px';
 }
+// テキストエリアの自動高さ伸縮
+function autoResizeTA(ta){
+  ta.style.height='auto';
+  ta.style.height=Math.max(36,ta.scrollHeight+2)+'px';
+}
 function autoResizeAll(){
   document.querySelectorAll('.free-inp-auto').forEach(autoResize);
+  document.querySelectorAll('textarea.auto-h').forEach(autoResizeTA);
 }
 function skillChanged(inp){
   inp.dataset.manual='1';
@@ -958,7 +962,7 @@ function addItemRow(){document.getElementById('item_rows').appendChild(makeItemT
 function addMemoRow(){
   const div=document.getElementById('memo_rows');
   const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:4px';
-  w.innerHTML='<textarea style="width:100%;height:60px" placeholder="メモを入力..."></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<textarea class="auto-h" style="width:100%;min-height:36px;height:auto" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.appendChild(w);
 }
 
@@ -980,7 +984,7 @@ function addRelGroup(){
     </div>
     <div class="secret-item-body" id="${id}">
       <div style="position:relative;margin:4px">
-        <textarea style="width:100%;height:60px"></textarea>
+        <textarea class="auto-h" style="width:100%;min-height:36px;height:auto" oninput="autoResizeTA(this)"></textarea>
         <button class="del-btn" onclick="delRow(this)"
           style="position:absolute;top:2px;right:2px">✕</button>
       </div>
@@ -1000,7 +1004,7 @@ function toggleRelGroup(id) {
 function addRelSubRow(bodyId){
   const body=document.getElementById(bodyId);const addBtn=body.querySelector('.add-row-btn');
   const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:3px';
-  w.innerHTML='<textarea style="width:100%;height:50px" placeholder="関係・経緯など"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<textarea class="auto-h" style="width:100%;min-height:36px;height:auto" placeholder="関係・経緯など" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   body.insertBefore(w,addBtn);
 }
 
@@ -1013,7 +1017,7 @@ function addAERow(tbodyId){
 function addScenarioRow(){
   const div=document.getElementById('scenario_rows');const w=document.createElement('div');
   w.style.cssText='position:relative;margin-bottom:4px';
-  w.innerHTML='<textarea style="width:100%;height:60px" placeholder="通過シナリオを入力..."></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<textarea class="auto-h" style="width:100%;min-height:36px;height:auto" placeholder="通過シナリオを入力..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.appendChild(w);
 }
 
@@ -1047,7 +1051,7 @@ function addSecretItem(title,pass){
       </div>
       <div id="content_${id}" style="display:none;padding:4px">
         <select style="width:120px;margin-bottom:4px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select>
-        <textarea style="width:100%;height:70px" placeholder="KP秘匿情報・後遺症など"></textarea>
+        <textarea class="auto-h" style="width:100%;min-height:36px;height:auto" placeholder="KP秘匿情報・後遺症など" oninput="autoResizeTA(this)"></textarea>
         <button class="add-row-btn" onclick="addSecretContentRow('content_${id}')">＋欄追加</button>
       </div>
     </div>`;
@@ -1073,7 +1077,7 @@ function changeSecretPass(id){
 }
 function addSecretContentRow(contentId){
   const div=document.getElementById(contentId);const w=document.createElement('div');w.style.marginTop='4px';
-  w.innerHTML='<select style="width:120px;margin-bottom:2px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select><div style="display:flex;gap:4px"><textarea style="flex:1;height:50px" placeholder="追加情報..."></textarea><button class="del-btn" onclick="this.closest(\'div[style]\').remove()">✕</button></div>';
+  w.innerHTML='<select style="width:120px;margin-bottom:2px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select><div style="display:flex;gap:4px"><textarea class="auto-h" style="flex:1;min-height:36px;height:auto" placeholder="追加情報..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="this.closest(\'div[style]\').remove()">✕</button></div>';
   div.insertBefore(w,div.querySelector('.add-row-btn'));
 }
 
@@ -1238,10 +1242,6 @@ function applyData(json){
   }
 
   calc();
-  // 職業特記・特徴表の表示を再描画
-  const jobSel=document.getElementById('job_ref_sel');
-  if(jobSel&&jobSel.value)onJobRefChange();
-  [1,2].forEach(n=>showTokucho(n));
   setTimeout(autoResizeAll,100);
 }
 // 保存ボタン
@@ -2286,7 +2286,7 @@ function parseSpreadsheetHTML(html){
         // 欄がなければ追加
         const w=document.createElement('div');
         w.style.cssText='position:relative;margin-bottom:4px';
-        w.innerHTML='<textarea style="width:100%;height:80px" placeholder="メモを入力..."></textarea>';
+        w.innerHTML='<textarea class="auto-h" style="width:100%;min-height:36px;height:auto" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea>';
         memoDiv.appendChild(w);
         ta=memoDiv.querySelector('textarea');
       }
@@ -2428,25 +2428,6 @@ function parseSpreadsheetHTML(html){
 populateJobs();populateTokucho();buildSkillTables();initWeaponRows();initItemRows();
   setTimeout(autoResizeAll,200);
 addSecretItem('','1234');addRelGroup();addAERow('tbody_kouisho');addAERow('tbody_af');addAERow('tbody_spell');
-
-// 一覧ページからの遷移処理
-(async () => {
-  const loadId = sessionStorage.getItem('coc_load_id');
-  const isNew  = sessionStorage.getItem('coc_new_char');
-  sessionStorage.removeItem('coc_load_id');
-  sessionStorage.removeItem('coc_new_char');
-
-  if (loadId) {
-    try {
-      const { data } = await db.from('character_sheets').select('data').eq('id', loadId).single();
-      if (data) {
-        applyData(data.data);
-        currentCharId = loadId;
-      }
-    } catch(e) { alert('読込エラー: ' + e.message); }
-  }
-  // isNew の場合は何もしない（空のまま）
-})();
 </script>
 </body>
 </html>

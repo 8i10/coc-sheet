@@ -8,295 +8,295 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;background:#d8d8d8;color:#111;min-height:100vh}
+body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;background:#d8d8d8;color:#111;min-height:100vh;padding-top:44px}
 
 /* ヘッダー */
-#header{position:fixed;top:0;left:0;width:100%;background:#333;color:#fff;z-index:999;display:flex;align-items:center;gap:10px;padding:6px 16px;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
-#header h1{font-size:14px;font-weight:bold;flex:1}
-.header-btn{padding:3px 12px;font-size:11px;cursor:pointer;border:none;border-radius:2px;color:#fff}
+#hdr{position:fixed;top:0;left:0;width:100%;background:#333;color:#fff;z-index:999;display:flex;align-items:center;padding:5px 16px;box-shadow:0 2px 5px rgba(0,0,0,.35)}
+#hdr-title{font-size:14px;font-weight:bold;flex:1}
+#hdr-right{display:flex;align-items:center;gap:8px;font-size:11px}
+#hdr-user{color:#ccc;font-size:11px}
+.hbtn{padding:3px 10px;font-size:11px;cursor:pointer;border:none;border-radius:2px;color:#fff;font-family:inherit}
 
-/* メイン */
-.container{max-width:900px;margin:0 auto;padding:54px 12px 24px}
+/* コンテナ */
+.container{max-width:960px;margin:0 auto;padding:14px 12px 30px}
 
-/* 認証エリア */
-#auth_area{background:#fff;border-radius:6px;padding:20px;margin-bottom:16px;border:1px solid #ccc}
-#auth_area h2{font-size:13px;margin-bottom:10px;color:#444}
-.auth-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
-.auth-inp{border:1px solid #aaa;padding:4px 8px;font-size:12px;font-family:inherit;border-radius:2px;width:200px}
-.auth-btn{padding:4px 14px;font-size:12px;cursor:pointer;border:none;border-radius:2px;color:#fff;font-family:inherit}
+/* 認証 */
+#auth_box{background:#fff;border-radius:6px;padding:18px;margin-bottom:14px;border:1px solid #ccc}
+#auth_box h2{font-size:12px;font-weight:bold;color:#555;margin-bottom:10px}
+.auth-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.a-inp{border:1px solid #bbb;padding:4px 8px;font-size:12px;font-family:inherit;border-radius:2px;width:200px;outline:none}
+.a-inp:focus{border-color:#5588cc}
+.a-btn{padding:4px 14px;font-size:12px;cursor:pointer;border:none;border-radius:2px;color:#fff;font-family:inherit}
 #auth_msg{font-size:11px;margin-top:4px}
-#logged_in_bar{background:#2a7;color:#fff;border-radius:4px;padding:6px 12px;margin-bottom:12px;font-size:12px;display:flex;align-items:center;gap:10px;display:none}
 
-/* カード一覧 */
-#char_grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.char-card{background:#fff;border-radius:6px;border:1px solid #ccc;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);transition:box-shadow .2s}
-.char-card:hover{box-shadow:0 3px 8px rgba(0,0,0,0.18)}
-.card-header{padding:10px 12px;border-bottom:1px solid #eee;display:flex;align-items:flex-start;gap:8px}
-.card-color-bar{width:6px;border-radius:3px;align-self:stretch;flex-shrink:0;min-height:36px}
-.card-names{flex:1;min-width:0}
-.card-pcname{font-size:14px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-furigana{font-size:10px;color:#888;margin-top:1px}
-.card-body{padding:8px 12px;font-size:11px;color:#555;line-height:1.8}
-.card-body .row{display:flex;gap:4px;align-items:baseline}
-.card-body .lbl{color:#888;flex-shrink:0;min-width:44px}
-.card-body .val{color:#111;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.card-status{display:inline-block;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:bold}
-.status-alive{background:#d4f5e4;color:#1a7a45}
-.status-lost{background:#fde8e8;color:#b03030}
-.status-retired{background:#e8eef5;color:#3a5a8a}
-.status-missing{background:#fff3d4;color:#8a6000}
-.status-dead{background:#e8e8e8;color:#555}
-.status-insane{background:#f0e4ff;color:#6a1a9a}
-.card-footer{padding:6px 12px;border-top:1px solid #f0f0f0;display:flex;gap:6px;justify-content:flex-end;background:#fafafa}
-.card-btn{padding:2px 10px;font-size:11px;cursor:pointer;border:none;border-radius:2px;font-family:inherit}
-.card-date{font-size:10px;color:#aaa;margin-right:auto;align-self:center}
+/* ツールバー */
+#toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+#new_btn{display:flex;align-items:center;gap:5px;padding:6px 16px;font-size:12px;cursor:pointer;background:#5a3a8a;color:#fff;border:none;border-radius:3px;font-family:inherit;font-weight:bold;white-space:nowrap}
+#new_btn:hover{background:#4a2a7a}
+#search_box{flex:1;min-width:180px;max-width:340px;border:1px solid #bbb;border-radius:3px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;background:#fff}
+#search_box:focus{border-color:#5588cc}
+#search_hint{font-size:10px;color:#aaa}
 
-/* 新規作成ボタン */
-#new_btn{display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;border:2px dashed #aaa;border-radius:6px;padding:20px;cursor:pointer;color:#888;font-size:13px;transition:border-color .2s,color .2s}
-#new_btn:hover{border-color:#5588cc;color:#5588cc}
+/* グリッド2列 */
+#grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:600px){#grid{grid-template-columns:1fr}}
 
-/* ローディング・空状態 */
-#loading{text-align:center;padding:40px;color:#888;font-size:13px}
-#empty{text-align:center;padding:40px;color:#aaa;font-size:13px;display:none}
+/* カード */
+.card{background:#fff;border-radius:5px;border:1px solid #ccc;overflow:hidden;transition:box-shadow .15s}
+.card:hover{box-shadow:0 3px 10px rgba(0,0,0,.15)}
+.card-top{display:flex;align-items:stretch;gap:0}
+.card-bar{width:5px;flex-shrink:0}
+.card-info{flex:1;padding:8px 10px;min-width:0}
+.card-tag-row{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.card-furigana{font-size:10px;color:#888;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-pcname{font-size:15px;font-weight:bold;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
+.card-job{font-size:11px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
+.card-meta{display:flex;gap:12px;font-size:11px;color:#666}
+.card-meta span{white-space:nowrap}
+/* ステータスバッジ */
+.badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:bold;white-space:nowrap}
+.s-alive{background:#d4f5e4;color:#1a7a45}
+.s-lost{background:#fde8e8;color:#b03030}
+.s-retired{background:#e8eef5;color:#3a5a8a}
+.s-missing{background:#fff3d4;color:#8a6000}
+.s-dead{background:#e8e8e8;color:#555}
+.s-insane{background:#f0e4ff;color:#6a1a9a}
+/* フッター */
+.card-foot{display:flex;align-items:center;padding:5px 10px;border-top:1px solid #f0f0f0;background:#fafafa;gap:6px}
+.card-date{font-size:10px;color:#bbb;flex:1}
+.cbtn{padding:2px 9px;font-size:11px;cursor:pointer;border:none;border-radius:2px;font-family:inherit}
 
-/* ステータスラベルマップ */
+/* ローディング・空 */
+#loading{text-align:center;padding:50px;color:#aaa;font-size:13px;grid-column:1/-1}
+#empty{text-align:center;padding:40px;color:#bbb;font-size:13px;grid-column:1/-1;display:none}
+#no_result{text-align:center;padding:20px;color:#bbb;font-size:12px;grid-column:1/-1;display:none}
 </style>
 </head>
 <body>
 
-<div id="header">
-  <h1>📋 キャラクター一覧</h1>
-  <button class="header-btn" style="background:#5a3a8a" onclick="location.href='index.html'">＋ 新規作成</button>
-  <button id="logout_btn" class="header-btn" style="background:#888;display:none" onclick="doLogout()">ログアウト</button>
+<!-- ヘッダー -->
+<div id="hdr">
+  <div id="hdr-title">📋 キャラクター一覧</div>
+  <div id="hdr-right">
+    <span id="hdr-user"></span>
+    <button id="logout_btn" class="hbtn" style="background:#666;display:none" onclick="doLogout()">ログアウト</button>
+  </div>
 </div>
 
 <div class="container">
 
-  <!-- 認証エリア -->
-  <div id="auth_area">
+  <!-- 認証 -->
+  <div id="auth_box">
     <h2>🔑 ログイン / アカウント登録</h2>
     <div class="auth-row">
-      <input class="auth-inp" type="email" id="auth_email" placeholder="メールアドレス">
-      <input class="auth-inp" type="password" id="auth_pass" placeholder="パスワード">
-      <button class="auth-btn" style="background:#2a7" onclick="doLogin()">ログイン</button>
-      <button class="auth-btn" style="background:#558" onclick="doSignup()">新規登録</button>
+      <input class="a-inp" type="email" id="auth_email" placeholder="メールアドレス">
+      <input class="a-inp" type="password" id="auth_pass" placeholder="パスワード" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="a-btn" style="background:#2a7" onclick="doLogin()">ログイン</button>
+      <button class="a-btn" style="background:#558" onclick="doSignup()">新規登録</button>
     </div>
-    <div id="auth_msg" style="color:#c00"></div>
+    <div id="auth_msg"></div>
   </div>
 
-  <!-- ログイン済みバー -->
-  <div id="logged_in_bar">
-    <span>✅ ログイン中: <span id="logged_email"></span></span>
-    <span style="font-size:10px;color:#cfc">データはクラウドに自動保存されます</span>
+  <!-- ツールバー -->
+  <div id="toolbar" style="display:none">
+    <button id="new_btn" onclick="goNew()">＋ 新規作成</button>
+    <input id="search_box" type="text" placeholder="PC名・職業で検索..." oninput="filterCards()">
+    <span id="search_hint"></span>
   </div>
 
-  <!-- ローディング -->
-  <div id="loading">読込中...</div>
-
-  <!-- キャラ一覧グリッド -->
-  <div id="char_grid" style="display:none"></div>
-  <div id="empty">保存されたキャラクターはありません。<br>「新規作成」から作ってみましょう！</div>
+  <!-- カードグリッド -->
+  <div id="grid">
+    <div id="loading">読込中...</div>
+    <div id="empty">保存されたキャラクターはまだありません。<br>「新規作成」から作ってみましょう！</div>
+    <div id="no_result">検索結果がありません</div>
+  </div>
 
 </div>
 
 <script>
-const SUPABASE_URL = 'https://cicodhxebyqewfnngfwt.supabase.co/';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpY29kaHhlYnlxZXdmbm5nZnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzM4NDYsImV4cCI6MjA5NTY0OTg0Nn0.huLOglTPbW1CcGDbDB_yf5ftqEkqmtJ1HBY9WTx9J8E';
-const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://cicodhxebyqewfnngfwt.supabase.co/';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpY29kaHhlYnlxZXdmbm5nZnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzM4NDYsImV4cCI6MjA5NTY0OTg0Nn0.huLOglTPbW1CcGDbDB_yf5ftqEkqmtJ1HBY9WTx9J8E';
+const {createClient}=supabase;
+const db=createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const STATUS_LABEL = {
-  alive:'生存', lost:'ロスト', retired:'引退',
-  missing:'行方不明', dead:'死亡', insane:'永久狂気'
-};
-const STATUS_CLASS = {
-  alive:'status-alive', lost:'status-lost', retired:'status-retired',
-  missing:'status-missing', dead:'status-dead', insane:'status-insane'
-};
+const S_LABEL={alive:'生存',lost:'ロスト',retired:'引退',missing:'行方不明',dead:'死亡',insane:'永久狂気'};
+const S_CLS  ={alive:'s-alive',lost:'s-lost',retired:'s-retired',missing:'s-missing',dead:'s-dead',insane:'s-insane'};
 
-// ログイン状態確認
-db.auth.getSession().then(({ data: { session } }) => {
-  if (session) {
-    onLoggedIn(session.user);
-    loadList();
-  } else {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('char_grid').style.display = 'none';
-  }
+let allChars=[];
+
+// 起動時ログイン確認
+db.auth.getSession().then(({data:{session}})=>{
+  if(session){onLoggedIn(session.user);loadList();}
+  else{document.getElementById('loading').style.display='none';}
 });
 
-function onLoggedIn(user) {
-  document.getElementById('auth_area').style.display = 'none';
-  const bar = document.getElementById('logged_in_bar');
-  bar.style.display = 'flex';
-  document.getElementById('logged_email').textContent = user.email;
-  document.getElementById('logout_btn').style.display = 'inline-block';
+function onLoggedIn(user){
+  document.getElementById('auth_box').style.display='none';
+  document.getElementById('toolbar').style.display='flex';
+  document.getElementById('hdr-user').textContent='ログイン中: '+user.email;
+  document.getElementById('logout_btn').style.display='inline-block';
 }
 
-async function doLogin() {
-  const email = document.getElementById('auth_email').value.trim();
-  const pass  = document.getElementById('auth_pass').value;
-  const msg   = document.getElementById('auth_msg');
-  msg.textContent = '';
-  const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
-  if (error) { msg.textContent = 'エラー: ' + error.message; return; }
-  onLoggedIn(data.user);
-  loadList();
+async function doLogin(){
+  const email=document.getElementById('auth_email').value.trim();
+  const pass =document.getElementById('auth_pass').value;
+  const msg  =document.getElementById('auth_msg');
+  msg.style.color='#c00';msg.textContent='';
+  const {data,error}=await db.auth.signInWithPassword({email,password:pass});
+  if(error){msg.textContent='エラー: '+error.message;return;}
+  onLoggedIn(data.user);loadList();
 }
 
-async function doSignup() {
-  const email = document.getElementById('auth_email').value.trim();
-  const pass  = document.getElementById('auth_pass').value;
-  const msg   = document.getElementById('auth_msg');
-  msg.textContent = '';
-  const { error } = await db.auth.signUp({ email, password: pass });
-  if (error) { msg.textContent = 'エラー: ' + error.message; return; }
-  msg.style.color = '#2a7';
-  msg.textContent = '確認メールを送信しました。メールをご確認ください。';
+async function doSignup(){
+  const email=document.getElementById('auth_email').value.trim();
+  const pass =document.getElementById('auth_pass').value;
+  const msg  =document.getElementById('auth_msg');
+  msg.style.color='#c00';msg.textContent='';
+  const {error}=await db.auth.signUp({email,password:pass});
+  if(error){msg.textContent='エラー: '+error.message;return;}
+  msg.style.color='#2a7';msg.textContent='確認メールを送信しました。メールをご確認ください。';
 }
 
-async function doLogout() {
-  await db.auth.signOut();
-  location.reload();
+async function doLogout(){
+  await db.auth.signOut();location.reload();
 }
 
-// キャラ一覧を読み込む
-async function loadList() {
-  const loadEl = document.getElementById('loading');
-  const gridEl = document.getElementById('char_grid');
-  const emptyEl = document.getElementById('empty');
-  loadEl.style.display = 'block';
-  gridEl.style.display = 'none';
-  emptyEl.style.display = 'none';
+function goNew(){
+  sessionStorage.setItem('coc_new_char','1');
+  location.href='index.html';
+}
 
-  try {
-    const { data: { user } } = await db.auth.getUser();
-    if (!user) return;
+// 一覧読み込み
+async function loadList(){
+  const grid=document.getElementById('grid');
+  const loadEl=document.getElementById('loading');
+  loadEl.style.display='block';
+  document.getElementById('empty').style.display='none';
 
-    const { data: list, error } = await db
+  try{
+    const {data:{user}}=await db.auth.getUser();
+    if(!user)return;
+    const {data:list,error}=await db
       .from('character_sheets')
-      .select('id, char_name, data, updated_at')
-      .eq('user_id', user.id)
-      .order('updated_at', { ascending: false });
+      .select('id,char_name,data,updated_at')
+      .eq('user_id',user.id)
+      .order('updated_at',{ascending:false});
+    if(error)throw error;
 
-    if (error) throw error;
-
-    loadEl.style.display = 'none';
-
-    if (!list || list.length === 0) {
-      emptyEl.style.display = 'block';
-      // 新規作成カードだけ表示
-      gridEl.innerHTML = '';
-      gridEl.appendChild(makeNewCard());
-      gridEl.style.display = 'grid';
-      return;
-    }
-
-    gridEl.innerHTML = '';
-    gridEl.appendChild(makeNewCard());
-    list.forEach(char => gridEl.appendChild(makeCharCard(char)));
-    gridEl.style.display = 'grid';
-
-  } catch(e) {
-    loadEl.textContent = '読込エラー: ' + e.message;
+    loadEl.style.display='none';
+    allChars=list||[];
+    renderCards(allChars);
+  }catch(e){
+    loadEl.textContent='読込エラー: '+e.message;
   }
 }
 
-// 新規作成カード
-function makeNewCard() {
-  const div = document.createElement('div');
-  div.id = 'new_btn';
-  div.innerHTML = '<span style="font-size:20px">＋</span><span>新規キャラクター作成</span>';
-  div.onclick = () => {
-    // 新規用: localStorageに「新規」フラグを立ててindex.htmlへ
-    sessionStorage.setItem('coc_new_char', '1');
-    location.href = 'index.html';
-  };
-  return div;
+function renderCards(chars){
+  const grid=document.getElementById('grid');
+  // 既存カードを削除（loading/empty/no_result以外）
+  [...grid.querySelectorAll('.card')].forEach(el=>el.remove());
+
+  document.getElementById('empty').style.display='none';
+  document.getElementById('no_result').style.display='none';
+  document.getElementById('loading').style.display='none';
+
+  if(chars.length===0){
+    document.getElementById(allChars.length===0?'empty':'no_result').style.display='block';
+    return;
+  }
+  chars.forEach(char=>grid.appendChild(makeCard(char)));
+
+  // 件数表示
+  const hint=document.getElementById('search_hint');
+  const q=document.getElementById('search_box').value.trim();
+  hint.textContent=q?`${chars.length}件 / ${allChars.length}件`:`${allChars.length}件`;
 }
 
-// キャラカード生成
-function makeCharCard(char) {
-  let sheet = {};
-  try { sheet = JSON.parse(char.data); } catch(e) {}
-  const inputs = sheet.inputs || {};
+// 検索フィルター
+function filterCards(){
+  const q=document.getElementById('search_box').value.trim().toLowerCase();
+  if(!q){renderCards(allChars);return;}
+  const filtered=allChars.filter(char=>{
+    let sheet={};try{sheet=JSON.parse(char.data);}catch(e){}
+    const inputs=sheet.inputs||{};
+    const pcname=(inputs.pcname||char.char_name||'').toLowerCase();
+    const job=(inputs.job||'').toLowerCase();
+    return pcname.includes(q)||job.includes(q);
+  });
+  renderCards(filtered);
+}
 
-  const pcname   = inputs.pcname   || char.char_name || '名無し';
-  const furigana = inputs.furigana || '';
-  const job      = inputs.job      || '';
-  const age      = inputs.age      || '';
-  const gender   = inputs.gender   || '';
-  const era      = inputs.era      || '';
-  const status   = inputs.pc_status || 'alive';
-  const color    = inputs.txtcolor  || '#555555';
-  const jobRef   = inputs.job_ref_sel || '';
-  const t1       = inputs.t1_sel !== undefined && inputs.t1_sel !== '' ? '①あり' : '';
-  const t2       = inputs.t2_sel !== undefined && inputs.t2_sel !== '' ? '②あり' : '';
+function makeCard(char){
+  let sheet={};try{sheet=JSON.parse(char.data);}catch(e){}
+  const inp=sheet.inputs||{};
 
-  // ステータス数値
-  const hp = (() => {
-    const el = sheet.inputs;
-    if (!el) return '?';
-    const con = parseInt(el.con||0), siz = parseInt(el.siz||0);
-    return Math.floor((con+siz)/2)||'?';
-  })();
-  const san = inputs.san_now || (parseInt(inputs.pow||0)*5) || '?';
+  const pcname  =inp.pcname   ||char.char_name||'名無し';
+  const furigana=inp.furigana ||'';
+  const job     =inp.job      ||'';
+  const age     =inp.age      ||'';
+  const gender  =inp.gender   ||'';
+  const status  =inp.pc_status||'alive';
+  const color   =inp.txtcolor ||'#888888';
 
-  const updDate = new Date(char.updated_at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  // 現在SAN
+  const sanNow=inp.san_now||(parseInt(inp.pow||0)*5)||'?';
 
-  const card = document.createElement('div');
-  card.className = 'char-card';
-  card.innerHTML = `
-    <div class="card-header">
-      <div class="card-color-bar" style="background:${color}"></div>
-      <div class="card-names">
+  // 更新日 YY/MM/DD
+  const d=new Date(char.updated_at);
+  const updDate=`${String(d.getFullYear()).slice(2)}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+
+  // メタ行
+  const metaParts=[];
+  if(age)metaParts.push(age+'歳');
+  if(gender)metaParts.push(gender);
+  if(sanNow!==undefined)metaParts.push('SAN '+sanNow);
+
+  const card=document.createElement('div');
+  card.className='card';
+  card.dataset.id=char.id;
+  card.innerHTML=`
+    <div class="card-top">
+      <div class="card-bar" style="background:${esc(color)}"></div>
+      <div class="card-info">
+        <div class="card-tag-row">
+          <span class="card-furigana">${esc(furigana)}</span>
+          <span class="badge ${S_CLS[status]||'s-alive'}">${S_LABEL[status]||status}</span>
+        </div>
         <div class="card-pcname">${esc(pcname)}</div>
-        ${furigana ? `<div class="card-furigana">${esc(furigana)}</div>` : ''}
+        ${job?`<div class="card-job">${esc(job)}</div>`:'<div class="card-job" style="color:#ccc">（職業未設定）</div>'}
+        <div class="card-meta">${metaParts.map(p=>`<span>${esc(p)}</span>`).join('')}</div>
       </div>
-      <span class="card-status ${STATUS_CLASS[status]||'status-alive'}">${STATUS_LABEL[status]||status}</span>
     </div>
-    <div class="card-body">
-      ${job ? `<div class="row"><span class="lbl">職業</span><span class="val">${esc(job)}</span></div>` : ''}
-      ${jobRef ? `<div class="row"><span class="lbl">参照</span><span class="val">${esc(jobRef)}</span></div>` : ''}
-      <div class="row">
-        ${age ? `<span class="lbl">年齢</span><span class="val">${esc(age)}歳</span>&nbsp;&nbsp;` : ''}
-        ${gender ? `<span class="lbl">性別</span><span class="val">${esc(gender)}</span>` : ''}
-      </div>
-      ${era ? `<div class="row"><span class="lbl">時代</span><span class="val">${esc(era)}</span></div>` : ''}
-      <div class="row"><span class="lbl">HP/SAN</span><span class="val">${hp} / ${san}</span></div>
-      ${(t1||t2) ? `<div class="row"><span class="lbl">特徴</span><span class="val">${[t1,t2].filter(Boolean).join('　')}</span></div>` : ''}
-    </div>
-    <div class="card-footer">
-      <span class="card-date">更新: ${updDate}</span>
-      <button class="card-btn" style="background:#558;color:#fff" onclick="openChar('${char.id}')">✏️ 編集</button>
-      <button class="card-btn" style="background:#7755aa;color:#fff" onclick="viewChar('${char.id}')">👁 閲覧</button>
-      <button class="card-btn" style="background:#fee;color:#933;border:1px solid #e99" onclick="deleteChar('${char.id}',this)">🗑</button>
+    <div class="card-foot">
+      <span class="card-date">更新 ${updDate}</span>
+      <button class="cbtn" style="background:#558;color:#fff" onclick="openEdit('${char.id}')">✏️ 編集</button>
+      <button class="cbtn" style="background:#7755aa;color:#fff" onclick="openView('${char.id}')">👁 閲覧</button>
+      <button class="cbtn" style="background:#fee;color:#933;border:1px solid #e99" onclick="deleteChar('${char.id}',this)">🗑</button>
     </div>`;
   return card;
 }
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function openChar(id) {
-  sessionStorage.setItem('coc_load_id', id);
-  location.href = 'index.html';
+function openEdit(id){
+  sessionStorage.setItem('coc_load_id',id);
+  location.href='index.html';
+}
+function openView(id){
+  location.href='view.html?id='+id;
 }
 
-function viewChar(id) {
-  location.href = 'view.html?id=' + id;
-}
-
-async function deleteChar(id, btn) {
-  if (!confirm('このキャラクターを削除しますか？\n（この操作は元に戻せません）')) return;
-  try {
-    await db.from('character_sheets').delete().eq('id', id);
-    btn.closest('.char-card').remove();
-    // 残りが新規ボタンだけなら空状態表示
-    const cards = document.querySelectorAll('#char_grid .char-card');
-    if (cards.length === 0) document.getElementById('empty').style.display = 'block';
-  } catch(e) {
-    alert('削除エラー: ' + e.message);
-  }
+async function deleteChar(id,btn){
+  if(!confirm('このキャラクターを削除しますか？\n（この操作は元に戻せません）'))return;
+  try{
+    await db.from('character_sheets').delete().eq('id',id);
+    btn.closest('.card').remove();
+    allChars=allChars.filter(c=>c.id!==id);
+    if(document.querySelectorAll('#grid .card').length===0)
+      document.getElementById(allChars.length===0?'empty':'no_result').style.display='block';
+    const hint=document.getElementById('search_hint');
+    hint.textContent=allChars.length+'件';
+  }catch(e){alert('削除エラー: '+e.message);}
 }
 </script>
 </body>
