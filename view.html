@@ -1140,9 +1140,11 @@ async function initViewMode() {
 
   const sheet = JSON.parse(data.data);
 
-  // 入力値を流し込む
+  // アコーディオン状態キーは除外して入力値を流し込む
+  const ACC_SKIP = new Set(['combat_acc','items_acc','memo_acc','scenario_outer','rel_acc','secret_outer','aftereffect_outer']);
   if (sheet.inputs) {
     Object.entries(sheet.inputs).forEach(([key, val]) => {
+      if (ACC_SKIP.has(key)) return;
       const el = document.getElementById(key);
       if (!el) return;
       if (el.type === 'checkbox') el.checked = val;
@@ -1160,8 +1162,68 @@ async function initViewMode() {
       const ii = tr.querySelector('.int-inp'); if (ii) ii.value = s.int;
       const gi = tr.querySelector('.grw-inp'); if (gi) gi.value = s.grw;
       const oi = tr.querySelector('.oth-inp'); if (oi) oi.value = s.oth;
+      if(s.freeVal){const fi=tr.querySelector('.sk-name .free-inp-auto')||tr.querySelector('.sk-name input[type=text]');if(fi)fi.value=s.freeVal;}
     });
   }
+
+  // 武器（アコーディオンは開かない）
+  if (sheet.weapons && sheet.weapons.length) {
+    const tbody = document.getElementById('weapon_rows');
+    tbody.innerHTML = '';
+    sheet.weapons.forEach(vals => {
+      const tr = makeWeaponTr(); tbody.appendChild(tr);
+      [...tr.querySelectorAll('input')].forEach((inp,j)=>{ if(j<vals.length)inp.value=vals[j]; });
+    });
+  }
+
+  // 所持品（アコーディオンは開かない）
+  if (sheet.items && sheet.items.length) {
+    const tbody = document.getElementById('item_rows');
+    tbody.innerHTML = '';
+    sheet.items.forEach(vals => {
+      const tr = makeItemTr(); tbody.appendChild(tr);
+      [...tr.querySelectorAll('input')].forEach((inp,j)=>{ if(j<vals.length)inp.value=vals[j]; });
+    });
+  }
+
+  // メモ（アコーディオンは開かない）
+  if (sheet.memos && sheet.memos.length) {
+    const div = document.getElementById('memo_rows');
+    const tas = [...div.querySelectorAll('textarea')];
+    sheet.memos.forEach((v,i)=>{
+      if(i<tas.length){tas[i].value=v;}
+      else{addMemoRow();[...div.querySelectorAll('textarea')].pop().value=v;}
+    });
+  }
+
+  // 通過シナリオ（アコーディオンは開かない）
+  if (sheet.scenarios && sheet.scenarios.length) {
+    const div = document.getElementById('scenario_rows');
+    const tas = [...div.querySelectorAll('textarea')];
+    sheet.scenarios.forEach((v,i)=>{
+      if(i<tas.length){tas[i].value=v;}
+      else{addScenarioRow();[...div.querySelectorAll('textarea')].pop().value=v;}
+    });
+  }
+
+  // 後遺症・AF・呪文
+  if (sheet.ae) {
+    [['kouisho','tbody_kouisho'],['af','tbody_af'],['spell','tbody_spell']].forEach(([key,tbodyId])=>{
+      const tbody=document.getElementById(tbodyId); if(!tbody||!sheet.ae[key])return;
+      sheet.ae[key].forEach((vals,i)=>{
+        const rows=[...tbody.querySelectorAll('tr')];
+        let tr=rows[i];
+        if(!tr){addAERow(tbodyId);tr=[...tbody.querySelectorAll('tr')].pop();}
+        if(!tr)return;
+        [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
+      });
+    });
+  }
+
+  // 特徴表・職業特記の表示
+  [1,2].forEach(n=>showTokucho(n));
+  const _jsel=document.getElementById('job_ref_sel');
+  if(_jsel&&_jsel.value)onJobRefChange();
 
   calc();
 

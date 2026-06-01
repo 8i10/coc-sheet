@@ -107,12 +107,18 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
   <div id="sticky-actions">
     <div id="save_msg" style="font-size:11px;color:#FFF;display:none">✓ 保存しました</div>
     <button onclick="saveToStorage()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#2a7;color:#fff;border:none;border-radius:2px">💾保存</button>
-    <button onclick="loadFromStorage()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#558;color:#fff;border:none;border-radius:2px">📂読込</button>
     <button onclick="copyViewURL()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#a72;color:#fff;border:none;border-radius:2px">🔗閲覧URL</button>
     <button onclick="openCocofoliaCopyDialog()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px">🐔駒出力</button>
-    <button onclick="exportJSON()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">⬇ JSON</button>
-    <button onclick="importJSON()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px">⬆ JSON</button>
-    <button onclick="importSpreadsheetHTML()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#5a3a8a;color:#fff;border:none;border-radius:2px">📥スプシ取込</button>
+    <!-- ≡ メニューボタン -->
+    <div style="position:relative;display:inline-block">
+      <button id="menu_btn" onclick="toggleMenu()" style="padding:2px 10px;font-size:14px;cursor:pointer;background:#555;color:#fff;border:none;border-radius:2px;line-height:1">≡</button>
+      <div id="sheet_menu" style="display:none;position:absolute;right:0;top:100%;margin-top:2px;background:#fff;border:1px solid #aaa;border-radius:3px;box-shadow:0 4px 12px rgba(0,0,0,.2);min-width:150px;z-index:9999">
+        <div onclick="location.href='index.html'" style="padding:8px 14px;cursor:pointer;font-size:11px;border-bottom:1px solid #eee;color:#333" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background=''">← 一覧に戻る</div>
+        <div onclick="exportJSON()" style="padding:8px 14px;cursor:pointer;font-size:11px;border-bottom:1px solid #eee;color:#333" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background=''">⬇ JSON出力</div>
+        <div onclick="importJSON()" style="padding:8px 14px;cursor:pointer;font-size:11px;border-bottom:1px solid #eee;color:#333" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background=''">⬆ JSON読込</div>
+        <div onclick="importSpreadsheetHTML()" style="padding:8px 14px;cursor:pointer;font-size:11px;color:#333" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background=''">📥スプシ取込</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -128,7 +134,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
     <div class="hdr">パーソナルデータ</div>
     <table>
       <colgroup><col style="width:52px"><col style="width:140px"><col style="width:52px"><col style="width:140px"></colgroup>
-      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana"></td></tr>
+      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana" style="text-align:center"></td></tr>
       <tr>
         <td class="hdr" style="vertical-align:middle">PC名</td>
         <td colspan="3"><input type="text" id="pcname" oninput="updateStickyHeader()" style="font-size:15px;font-weight:bold;height:52px;text-align:center;padding:2px 4px;display:block;width:100%"></td>
@@ -284,7 +290,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
     </div>
     <div style="font-size:11px;color:#555;margin-bottom:1px;margin-top:4px">その他特記</div>
-    <textarea id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;height:44px;font-size:11px;border:1px solid #aaa;resize:vertical;padding:2px;background:#fff"></textarea>
+    <textarea class="auto-h" id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;font-size:11px;border:1px solid #aaa;resize:vertical;padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
 
   </div>
   <!-- 特徴表①② -->
@@ -372,7 +378,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <div class="acc-body" id="combat_acc">
         <div style="padding:4px;overflow-x:auto">
           <table>
-            <thead><tr><th style="min-width:80px">武器名</th><th style="min-width:40px">技能(%)</th><th>ダメージ</th><th>射程</th><th>攻撃回数</th><th>装弾数</th><th>耐久</th><th>故障No.</th><th style="min-width:80px">備考</th><th style="width:18px"></th></tr></thead>
+            <thead><tr><th style="min-width:80px">武器名</th><th style="min-width:28px;width:32px">技能(%)</th><th>ダメージ</th><th>射程</th><th>攻撃回数</th><th>装弾数</th><th>耐久</th><th>故障No.</th><th style="min-width:80px">備考</th><th style="width:18px"></th></tr></thead>
             <tbody id="weapon_rows"></tbody>
           </table>
           <button class="add-row-btn" onclick="addWeaponRow()">＋追加</button>
@@ -399,7 +405,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
         <div style="padding:4px">
           <div id="memo_rows">
             <div style="position:relative;margin-bottom:4px">
-              <textarea style="width:100%;height:80px" placeholder="メモを入力..."></textarea>
+              <textarea class="auto-h" style="width:100%" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea>
             </div>
           </div>
           <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
@@ -463,7 +469,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <div class="acc-header" onclick="toggleAcc('scenario_outer')"><span>▮ 通過シナリオ</span><span id="arr_scenario_outer">▶</span></div>
       <div class="acc-body" id="scenario_outer">
         <div style="padding:4px">
-          <div id="scenario_rows"><div style="position:relative;margin-bottom:4px"><textarea style="width:100%;height:80px" placeholder="通過シナリオを入力..."></textarea></div></div>
+          <div id="scenario_rows"><div style="position:relative;margin-bottom:4px"><textarea class="auto-h" style="width:100%" placeholder="通過シナリオを入力..." oninput="autoResizeTA(this)"></textarea></div></div>
           <button class="add-row-btn" onclick="addScenarioRow()">＋追加</button>
         </div>
       </div>
@@ -572,8 +578,13 @@ function autoResize(inp){
   for(const ch of val){w+=(ch.charCodeAt(0)>0x7f)?13:7;}
   inp.style.width=Math.max(44,w+8)+'px';
 }
+function autoResizeTA(ta){
+  ta.style.height='auto';
+  ta.style.height=Math.max(36,ta.scrollHeight+2)+'px';
+}
 function autoResizeAll(){
   document.querySelectorAll('.free-inp-auto').forEach(autoResize);
+  document.querySelectorAll('textarea.auto-h').forEach(autoResizeTA);
 }
 function skillChanged(inp){
   inp.dataset.manual='1';
@@ -962,7 +973,7 @@ function addItemRow(){document.getElementById('item_rows').appendChild(makeItemT
 function addMemoRow(){
   const div=document.getElementById('memo_rows');
   const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:4px';
-  w.innerHTML='<textarea style="width:100%;height:60px" placeholder="メモを入力..."></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.appendChild(w);
 }
 
@@ -984,7 +995,7 @@ function addRelGroup(){
     </div>
     <div class="secret-item-body" id="${id}">
       <div style="position:relative;margin:4px">
-        <textarea style="width:100%;height:60px"></textarea>
+        <textarea class="auto-h" style="width:100%" oninput="autoResizeTA(this)"></textarea>
         <button class="del-btn" onclick="delRow(this)"
           style="position:absolute;top:2px;right:2px">✕</button>
       </div>
@@ -1004,7 +1015,7 @@ function toggleRelGroup(id) {
 function addRelSubRow(bodyId){
   const body=document.getElementById(bodyId);const addBtn=body.querySelector('.add-row-btn');
   const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:3px';
-  w.innerHTML='<textarea style="width:100%;height:50px" placeholder="関係・経緯など"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="関係・経緯など" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   body.insertBefore(w,addBtn);
 }
 
@@ -1017,7 +1028,7 @@ function addAERow(tbodyId){
 function addScenarioRow(){
   const div=document.getElementById('scenario_rows');const w=document.createElement('div');
   w.style.cssText='position:relative;margin-bottom:4px';
-  w.innerHTML='<textarea style="width:100%;height:60px" placeholder="通過シナリオを入力..."></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="通過シナリオを入力..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.appendChild(w);
 }
 
@@ -1051,7 +1062,7 @@ function addSecretItem(title,pass){
       </div>
       <div id="content_${id}" style="display:none;padding:4px">
         <select style="width:120px;margin-bottom:4px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select>
-        <textarea style="width:100%;height:70px" placeholder="KP秘匿情報・後遺症など"></textarea>
+        <textarea class="auto-h" style="width:100%" placeholder="KP秘匿情報・後遺症など" oninput="autoResizeTA(this)"></textarea>
         <button class="add-row-btn" onclick="addSecretContentRow('content_${id}')">＋欄追加</button>
       </div>
     </div>`;
@@ -1077,7 +1088,7 @@ function changeSecretPass(id){
 }
 function addSecretContentRow(contentId){
   const div=document.getElementById(contentId);const w=document.createElement('div');w.style.marginTop='4px';
-  w.innerHTML='<select style="width:120px;margin-bottom:2px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select><div style="display:flex;gap:4px"><textarea style="flex:1;height:50px" placeholder="追加情報..."></textarea><button class="del-btn" onclick="this.closest(\'div[style]\').remove()">✕</button></div>';
+  w.innerHTML='<select style="width:120px;margin-bottom:2px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select><div style="display:flex;gap:4px"><textarea class="auto-h" style="flex:1" placeholder="追加情報..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="this.closest(\'div[style]\').remove()">✕</button></div>';
   div.insertBefore(w,div.querySelector('.add-row-btn'));
 }
 
@@ -1242,6 +1253,10 @@ function applyData(json){
   }
 
   calc();
+  // 職業特記・特徴表の表示を再描画
+  const _jSel=document.getElementById('job_ref_sel');
+  if(_jSel&&_jSel.value)onJobRefChange();
+  [1,2].forEach(n=>showTokucho(n));
   setTimeout(autoResizeAll,100);
 }
 // 保存ボタン
@@ -2286,7 +2301,7 @@ function parseSpreadsheetHTML(html){
         // 欄がなければ追加
         const w=document.createElement('div');
         w.style.cssText='position:relative;margin-bottom:4px';
-        w.innerHTML='<textarea style="width:100%;height:80px" placeholder="メモを入力..."></textarea>';
+        w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea>';
         memoDiv.appendChild(w);
         ta=memoDiv.querySelector('textarea');
       }
@@ -2428,6 +2443,78 @@ function parseSpreadsheetHTML(html){
 populateJobs();populateTokucho();buildSkillTables();initWeaponRows();initItemRows();
   setTimeout(autoResizeAll,200);
 addSecretItem('','1234');addRelGroup();addAERow('tbody_kouisho');addAERow('tbody_af');addAERow('tbody_spell');
+
+// ページリロード時・一覧からの遷移時にデータを保持
+const SHEET_KEY = 'coc_sheet_draft';
+(async () => {
+  // 1) 一覧からの「編集」遷移 → Supabaseから読込
+  const loadId = sessionStorage.getItem('coc_load_id');
+  if (loadId) {
+    sessionStorage.removeItem('coc_load_id');
+    sessionStorage.removeItem('coc_new_char');
+    try {
+      const { data: { user } } = await db.auth.getUser();
+      if (user) {
+        const { data, error } = await db.from('character_sheets').select('data').eq('id', loadId).single();
+        if (!error && data) {
+          applyData(data.data);
+          currentCharId = loadId;
+          sessionStorage.setItem(SHEET_KEY, data.data); // ドラフトにも保存
+          return;
+        }
+      }
+    } catch(e) { console.warn('load error', e); }
+  }
+
+  // 2) 新規作成フラグがある場合は白紙のまま
+  const isNew = sessionStorage.getItem('coc_new_char');
+  if (isNew) {
+    sessionStorage.removeItem('coc_new_char');
+    sessionStorage.removeItem(SHEET_KEY);
+    return;
+  }
+
+  // 3) リロードや通常アクセス → ドラフト（sessionStorage）から復元
+  const draft = sessionStorage.getItem(SHEET_KEY);
+  if (draft) {
+    try {
+      applyData(draft);
+      // currentCharIdも復元
+      const draftObj = JSON.parse(draft);
+      if (draftObj._charId) currentCharId = draftObj._charId;
+    } catch(e) { console.warn('draft restore error', e); }
+  }
+})();
+
+// 保存時にドラフトにも書く
+const _origSave = saveToStorage;
+saveToStorage = async function() {
+  await _origSave();
+  // 保存後にドラフトを更新
+  try {
+    const d = collectData();
+    // currentCharIdを埋め込む
+    const obj = JSON.parse(d);
+    if (currentCharId) obj._charId = currentCharId;
+    sessionStorage.setItem(SHEET_KEY, JSON.stringify(obj));
+  } catch(e) {}
+};
+
+// 入力変更時にドラフトを随時更新（1秒デバウンス）
+let _draftTimer = null;
+function saveDraft() {
+  clearTimeout(_draftTimer);
+  _draftTimer = setTimeout(() => {
+    try {
+      const d = collectData();
+      const obj = JSON.parse(d);
+      if (currentCharId) obj._charId = currentCharId;
+      sessionStorage.setItem(SHEET_KEY, JSON.stringify(obj));
+    } catch(e) {}
+  }, 1000);
+}
+document.addEventListener('input', saveDraft);
+document.addEventListener('change', saveDraft);
 </script>
 </body>
 </html>
