@@ -123,7 +123,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
     <div class="hdr">パーソナルデータ</div>
     <table>
       <colgroup><col style="width:52px"><col style="width:140px"><col style="width:52px"><col style="width:140px"></colgroup>
-      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana"></td></tr>
+      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana" style="text-align:center"></td></tr>
       <tr>
         <td class="hdr" style="vertical-align:middle">PC名</td>
         <td colspan="3"><input type="text" id="pcname" oninput="updateStickyHeader()" style="font-size:15px;font-weight:bold;height:52px;text-align:center;padding:2px 4px;display:block;width:100%"></td>
@@ -584,6 +584,15 @@ function skillChanged(inp){
   const t=tr?.querySelector('.sk-total');if(t)t.textContent=base+j+i+g+o;
   if(key==='mythos')tx('max_san',99-(base+j+i+g+o));
   updatePointBar();
+}
+
+// 自由入力欄の自動幅伸縮
+function autoResize(inp){
+  inp.style.width='0';
+  inp.style.width=Math.max(44,inp.scrollWidth+4)+'px';
+}
+function autoResizeAll(){
+  document.querySelectorAll('.free-inp-auto').forEach(autoResize);
 }
 
 // FIX1: makeSkillRow — isDefault=true のみ skill-default-row を付与
@@ -1503,31 +1512,30 @@ function buildChatPalette(c) {
       if (secId === 'tbody_combat' && isMelee && total > base) {
         const dmg = MELEE_DAMAGE[key];
         if (dmg && dmg !== '特殊') {
-          // DBを{DB}で埋め込み
           lines.push(`${dmg} 【${label}】ダメージ`);
+        }
+        // こぶし：武道MAが育っていればCBRBも追加
+        if (key === 'punch' && maTotal > getSkillBase(maTr,'ma')) {
+          lines.push(`CBRB(${maTotal},${total}) 【武道(MA)】+【こぶし(パンチ)】`);
+        }
+        // キック：武道MAが育っていればCBRBも追加
+        if (key === 'kick' && maTotal > getSkillBase(maTr,'ma')) {
+          lines.push(`CBRB(${maTotal},${total}) 【武道(MA)】+【キック】`);
         }
       }
 
-      // 武道(MA)が初期値超えの場合：組み合わせ可能技能の下にCBRBを追加
+      // 武道(MA)が初期値超えの場合
       if (isMa && total > base) {
-        // MA自体のダメージ
         lines.push(`1D3{DB} 【武道(MA)】ダメージ`);
       }
 
-      // MA超えかつ組み合わせ可能技能の場合
-      if (maTotal > getSkillBase(maTr, 'ma') && MA_COMBO_KEYS.includes(key) && total > base) {
+      // MA超えかつ組み合わせ可能技能（こぶし・キック以外）
+      if (maTotal > getSkillBase(maTr, 'ma') && MA_COMBO_KEYS.includes(key) && total > base && key!=='punch' && key!=='kick') {
         const maLbl = '武道(MA)';
         const comboKey = `ma_${key}`;
         if (!comboAlreadyAdded.has(comboKey)) {
           comboAlreadyAdded.add(comboKey);
           lines.push(`CBRB(${maTotal},${total}) 【${maLbl}】+【${label}】`);
-          // 組み合わせダメージ（武道はD3+DB、キックはD6+DB等）
-          const comboDmg = MELEE_DAMAGE[key];
-          const maDmg = MELEE_DAMAGE['ma'];
-          if (comboDmg && comboDmg !== '特殊' && maDmg && maDmg !== '特殊') {
-            // 組み合わせは高いほうのダメージを使う（慣例）
-            lines.push(`2D6{DB} 【${maLbl}】+【${label}】ダメージ`);
-          }
         }
       }
 
@@ -1544,6 +1552,35 @@ function buildChatPalette(c) {
       if (key.startsWith('custom_')) {
         // カスタム名はinput[type=text]から取得済み（getSkillDisplayName内）
         // ダメージ等は自動判定不可なので技能ロールのみ
+      }
+    });
+  });
+
+  // ---- 武器テーブルのダメージ追加 ----
+  // 戦闘・武器欄に登録された武器で、技能名が技能テーブルに存在し初期値より高い場合にダメージを追加
+  document.querySelectorAll('#weapon_rows tr').forEach(tr => {
+    const cells = [...tr.querySelectorAll('td')];
+    if (cells.length < 3) return;
+    const weaponName = cells[0]?.querySelector('input')?.value?.trim() || '';
+    const skillPct   = parseInt(cells[1]?.querySelector('input')?.value) || 0;
+    const dmgVal     = cells[2]?.querySelector('input')?.value?.trim() || '';
+    if (!weaponName || !skillPct || !dmgVal) return;
+    // 同名の技能行を探す（技能名が技能テーブルの表示名と一致するもの）
+    let matched = false;
+    document.querySelectorAll('#tbody_combat tr').forEach(skillTr => {
+      const sc = skillTr.querySelector('[data-skill]');
+      if (!sc) return;
+      const key = sc.dataset.skill;
+      const skillLabel = getSkillDisplayName(skillTr, key);
+      const skillTot = getSkillTotal(skillTr);
+      // 技能名（武器欄）と技能ラベルが一致 かつ 技能値が一致
+      if (skillLabel === weaponName || skillPct === skillTot) {
+        // すでにダメージ行が追加されていないか確認
+        const dmgLine = `${dmgVal} 【${weaponName}】ダメージ`;
+        if (!lines.includes(dmgLine)) {
+          lines.push(dmgLine);
+          matched = true;
+        }
       }
     });
   });
@@ -2092,6 +2129,10 @@ function parseSpreadsheetHTML(html){
   let scenarioRowIdx=-1;
   rows.forEach((row,ri)=>{if(row.some(c=>c.text==='通過シナリオ'))scenarioRowIdx=ri;});
 
+  // 所持品テーブル終了行（価格総計）を特定
+  let itemTableEndIdx=9999;
+  rows.forEach((row,ri)=>{if(row.some(c=>c.text&&c.text.includes('価格総計')))itemTableEndIdx=ri;});
+
   let memoText='',scenarioText='',secretText='';
   let inMemo=false,inScenario=false;
   const SCENARIO_SKIP=['名称','単価','個','価格','効果・備考など','価格総計','預金・借金',
@@ -2123,33 +2164,39 @@ function parseSpreadsheetHTML(html){
         }
       });
     }
-    // 通過シナリオ: ヘッダー行の次行以降で「効果・備考など」列（大きなcolspan）のセルを収集
-    // スプシ構造: 所持品テーブルの「効果・備考など」列（colspan>=5〜10）に通過シナリオが入る
-    if(inScenario){
+    // 通過シナリオ: 所持品テーブル終了後の通過シナリオ列を収集
+    // 「通過シナリオ」ヘッダー行と同じ行にcolspan>=5のセルがあればそれが内容
+    if(ri===scenarioRowIdx){
+      row.forEach(c=>{
+        const t=(c.text||'').trim();
+        if(!scenarioText&&t&&t.length>=3&&c.colspan>=3&&
+           t!=='通過シナリオ'&&!SCENARIO_SKIP.includes(t)){
+          scenarioText=t;
+        }
+      });
+    }
+    if(inScenario&&!scenarioText){
       if(texts.some(t=>t==='価格総計'))inScenario=false;
+      // 所持品テーブル内の行はスキップ（itemTableEndIdx以前はrowspan/colspanが大きいがスキップ）
+      if(ri<=itemTableEndIdx)return;
+      // colspan>=5 を優先
+      row.forEach(c=>{
+        const t=(c.text||'').trim();
+        if(!scenarioText&&t&&t.length>=3&&c.colspan>=5&&
+           !t.startsWith('¥')&&!/^\d+$/.test(t)&&!SCENARIO_SKIP.includes(t)&&
+           !t.startsWith('CCB')&&!t.startsWith('CBRB')){
+          scenarioText=t;
+        }
+      });
       if(!scenarioText){
-        // colspan>=5 を優先（「効果・備考など」列に相当）
         row.forEach(c=>{
           const t=(c.text||'').trim();
-          if(!scenarioText&&t&&t.length>=3&&c.colspan>=5&&
-             !t.startsWith('¥')&&!t.startsWith('･')&&
-             !/^\d+$/.test(t)&&!SCENARIO_SKIP.includes(t)&&
-             !t.startsWith('CCB')&&!t.startsWith('###')&&!t.startsWith('CBRB')){
+          if(!scenarioText&&t&&t.length>=10&&c.colspan>=3&&
+             !t.startsWith('¥')&&!/^\d+$/.test(t)&&!SCENARIO_SKIP.includes(t)&&
+             !t.startsWith('CCB')&&!t.startsWith('CBRB')){
             scenarioText=t;
           }
         });
-        // colspan>=3 かつ10文字以上でも可
-        if(!scenarioText){
-          row.forEach(c=>{
-            const t=(c.text||'').trim();
-            if(!scenarioText&&t&&t.length>=10&&c.colspan>=3&&
-               !t.startsWith('¥')&&!t.startsWith('･')&&
-               !/^\d+$/.test(t)&&!SCENARIO_SKIP.includes(t)&&
-               !t.startsWith('CCB')&&!t.startsWith('###')&&!t.startsWith('CBRB')){
-              scenarioText=t;
-            }
-          });
-        }
       }
     }
   });
@@ -2211,7 +2258,7 @@ function parseSpreadsheetHTML(html){
     }
   }
 
-  // 職業参照を自動選択（完全一致→部分一致→シナリオ指定の順）
+  // 職業参照を自動選択（完全一致→前方一致→シナリオ指定の順）
   const jobMatchName=jobRefName||jobName;
   if(jobMatchName){
     const jsel=document.getElementById('job_ref_sel');
@@ -2221,12 +2268,19 @@ function parseSpreadsheetHTML(html){
       for(let i=0;i<jsel.options.length;i++){
         if(jsel.options[i].value===jobMatchName||jsel.options[i].text===jobMatchName){jsel.selectedIndex=i;matched=true;break;}
       }
-      // 部分一致（完全一致失敗時のみ）
+      // 前方一致（jobMatchNameがリスト項目の先頭に一致するもの。短い方が長い方を誤マッチしないよう長い方優先）
       if(!matched){
+        // マッチ候補を全収集して最長のものを選ぶ
+        let bestIdx=-1,bestLen=0;
         for(let i=0;i<jsel.options.length;i++){
           if(jsel.options[i].value===''||jsel.options[i].value==='シナリオ指定')continue;
-          if(jsel.options[i].text.includes(jobMatchName)||jobMatchName.includes(jsel.options[i].text)){jsel.selectedIndex=i;matched=true;break;}
+          const optName=jsel.options[i].text;
+          // jobMatchNameがoptNameを含む、またはoptNameがjobMatchNameを含む（より長い方が優先）
+          if(jobMatchName.includes(optName)||optName.includes(jobMatchName)){
+            if(optName.length>bestLen){bestLen=optName.length;bestIdx=i;}
+          }
         }
+        if(bestIdx>=0){jsel.selectedIndex=bestIdx;matched=true;}
       }
       // どれにも一致しない場合は「シナリオ指定」を選択
       if(!matched){
