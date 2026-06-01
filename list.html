@@ -31,6 +31,7 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 
 /* ツールバー */
 #toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+#toolbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
 #new_btn{display:flex;align-items:center;gap:5px;padding:6px 16px;font-size:12px;cursor:pointer;background:#5a3a8a;color:#fff;border:none;border-radius:3px;font-family:inherit;font-weight:bold;white-space:nowrap}
 #new_btn:hover{background:#4a2a7a}
 #search_box{flex:1;min-width:180px;max-width:340px;border:1px solid #bbb;border-radius:3px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;background:#fff}
@@ -100,8 +101,10 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
   <!-- ツールバー -->
   <div id="toolbar" style="display:none">
     <button id="new_btn" onclick="goNew()">＋ 新規作成</button>
-    <input id="search_box" type="text" placeholder="PC名・職業で検索..." oninput="filterCards()">
-    <span id="search_hint"></span>
+    <div id="toolbar-right">
+      <input id="search_box" type="text" placeholder="PC名・職業で検索..." oninput="filterCards()">
+      <span id="search_hint"></span>
+    </div>
   </div>
 
   <!-- カードグリッド -->
@@ -247,9 +250,9 @@ function makeCard(char){
 
   // メタ行
   const metaParts=[];
-  if(age)metaParts.push(age+'歳');
-  if(gender)metaParts.push(gender);
-  if(sanNow!==undefined)metaParts.push('SAN '+sanNow);
+  if(age)metaParts.push('年齢：'+age);
+  if(gender)metaParts.push('性別：'+gender);
+  metaParts.push('SAN：'+sanNow);
 
   const card=document.createElement('div');
   card.className='card';

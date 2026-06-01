@@ -55,7 +55,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 .skill-table th{background:#666;color:#fff;text-align:center;white-space:nowrap}
 .sk-chk{width:18px;text-align:center}
 .sk-name{background:#f8f8f8;text-align:left;padding-left:3px}
-.sk-base{width:28px;text-align:center;color:#111}
+.sk-base{width:28px;text-align:center;color:#666}
 .sk-inp{width:28px}
 .sk-inp input{text-align:center;width:100%;border:none;outline:none;background:#fff}
 .sk-total{width:30px;text-align:center;font-weight:bold;background:#eee}
@@ -115,7 +115,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
     <div class="hdr">パーソナルデータ</div>
     <table>
       <colgroup><col style="width:52px"><col style="width:140px"><col style="width:52px"><col style="width:140px"></colgroup>
-      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana" style="text-align:center"></td></tr>
+      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana"></td></tr>
       <tr>
         <td class="hdr" style="vertical-align:middle">PC名</td>
         <td colspan="3"><input type="text" id="pcname" style="font-size:15px;font-weight:bold;height:52px;text-align:center;padding:2px 4px;display:block;width:100%"></td>
@@ -125,7 +125,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
         <td colspan="3">
           <div style="display:flex;align-items:center;gap:6px">
             <input type="color" id="txtcolor" value="#000000" oninput="updateColorCode()" style="width:36px;height:16px;border:none;cursor:pointer">
-            <span id="color_code" style="font-size:10px;color:#111">#000000 / RGB(0,0,0)</span>
+            <span id="color_code" style="font-size:10px;color:#666">#000000 / RGB(0,0,0)</span>
           </div>
         </td>
       </tr>
@@ -134,20 +134,6 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <tr><td class="hdr">身長</td><td><input type="text" id="height"></td><td class="hdr">体重</td><td><input type="text" id="weight"></td></tr>
       <tr><td class="hdr">誕生日</td><td><input type="text" id="birthday"></td><td class="hdr">出身</td><td><input type="text" id="origin"></td></tr>
       <tr><td class="hdr">髪の色</td><td><input type="text" id="hair"></td><td class="hdr">瞳の色</td><td><input type="text" id="eye"></td></tr>
-      <tr style="height:18px">
-        <td class="hdr">時代</td><td><input type="text" id="era" placeholder="例: 1920年代"></td>
-        <td class="hdr">状態</td>
-        <td>
-          <select id="pc_status" style="width:100%">
-            <option value="alive">生存</option>
-            <option value="lost">ロスト</option>
-            <option value="retired">引退</option>
-            <option value="missing">行方不明</option>
-            <option value="dead">死亡</option>
-            <option value="insane">永久狂気</option>
-          </select>
-        </td>
-      </tr>
     </table>
   </div>
   <div style="flex:1;overflow-x:auto">
@@ -270,8 +256,6 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
       <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
     </div>
-    <div style="font-size:11px;color:#555;margin-bottom:1px;margin-top:4px">その他特記</div>
-    <textarea id="job_other_note" placeholder="職業ボーナス・特殊ルールなど..." style="width:100%;height:44px;font-size:11px;border:1px solid #aaa;resize:vertical;padding:2px;background:#fff"></textarea>
   </div>
   <!-- 特徴表①② -->
   <div style="flex:1;display:flex">
@@ -743,7 +727,6 @@ const jobData=[
 function populateJobs(){
   const sel=document.getElementById('job_ref_sel');
   const o=document.createElement('option');o.value='';o.textContent='-- 職業参照 --';sel.appendChild(o);
-  const oSc=document.createElement('option');oSc.value='シナリオ指定';oSc.textContent='シナリオ指定';sel.appendChild(oSc);
   jobData.forEach(j=>{const op=document.createElement('option');op.value=j.name;op.textContent=j.name;sel.appendChild(op);});
 }
 function onJobRefChange(){
@@ -1010,97 +993,6 @@ function applyData(json){
     const oi=tr.querySelector('.oth-inp');if(oi)oi.value=s.oth;
     if(s.freeVal){const fi=tr.querySelector('.sk-name .free-inp-auto')||tr.querySelector('.sk-name input[type=text]');if(fi)fi.value=s.freeVal;}
   });
-
-  // 武器テーブル
-  if(data.weapons&&data.weapons.length){
-    const tbody=document.getElementById('weapon_rows');
-    const rows=[...tbody.querySelectorAll('tr')];
-    data.weapons.forEach((vals,i)=>{
-      let tr=rows[i];
-      if(!tr){tr=makeWeaponTr();tbody.appendChild(tr);}
-      [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
-    });
-    const acc=document.getElementById('combat_acc');
-    if(acc&&!acc.classList.contains('open'))toggleAcc('combat_acc');
-  }
-
-  // 所持品テーブル
-  if(data.items&&data.items.length){
-    const tbody=document.getElementById('item_rows');
-    const rows=[...tbody.querySelectorAll('tr')];
-    data.items.forEach((vals,i)=>{
-      let tr=rows[i];
-      if(!tr){tr=makeItemTr();tbody.appendChild(tr);}
-      [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
-    });
-    const acc=document.getElementById('items_acc');
-    if(acc&&!acc.classList.contains('open'))toggleAcc('items_acc');
-  }
-
-  // その他メモ
-  if(data.memos&&data.memos.length){
-    const memoDiv=document.getElementById('memo_rows');
-    const tas=[...memoDiv.querySelectorAll('textarea')];
-    data.memos.forEach((v,i)=>{
-      if(i<tas.length){tas[i].value=v;}
-      else{addMemoRow();const all=memoDiv.querySelectorAll('textarea');all[all.length-1].value=v;}
-    });
-    const acc=document.getElementById('memo_acc');
-    if(acc&&!acc.classList.contains('open'))toggleAcc('memo_acc');
-  }
-
-  // 通過シナリオ
-  if(data.scenarios&&data.scenarios.length){
-    const scDiv=document.getElementById('scenario_rows');
-    const tas=[...scDiv.querySelectorAll('textarea')];
-    data.scenarios.forEach((v,i)=>{
-      if(i<tas.length){tas[i].value=v;}
-      else{addScenarioRow();const all=scDiv.querySelectorAll('textarea');all[all.length-1].value=v;}
-    });
-    const acc=document.getElementById('scenario_outer');
-    if(acc&&!acc.classList.contains('open'))toggleAcc('scenario_outer');
-  }
-
-  // 後遺症・AF・呪文
-  if(data.ae){
-    [['kouisho','tbody_kouisho'],['af','tbody_af'],['spell','tbody_spell']].forEach(([key,tbodyId])=>{
-      const tbody=document.getElementById(tbodyId);
-      if(!tbody||!data.ae[key])return;
-      const rows=[...tbody.querySelectorAll('tr')];
-      data.ae[key].forEach((vals,i)=>{
-        let tr=rows[i];
-        if(!tr){addAERow(tbodyId);tr=[...tbody.querySelectorAll('tr')].pop();}
-        if(!tr)return;
-        [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
-      });
-    });
-  }
-
-  // ネタバレ管理
-  if(data.secrets&&data.secrets.length){
-    const wrap=document.getElementById('secret_items_wrap');
-    data.secrets.forEach((s)=>{
-      let item=document.getElementById(s.id);
-      if(!item){addSecretItem(s.title,s.pass);item=wrap.lastElementChild;}
-      if(!item)return;
-      item.dataset.pass=s.pass;
-      const titleInp=item.querySelector('.secret-item-header input[type=text]');
-      if(titleInp)titleInp.value=s.title;
-      const summInp=item.querySelector('#body_'+item.id+' input[type=text]');
-      if(summInp)summInp.value=s.summary||'';
-      const tas=[...item.querySelectorAll('#content_'+item.id+' textarea')];
-      s.contents.forEach((c,i)=>{if(i<tas.length)tas[i].value=c;});
-      const sels=[...item.querySelectorAll('#content_'+item.id+' select')];
-      s.cats.forEach((c,i)=>{if(i<sels.length)sels[i].value=c;});
-    });
-  }
-
-  // 特徴表の表示を更新
-  [1,2].forEach(n=>showTokucho(n));
-  // 職業特記の表示を更新
-  const jobSel=document.getElementById('job_ref_sel');
-  if(jobSel&&jobSel.value)onJobRefChange();
-
   calc();
   setTimeout(autoResizeAll,100);
 }
@@ -1272,7 +1164,7 @@ async function initViewMode() {
     });
   }
 
-  // 武器テーブル
+  // 武器テーブル（アコーディオンは開かない）
   if (sheet.weapons && sheet.weapons.length) {
     const tbody = document.getElementById('weapon_rows');
     const rows = [...tbody.querySelectorAll('tr')];
@@ -1281,11 +1173,9 @@ async function initViewMode() {
       if (!tr) { tr = makeWeaponTr(); tbody.appendChild(tr); }
       [...tr.querySelectorAll('input')].forEach((inp, j) => { if (j < vals.length) inp.value = vals[j]; });
     });
-    const acc = document.getElementById('combat_acc');
-    if (acc && !acc.classList.contains('open')) toggleAcc('combat_acc');
   }
 
-  // 所持品テーブル
+  // 所持品テーブル（アコーディオンは開かない）
   if (sheet.items && sheet.items.length) {
     const tbody = document.getElementById('item_rows');
     const rows = [...tbody.querySelectorAll('tr')];
@@ -1294,11 +1184,9 @@ async function initViewMode() {
       if (!tr) { tr = makeItemTr(); tbody.appendChild(tr); }
       [...tr.querySelectorAll('input')].forEach((inp, j) => { if (j < vals.length) inp.value = vals[j]; });
     });
-    const acc = document.getElementById('items_acc');
-    if (acc && !acc.classList.contains('open')) toggleAcc('items_acc');
   }
 
-  // その他メモ
+  // その他メモ（アコーディオンは開かない）
   if (sheet.memos && sheet.memos.length) {
     const memoDiv = document.getElementById('memo_rows');
     const tas = [...memoDiv.querySelectorAll('textarea')];
@@ -1306,11 +1194,9 @@ async function initViewMode() {
       if (i < tas.length) { tas[i].value = v; }
       else { addMemoRow(); const all = memoDiv.querySelectorAll('textarea'); all[all.length-1].value = v; }
     });
-    const acc = document.getElementById('memo_acc');
-    if (acc && !acc.classList.contains('open')) toggleAcc('memo_acc');
   }
 
-  // 通過シナリオ
+  // 通過シナリオ（アコーディオンは開かない）
   if (sheet.scenarios && sheet.scenarios.length) {
     const scDiv = document.getElementById('scenario_rows');
     const tas = [...scDiv.querySelectorAll('textarea')];
@@ -1318,8 +1204,6 @@ async function initViewMode() {
       if (i < tas.length) { tas[i].value = v; }
       else { addScenarioRow(); const all = scDiv.querySelectorAll('textarea'); all[all.length-1].value = v; }
     });
-    const acc = document.getElementById('scenario_outer');
-    if (acc && !acc.classList.contains('open')) toggleAcc('scenario_outer');
   }
 
   // 後遺症・AF・呪文
@@ -1345,7 +1229,7 @@ async function initViewMode() {
 
   calc();
 
-// ネタバレ管理を再構築
+  // ネタバレ管理を再構築
   const secretWrap = document.getElementById('secret_items_wrap');
   secretWrap.innerHTML = '';
   if (sheet.secrets) {
@@ -1383,10 +1267,7 @@ async function initViewMode() {
   // 全inputをreadonlyにする（secret_items_wrap内は除く）
   document.querySelectorAll('input, textarea, select').forEach(el => {
     if (el.closest('#secret_items_wrap')) return;
-    if (el.type === 'checkbox') {
-      el.style.pointerEvents = 'none';
-      return;
-    }
+    if (el.type === 'checkbox') { el.style.pointerEvents = 'none'; return; }
     el.setAttribute('readonly', true);
     el.setAttribute('disabled', true);
     el.style.pointerEvents = 'none';
@@ -1400,21 +1281,20 @@ async function initViewMode() {
     el.style.display = 'none';
   });
 
-
-// 固定ヘッダーを更新
+  // 固定ヘッダーを更新
   const pcname = document.getElementById('pcname')?.value || 'キャラクターシート';
   const sn = document.getElementById('sticky-pcname');
   if(sn) sn.textContent = pcname;
 
-// sk-del列を非表示
-document.querySelectorAll('.sk-del').forEach(el => el.style.display = 'none');
+  // sk-del列を非表示
+  document.querySelectorAll('.sk-del').forEach(el => el.style.display = 'none');
 
-// 削除ボタン列のthを非表示
-document.querySelectorAll('th:last-child:empty, th:last-child').forEach(el => {
-  if (el.textContent.trim() === '') el.style.display = 'none';
-});
+  // 削除ボタン列のthを非表示
+  document.querySelectorAll('th:last-child').forEach(el => {
+    if (el.textContent.trim() === '') el.style.display = 'none';
+  });
 
-  // ococofolia駒出力ボタンを表示（閲覧モード完了後）
+  // 駒出力ボタンを表示
   const cocoBtn = document.getElementById('coco_btn');
   if (cocoBtn) cocoBtn.style.display = 'inline-block';
 }
