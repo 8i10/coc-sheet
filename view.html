@@ -26,6 +26,7 @@ select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:n
 textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;resize:vertical;padding:2px}
 .hdr{background:#444;color:#fff;font-size:11px;padding:2px 5px;font-weight:bold}
 .personal-data td.hdr{text-align:center}
+.personal-data input[type=text],.personal-data input[type=number]{text-align:left}
 .section{border:1px solid #777;margin-bottom:5px;background:#fff}
 .derived{background:#e8e8e8;text-align:center;min-width:28px}
 .row-label{background:#444;color:#fff;font-size:11px;text-align:center;padding:1px 3px;white-space:nowrap}
@@ -135,6 +136,20 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <tr><td class="hdr">身長</td><td><input type="text" id="height"></td><td class="hdr">体重</td><td><input type="text" id="weight"></td></tr>
       <tr><td class="hdr">誕生日</td><td><input type="text" id="birthday"></td><td class="hdr">出身</td><td><input type="text" id="origin"></td></tr>
       <tr><td class="hdr">髪の色</td><td><input type="text" id="hair"></td><td class="hdr">瞳の色</td><td><input type="text" id="eye"></td></tr>
+      <tr style="height:18px">
+        <td class="hdr">時代</td><td><input type="text" id="era"></td>
+        <td class="hdr">状態</td>
+        <td>
+          <select id="pc_status" style="width:100%">
+            <option value="alive">生存</option>
+            <option value="lost">ロスト</option>
+            <option value="retired">引退</option>
+            <option value="missing">行方不明</option>
+            <option value="dead">死亡</option>
+            <option value="insane">永久狂気</option>
+          </select>
+        </td>
+      </tr>
     </table>
   </div>
   <div style="flex:1;overflow-x:auto">
