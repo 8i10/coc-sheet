@@ -83,6 +83,71 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 .relg-header:hover{background:#555}
 .relg-name-inp{background:transparent;border:none;color:#fff;font-size:11px;outline:none;width:50%;min-width:0;text-align:left}
 .relg-toggle-zone{flex:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:2px 0}
+
+/* ===== スマホレイアウト (max-width:700px) ===== */
+@media(max-width:700px){
+  body{padding-top:44px}
+  .sheet{width:100% !important;padding:4px}
+
+  /* ヘッダー */
+  #sticky-pcname{font-size:13px;max-width:130px}
+  .sticky-pt-block{padding:2px 4px;gap:2px}
+  #sticky-actions{gap:2px}
+  #sticky-actions button{padding:2px 6px;font-size:10px}
+
+  /* 行1: パーソナル＋能力値 → 縦並び */
+  #row1_flex{flex-direction:column !important}
+  .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
+  #row1_stats{width:100% !important;overflow-x:auto}
+  #row1_stats table{min-width:560px}
+
+  /* 行2: 職業特記＋特徴表 → 縦並び */
+  #row2_flex{flex-direction:column !important}
+  #row2_job{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
+  #row2_tokucho{width:100% !important;flex-direction:column !important}
+  #row2_tokucho > div{border-right:none !important;border-bottom:1px solid #eee;width:100% !important}
+
+  /* メイン: 技能表＋右パネル → 縦並び */
+  #main_flex{flex-direction:column !important}
+  #skill_col{width:100% !important;flex:none !important}
+  .right-panel{width:100% !important}
+
+  /* 技能テーブル */
+  .skill-table td,.skill-table th{font-size:10px;padding:1px}
+  .sk-inp{width:24px}
+  .sk-total{width:26px}
+}
+  .sheet{width:100%;padding:4px}
+
+  /* ヘッダー：PC名を短く・ボタン類を小さく */
+  #sticky-pcname{font-size:13px;max-width:120px}
+  .sticky-pt-block{padding:2px 4px;gap:2px}
+  #sticky-actions{gap:2px}
+  #sticky-actions button{padding:2px 6px;font-size:10px}
+
+  /* 行1: パーソナル＋能力値 → 縦並び */
+  .section > div[style*="display:flex"]{flex-direction:column !important}
+  .section > div > div[style*="width:378px"]{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
+  .section > div > div[style*="flex:1;overflow"]{width:100% !important;overflow-x:auto}
+
+  /* 行2: 職業特記＋特徴表 → 縦並び */
+  .section > div > div[style*="width:378px;min-width:378px;border-right"]{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
+  .section > div > div[style*="flex:1;display:flex"]{width:100% !important;flex-direction:column !important}
+  .section > div > div[style*="flex:1;display:flex"] > div{border-right:none !important;border-bottom:1px solid #eee}
+
+  /* メイン: 技能表＋右パネル → 縦並び */
+  div[style*="display:flex;gap:5px;align-items:flex-start"]{flex-direction:column !important}
+  div[style*="flex:0 0 370px"]{width:100% !important;flex:none !important}
+  .right-panel{width:100% !important}
+
+  /* 能力値テーブルをスクロール */
+  .section > div > div[style*="flex:1;overflow"] table{min-width:600px}
+
+  /* 技能テーブルのフォント */
+  .skill-table td,.skill-table th{font-size:10px;padding:1px 1px}
+  .sk-inp{width:24px}
+  .sk-total{width:26px}
+}
 </style>
 </head>
 <body>
@@ -132,8 +197,8 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 </div>
 
 <!-- ===== 行1 ===== -->
-<div class="section">
-<div style="display:flex">
+<div class="section" id="sec_row1">
+<div id="row1_flex" style="display:flex">
   <div style="width:378px;min-width:378px;border-right:1px solid #888" class="personal-data">
     <div class="hdr">パーソナルデータ</div>
     <table>
@@ -173,7 +238,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
       </tr>
     </table>
   </div>
-  <div style="flex:1;overflow-x:auto">
+  <div id="row1_stats" style="flex:1;overflow-x:auto">
     <table>
       <thead>
         <tr>
@@ -270,10 +335,10 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 </div>
 
 <!-- ===== 行2 ===== -->
-<div class="section">
-<div style="display:flex">
+<div class="section" id="sec_row2">
+<div id="row2_flex" style="display:flex">
   <!-- 職業特記 378px固定 -->
-  <div style="width:378px;min-width:378px;border-right:1px solid #aaa;padding:3px">
+  <div id="row2_job" style="width:378px;min-width:378px;border-right:1px solid #aaa;padding:3px">
     <div class="hdr" style="margin-bottom:3px">職業特記</div>
     <select id="job_ref_sel" onchange="onJobRefChange()" style="width:100%;margin-bottom:3px"></select>
     <div style="font-size:11px;color:#444;margin-bottom:1px">技能P計算式</div>
@@ -298,7 +363,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 
   </div>
   <!-- 特徴表①② -->
-  <div style="flex:1;display:flex">
+  <div id="row2_tokucho" style="flex:1;display:flex">
     <div style="flex:1;border-right:1px solid #aaa;padding:3px">
       <div class="hdr" style="margin-bottom:3px">特徴表①</div>
       <select id="t1_sel" onchange="showTokucho(1)" style="width:100%;margin-bottom:3px"><option value="">-- 特徴を選択 --</option></select>
@@ -326,9 +391,9 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 </div>
 
 <!-- ===== メイン ===== -->
-<div style="display:flex;gap:5px;align-items:flex-start">
+<div id="main_flex" style="display:flex;gap:5px;align-items:flex-start">
   <!-- 技能列 -->
-  <div style="flex:0 0 370px;width:370px">
+  <div id="skill_col" style="flex:0 0 370px;width:370px">
     <div style="display:flex;align-items:center;gap:6px;padding:2px 6px;background:#444;color:#fff;margin-bottom:2px;border-radius:2px">
       <span style="font-size:11px;font-weight:bold;flex:1">技能表</span>
       <button onclick="toggleAllDefault()" id="tog_all" style="font-size:10px;padding:1px 8px;background:#ccc;border:1px solid #999;border-radius:2px;cursor:pointer">初期値を隠す</button>
