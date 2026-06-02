@@ -29,6 +29,7 @@ input[type=number]::-webkit-inner-spin-button{display:none}
 select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:none;font-family:inherit}
 textarea{font-size:11px;font-family:inherit;border:1px solid #ddd;width:100%;resize:vertical;padding:2px}
 textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizing:border-box}
+.memo-title::placeholder{color:#ccc}
 .hdr{background:#444;color:#fff;font-size:11px;padding:2px 5px;font-weight:bold}
 .personal-data td.hdr{text-align:center}
 .personal-data input[type=text],.personal-data input[type=number]{text-align:left}
@@ -1268,7 +1269,7 @@ function collectData(){
     secrets.push({id,title,pass,summary,contents,cats});
   });
 
-  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,ts:Date.now()});
+  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,hideDefault,ts:Date.now()});
 }
 
 function applyData(json){
