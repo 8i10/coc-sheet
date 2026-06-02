@@ -461,6 +461,11 @@ body:not(.light) .card-job{ color:#ccc !important; }
 body:not(.light) .card-date{ color:#888 !important; }
 body:not(.light) .card-pcname{ color:var(--text) !important; }
 
+
+/* 一覧カードの白い線・ゴミ箱 */
+body:not(.light) .card{ border-color:var(--border) !important; }
+body:not(.light) .card-top{ border:none !important; }
+
 </style>
 </head>
 <body class="light">
@@ -496,7 +501,7 @@ body:not(.light) .card-pcname{ color:var(--text) !important; }
 
   <!-- ツールバー -->
   <div id="toolbar" style="display:none">
-    <button id="new_btn" onclick="goNew()">＋ 新規作成</button>
+    <button id="new_btn" onclick="goNew()" style="background:#2a7;color:#fff">＋ 新規作成</button>
     <div id="toolbar-right">
       <input id="search_box" type="text" placeholder="PC名・ふりがな・職業・特徴表で検索..." oninput="filterCards()">
       <span id="search_hint"></span>
@@ -682,7 +687,7 @@ function makeCard(char){
       <span class="card-date">更新 ${updDate}</span>
       <button class="cbtn" style="background:#558;color:#fff" onclick="openEdit('${char.id}')">✏️ 編集</button>
       <button class="cbtn" style="background:#7755aa;color:#fff" onclick="openView('${char.id}')">👁 閲覧</button>
-      <button class="cbtn" style="background:#fee;color:#933;border:1px solid #e99" onclick="deleteChar('${char.id}',this)">🗑</button>
+      <button class="cbtn" style="background:#c00;color:#fff;border:1px solid #900" onclick="deleteChar('${char.id}',this)">🗑</button>
     </div>`;
   return card;
 }

@@ -818,7 +818,7 @@ textarea{
 /* --- ただしライトモードは元の色を維持 --- */
 body.light td{ background:initial !important; }
 body.light .derived{ background:#e8e8e8 !important; }
-body.light .row-label{ background:#f0f0f0 !important; }
+body.light .row-label{ background:#e0e0e0 !important; }
 body.light input[type=text],
 body.light input[type=number],
 body.light input[type=password],
@@ -844,6 +844,105 @@ body.light #sticky-actions button:first-child,
 body:not(.light) #sticky-actions button:first-child{
   margin-left:0;
 }
+
+/* ===== 総合修正パッチ ===== */
+
+/* アイコン周辺をヘッダー色に完全統一 */
+#sticky-header,
+#sticky-actions,
+#sp-row1{
+  background:#333 !important;
+}
+body.light #sticky-header,
+body.light #sticky-actions,
+body.light #sp-row1{
+  background:#333 !important;
+}
+
+/* 技能表の初期値・合計値欄を薄灰色に */
+.sk-base{ background:#eeeeee !important; color:#666 !important; }
+.sk-total{ background:#eeeeee !important; }
+body:not(.light) .sk-base{ background:var(--surface2) !important; color:var(--text-muted) !important; }
+body:not(.light) .sk-total{ background:var(--surface2) !important; }
+
+/* ライトモード: 開く/閉じるボタンの枠線を濃く */
+body.light button[style*="background:#666"],
+body.light .relg-toggle-zone + button{
+  border:1px solid #444 !important;
+}
+
+/* 一覧バーの色 */
+#back-bar{
+  background:#e0e0e0;
+  border-bottom:2px solid #bbb;
+}
+body:not(.light) #back-bar{
+  background:var(--surface2);
+  border-bottom:2px solid var(--border);
+}
+
+/* カラーコードfont-weightをリセット */
+#color_code{ font-weight:normal !important; }
+
+/* メニュー内の文字色を白に統一 */
+#sheet_menu div{ color:#eee !important; }
+
+
+body.light .relg-name-inp{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .secret-item-header{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .secret-item-header input[type=text]{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+
+/* スマホ特徴表の白背景 */
+#row2_tokucho,
+#row2_tokucho > div{
+  background:var(--surface) !important;
+}
+/* コマ出力ダイアログ */
+#coco_palette{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+/* ライトモードの技能合計背景 */
+body.light .sk-total{ background:#e8e8e8 !important; color:#111 !important; }
+/* ダークモードの選択欄 */
+body:not(.light) .row2_tokucho select,
+body:not(.light) #row2_tokucho select{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+/* 開く閉じるボタン枠線 */
+body.light [style*="background:#666"][style*="cursor:pointer"]{
+  border:1px solid #333 !important;
+}
+
+
+/* ライトモードのアイコン周り完全修正 */
+#sticky-header{background:#333 !important;}
+#sp-row1{background:#333 !important;}
+#header_left{background:#333 !important;}
+#sticky-actions{background:#333 !important;}
+body.light #sticky-header,
+body.light #sp-row1,
+body.light #header_left,
+body.light #sticky-actions{
+  background:#333 !important;
+}
+body.light #sticky-header *:not(select):not(input):not(.pts-bar):not(.pts-bar-fill){
+  background:#333 !important;
+}
+/* pt-blockだけ#444に */
+body.light .sticky-pt-block{background:#444 !important;}
+
 </style>
 </head>
 <body class="light">
@@ -910,7 +1009,7 @@ body:not(.light) #sticky-actions button:first-child{
 </div>
 
 <!-- 一覧に戻るバー（余白のみ）-->
-<div style="background:#333;border-bottom:2px solid #222;padding:3px 10px;min-height:28px;display:flex;align-items:center;justify-content:flex-end">
+<div id="back-bar" style="padding:3px 10px;min-height:28px;display:flex;align-items:center;justify-content:flex-end">
   <span style="font-size:10px;color:#999">メニューから一覧に戻れます</span>
 </div>
 
@@ -931,7 +1030,7 @@ body:not(.light) #sticky-actions button:first-child{
         <td colspan="3">
           <div style="display:flex;align-items:center;gap:6px">
             <input type="color" id="txtcolor" value="#000000" oninput="updateColorCode()" style="width:36px;height:16px;border:none;cursor:pointer">
-            <span id="color_code" style="font-size:10px;color:var(--text);font-family:Georgia,serif;font-weight:bold">#000000 / RGB(0,0,0)</span>
+            <span id="color_code" style="font-size:10px;color:var(--text);font-family:Georgia,serif">#000000 / RGB(0,0,0)</span>
           </div>
         </td>
       </tr>
@@ -949,7 +1048,7 @@ body:not(.light) #sticky-actions button:first-child{
             <option value="lost">ロスト</option>
             <option value="retired">引退</option>
             <option value="missing">行方不明</option>
-            <option value="dead">死亡</option>
+            <option value="dead">継続不可</option>
             <option value="insane">永久狂気</option>
           </select>
         </td>
@@ -2446,11 +2545,11 @@ function openCocofoliaCopyDialog(){
 
   modal.innerHTML = `
     <div style="background:var(--surface);border-radius:6px;padding:16px;width:92%;max-width:680px;max-height:90vh;overflow-y:auto;font-family:inherit">
-      <div style="font-weight:bold;font-size:13px;margin-bottom:8px;color:#333">🐔 ココフォリア駒出力</div>
+      <div style="font-weight:bold;font-size:13px;margin-bottom:8px;color:var(--text)">🐔 ココフォリア駒出力</div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;font-size:11px">
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px">
-          <div style="font-weight:bold;color:#555;margin-bottom:4px">📊 ステータス（確認）</div>
+          <div style="font-weight:bold;color:var(--text);margin-bottom:4px">📊 ステータス（確認）</div>
           <div>PC名: <b>${pcname}</b></div>
           <div>イニシアチブ: <b>${c.dex}</b>（DEX）</div>
           <div>HP: ${hpMax} / ${hpMax} &nbsp; MP: ${mpMax} / ${mpMax}</div>
@@ -2459,13 +2558,13 @@ function openCocofoliaCopyDialog(){
           <div>カラー: <span style="background:${color};color:#fff;padding:0 6px;border-radius:2px">${color}</span></div>
         </div>
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px">
-          <div style="font-weight:bold;color:#555;margin-bottom:4px">📋 パラメータ（STR〜DB）</div>
-          ${['str','con','pow','dex','app','siz','int_v','edu'].map(k=>`<span style="background:#eee;border-radius:2px;padding:0 4px;margin:1px;display:inline-block">${k.replace('_v','').toUpperCase()}: ${c[k]||0}</span>`).join('')}
-          <span style="background:#eee;border-radius:2px;padding:0 4px;margin:1px;display:inline-block">DB: ${dbVal}</span>
+          <div style="font-weight:bold;color:var(--text);margin-bottom:4px">📋 パラメータ（STR〜DB）</div>
+          ${['str','con','pow','dex','app','siz','int_v','edu'].map(k=>`<span style="background:var(--surface2);color:var(--text);border-radius:2px;padding:0 4px;margin:1px;display:inline-block">${k.replace('_v','').toUpperCase()}: ${c[k]||0}</span>`).join('')}
+          <span style="background:var(--surface2);color:var(--text);border-radius:2px;padding:0 4px;margin:1px;display:inline-block">DB: ${dbVal}</span>
         </div>
       </div>
 
-      <div style="font-weight:bold;font-size:11px;color:#555;margin-bottom:3px">📝 チャットパレット（プレビュー・編集可）</div>
+      <div style="font-weight:bold;font-size:11px;color:var(--text);margin-bottom:3px">📝 チャットパレット（プレビュー・編集可）</div>
       <textarea id="coco_palette_preview" style="width:100%;height:220px;font-size:11px;font-family:monospace;border:1px solid var(--border);padding:4px;resize:vertical;background:var(--surface2)">${palette}</textarea>
 
       <div id="coco_copy_msg" style="font-size:11px;color:#2a7;display:none;margin:6px 0">✓ クリップボードにコピーしました！</div>

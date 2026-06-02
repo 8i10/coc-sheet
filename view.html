@@ -16,70 +16,70 @@
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:11px;background:#d8d8d8;color:#111;padding-top:36px}
-.sheet{background:#f4f4f4;padding:6px;width:980px;margin:0 auto;padding-bottom:40px}
-#sticky-header{position:fixed;top:0;left:0;width:100%;background:#333;color:#fff;z-index:9999;display:flex;align-items:center;gap:8px;padding:4px 10px;font-size:11px;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
+.sheet{background:var(--bg);padding:6px;width:980px;margin:0 auto;padding-bottom:40px}
+#sticky-header{position:fixed;top:0;left:0;width:100%;background:var(--hdr-bg);color:var(--hdr-text);z-index:9999;display:flex;align-items:center;gap:8px;padding:4px 10px;font-size:11px;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
 #sticky-pcname{font-weight:bold;font-size:13px;flex:0 0 auto;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #sticky-pts{display:flex;gap:6px;align-items:center;flex:1}
 .sticky-pt{background:#444;border-radius:3px;padding:2px 6px;font-size:11px}
 #sticky-actions{display:flex;gap:4px;margin-left:auto}
 .sticky-pt-block{display:flex;align-items:center;gap:5px;background:#444;border-radius:3px;padding:2px 8px;font-size:11px;color:#fff}
 table{border-collapse:collapse;width:100%}
-td,th{border:1px solid #888;padding:0 3px;height:20px}
-th{background:#444;color:#fff;text-align:center;font-weight:normal;font-size:10px}
+td,th{border:1px solid var(--border);padding:0 3px;height:20px}
+th{background:var(--hdr-bg);color:var(--hdr-text);text-align:center;font-weight:normal;font-size:10px}
 input[type=text],input[type=number],input[type=password]{border:none;background:transparent;width:100%;font-size:11px;font-family:inherit;text-align:center;outline:none;padding:0}
 input[type=number]::-webkit-inner-spin-button{display:none}
-select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:none;font-family:inherit}
-textarea{font-size:11px;font-family:inherit;border:1px solid #ddd;width:100%;resize:vertical;padding:2px}
-.hdr{background:#444;color:#fff;font-size:11px;padding:2px 5px;font-weight:bold}
+select{font-size:11px;border:1px solid var(--border);background:var(--surface);width:100%;outline:none;font-family:inherit}
+textarea{font-size:11px;font-family:inherit;border:1px solid var(--border);width:100%;resize:vertical;padding:2px}
+.hdr{background:var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;padding:2px 5px;font-weight:bold}
 .personal-data td.hdr{text-align:center}
 .personal-data input[type=text],.personal-data input[type=number]{text-align:left}
-.section{border:1px solid #777;margin-bottom:5px;background:#fff}
-.derived{background:#e8e8e8;text-align:center;min-width:28px}
-.row-label{background:#444;color:#fff;font-size:11px;text-align:center;padding:1px 3px;white-space:nowrap}
+.section{border:1px solid var(--border);margin-bottom:5px;background:var(--surface)}
+.derived{background:var(--surface2);text-align:center;min-width:28px}
+.row-label{background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;text-align:center;padding:1px 3px;white-space:nowrap}
 /* FIX5: pts-block を職業特記幅に合わせるため width:100% の親で包む */
-.pts-block{display:flex;align-items:center;gap:3px;padding:2px 4px;border:1px solid #bbb;border-radius:3px;background:#fff;font-size:11px;flex:1;min-width:0}
+.pts-block{display:flex;align-items:center;gap:3px;padding:2px 4px;border:1px solid var(--border);border-radius:3px;background:var(--surface);font-size:11px;flex:1;min-width:0}
 .pts-remain{font-size:11px;font-weight:bold;min-width:36px;text-align:right}
 .pts-remain.ok{color:#2a7}
 .pts-remain.warn{color:#e60}
 .pts-remain.over{color:#c00;animation:blink .6s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.pts-bar{height:5px;border-radius:3px;background:#ddd;width:40px;overflow:hidden;border:1px solid #ccc;flex-shrink:0}
+.pts-bar{height:5px;border-radius:3px;background:#ddd;width:40px;overflow:hidden;border:1px solid var(--border);flex-shrink:0}
 .pts-bar-fill{height:100%;border-radius:3px;transition:width .2s,background .2s}
-.acc-header{background:#333;color:#fff;padding:3px 8px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.acc-header{background:var(--hdr-bg);color:var(--hdr-text);padding:3px 8px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none}
 .acc-header:hover{background:#222}
 .acc-body{display:none}
 .acc-body.open{display:block}
-.sub-acc-header{background:#555;color:#fff;padding:2px 6px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;border-bottom:1px solid #444}
+.sub-acc-header{background:var(--hdr-bg);color:var(--hdr-text);padding:2px 6px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;border-bottom:1px solid var(--border)}
 .sub-acc-header:hover{background:#444}
 .sub-acc-body{display:none;padding:4px}
 .sub-acc-body.open{display:block}
-.sub2-acc-header{background:#555;color:#fff;padding:2px 5px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;margin-bottom:1px}
+.sub2-acc-header{background:var(--hdr-bg);color:var(--hdr-text);padding:2px 5px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;margin-bottom:1px}
 .sub2-acc-header:hover{background:#444}
 .sub2-acc-body{display:none;padding:3px}
 .sub2-acc-body.open{display:block}
-.skill-sec-hdr{background:#555;color:#fff;font-size:11px;padding:2px 4px}
+.skill-sec-hdr{background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;padding:2px 4px}
 .skill-table{width:100%;border-collapse:collapse;table-layout:fixed}
-.skill-table td,.skill-table th{border:1px solid #aaa;padding:1px 2px;font-size:11px;overflow:hidden}
+.skill-table td,.skill-table th{border:1px solid var(--border);padding:1px 2px;font-size:11px;overflow:hidden}
 .skill-table th{background:#666;color:#fff;text-align:center;white-space:nowrap}
 .sk-chk{width:18px;text-align:center}
-.sk-name{background:#f8f8f8;text-align:left;padding-left:3px}
+.sk-name{background:var(--surface2);text-align:left;padding-left:3px}
 .sk-base{width:28px;text-align:center;color:#666}
 .sk-inp{width:28px}
-.sk-inp input{text-align:center;width:100%;border:none;outline:none;background:#fff}
+.sk-inp input{text-align:center;width:100%;border:none;outline:none;background:var(--surface)}
 .sk-total{width:30px;text-align:center;font-weight:bold;background:#eee}
 /* FIX5: 合計列右の余白（sk-del列）を幅0・border無しで消す */
 .sk-del{width:0;padding:0;border:none;overflow:visible}
-.add-row-btn{font-size:11px;padding:1px 7px;cursor:pointer;margin:2px 2px 2px 0;background:#eee;border:1px solid #aaa;border-radius:2px}
+.add-row-btn{font-size:11px;padding:1px 7px;cursor:pointer;margin:2px 2px 2px 0;background:#eee;border:1px solid var(--border);border-radius:2px}
 .del-btn{font-size:11px;padding:0 3px;cursor:pointer;background:none;border:none;color:#bbb;line-height:1;font-weight:normal;transition:color .15s}.del-btn:hover{color:#933}
 .right-panel{display:flex;flex-direction:column;gap:5px}
-.secret-item{border:1px solid #ccc;border-radius:3px;margin-bottom:4px;overflow:hidden}
-.secret-item-header{background:#555;color:#fff;padding:2px 6px;display:flex;align-items:center;gap:4px;font-size:11px}
+.secret-item{border:1px solid var(--border);border-radius:3px;margin-bottom:4px;overflow:hidden}
+.secret-item-header{background:var(--hdr-bg);color:var(--hdr-text);padding:2px 6px;display:flex;align-items:center;gap:4px;font-size:11px}
 .secret-item-body{display:none;padding:0}
 .secret-item-body.open{display:block}
-.secret-pass-row{background:#f5f5f5;padding:3px 6px;border-bottom:1px solid #ddd;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.secret-pass-row{background:#f5f5f5;padding:3px 6px;border-bottom:1px solid var(--border);display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 /* FIX1: 技能初期値トグル対象は skill-default-row のみ */
 .skill-table tbody tr.skill-default-row.hidden{display:none}
-.item-input{height:22px;line-height:22px;border:none;outline:none;background:#fff;width:100%;font-size:11px;font-family:inherit;padding:0 2px;text-align:left}
+.item-input{height:22px;line-height:22px;border:none;outline:none;background:var(--surface);width:100%;font-size:11px;font-family:inherit;padding:0 2px;text-align:left}
 /* FIX2: うちよそグループ header */
 .relg-header{background:#666;color:#fff;padding:2px 5px;font-size:11px;display:flex;align-items:center;gap:4px;user-select:none;margin-bottom:1px}
 .relg-header:hover{background:#555}
@@ -116,13 +116,13 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #ddd;width:100%;res
 
   /* 行1: パーソナル＋能力値 → 縦並び */
   #row1_flex{flex-direction:column !important}
-  .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
+  .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid var(--border)}
   #row1_stats{width:100% !important;overflow-x:auto}
   #row1_stats table{min-width:560px}
 
   /* 行2: 職業特記＋特徴表 → 縦並び */
   #row2_flex{flex-direction:column !important}
-  #row2_job{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
+  #row2_job{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid var(--border)}
   #row2_tokucho{width:100% !important;padding:3px}
 
   /* メイン: 技能表＋右パネル → 縦並び */
@@ -146,22 +146,26 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #ddd;width:100%;res
   --accent2:#7e9ec8;
   --text:#e8e4da;
   --text-muted:#8a8499;
-  --header-bg:#1a1428;
+  --header-bg:#111116;
   --shadow:rgba(0,0,0,0.4);
   --hover:rgba(200,169,126,0.07);
+  --hdr-bg:#1e1e2e;
+  --hdr-text:#e8e4da;
 }
 body.light{
-  --bg:#f4f1ec;
+  --bg:#fff;
   --surface:#ffffff;
-  --surface2:#f0ece4;
-  --border:#d8d0c4;
-  --accent:#8b6d42;
-  --accent2:#3d6e99;
-  --text:#2a2420;
+  --surface2:#eeeeee;
+  --border:#cccccc;
+  --accent:#555555;
+  --accent2:#3366aa;
+  --text:#111;
   --text-muted:#7a6e62;
-  --header-bg:#e8e0d4;
+  --header-bg:#333;
   --shadow:rgba(0,0,0,0.12);
-  --hover:rgba(139,109,66,0.05);
+  --hover:rgba(0,0,0,0.04);
+  --hdr-bg:#444;
+  --hdr-text:#fff;
 }
 body{
   background:var(--bg);
@@ -170,12 +174,12 @@ body{
 }
 /* ヘッダー */
 #hdr,#sticky-header{
-  background:linear-gradient(135deg,#0d0d12 0%,var(--header-bg) 50%,#0d0d12 100%) !important;
+  background:var(--header-bg,#333) !important;
   border-bottom:1px solid var(--border);
   transition:background .25s;
 }
 body.light #hdr,body.light #sticky-header{
-  background:linear-gradient(135deg,#f4f1ec 0%,var(--header-bg) 50%,#f4f1ec 100%) !important;
+  background:#333 !important;
 }
 /* カード・サーフェス */
 .card,.char-card,#auth_box,.sheet{background:var(--surface) !important}
@@ -198,8 +202,8 @@ input[type=text],input[type=number],textarea,select{
 }
 body.light .acc-header,body.light .sub-acc-header,
 body.light .sub2-acc-header,body.light .hdr{
-  background:#b8b0a0 !important;
-  color:#1a1410 !important;
+  background:#444 !important;
+  color:#fff !important;
 }
 .acc-body,.sub-acc-body,.sub2-acc-body,.section{
   background:var(--surface2) !important;
@@ -220,7 +224,7 @@ body.light .s-alive{background:#d4f5e4;color:#1a7a45}
 body.light .s-lost{background:#fde8e8;color:#b03030}
 body.light .s-retired{background:#e8eef5;color:#3a5a8a}
 body.light .s-missing{background:#fff3d4;color:#8a6000}
-body.light .s-dead{background:#e8e8e8;color:#555}
+body.light .s-dead{background:var(--surface2);color:#555}
 body.light .s-insane{background:#f0e4ff;color:#6a1a9a}
 /* コンテナ・パネル */
 .container{background:transparent !important}
@@ -240,7 +244,7 @@ body.light .s-insane{background:#f0e4ff;color:#6a1a9a}
 body.light .pts-bar{background:#ccc8be !important}
 /* sticky-pt-block */
 .sticky-pt-block{background:#252535 !important}
-body.light .sticky-pt-block{background:#ccc0b0 !important}
+body.light .sticky-pt-block{background:#ccc !important}
 /* テーマ切り替えボタン */
 #theme_btn{
   padding:2px 10px;font-size:12px;cursor:pointer;
@@ -249,9 +253,9 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
 }
 #theme_btn:hover{border-color:var(--accent);color:var(--accent)}
 /* fafafa → surface2 */
-[style*="background:#fafafa"],[style*="background: #fafafa"]{background:var(--surface2) !important}
-[style*="background:#f8f8f8"]{background:var(--surface2) !important}
-[style*="background:#f0f0f0"]{background:var(--surface2) !important}
+[style*="background:var(--surface2)"],[style*="background: #fafafa"]{background:var(--surface2) !important}
+[style*="background:var(--surface2)"]{background:var(--surface2) !important}
+[style*="background:var(--surface2)"]{background:var(--surface2) !important}
 [style*="color:#333"]{color:var(--text) !important}
 [style*="color:#444"]{color:var(--text) !important}
 [style*="color:#555"]{color:var(--text-muted) !important}
@@ -259,17 +263,11 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
 /* ===== テーマ修正パッチ ===== */
 
 /* ライトモードのヘッダー文字色 */
-body.light #sticky-header,
-body.light #hdr{
-  color:#2a2420 !important;
-}
-body.light #sticky-header *,
-body.light #hdr *{
-  color:#2a2420 !important;
-}
+
+
 body.light .sticky-pt-block span,
 body.light .sticky-pt-block div{
-  color:#2a2420 !important;
+  color:#111 !important;
 }
 
 /* 能力値テーブル・パーソナルデータ・技能テーブル背景を統一 */
@@ -308,22 +306,22 @@ body.light .skill-table th{
 }
 body.light .fute-table td[style*="background:#444"],
 body.light .fute-table td[style*="background:#555"]{
-  background:#b8b0a0 !important;
-  color:#1a1410 !important;
+  background:#444 !important;
+  color:#fff !important;
 }
 
 /* ライトモードのヘッダーは濃い色に */
 body.light #sticky-header,
 body.light #hdr{
-  background:linear-gradient(135deg,#5a4a3a 0%,#3d2e1e 50%,#5a4a3a 100%) !important;
-  color:#f4f1ec !important;
+  background:#333 !important;
+  color:#fff !important;
 }
 body.light #sticky-header *,
 body.light #hdr *{
-  color:#f4f1ec !important;
+  color:#fff !important;
 }
 body.light .pts-remain.ok{color:#2a7a4a !important}
-body.light #sticky-pcname{color:#f4f1ec !important}
+body.light #sticky-pcname{color:#fff !important}
 
 /* セクション区切りラベル */
 .skill-sec-hdr{
@@ -348,7 +346,7 @@ body.light #sticky-pcname{color:#f4f1ec !important}
 body.light #theme_btn{
   background:rgba(255,255,255,0.2);
   border-color:rgba(255,255,255,0.4);
-  color:#f4f1ec;
+  color:#fff;
 }
 
 
@@ -360,7 +358,7 @@ body.light .acc-header,
 body.light .sub-acc-header,
 body.light .sub2-acc-header,
 body.light .skill-sec-hdr{
-  background:#8a7a6a !important;
+  background:#444 !important;
   color:#f8f4ee !important;
 }
 /* sectionの背景をsurfaceに統一 */
@@ -375,7 +373,7 @@ body:not(.light) .section{
 /* 不定の内容・期間ラベルをhdrと統一 */
 body.light .fute-table td[style*="background:#444"],
 body.light .fute-table td[style*="background:#555"]{
-  background:#8a7a6a !important;
+  background:#444 !important;
   color:#f8f4ee !important;
 }
 body:not(.light) .fute-table td[style*="background:#444"],
@@ -387,11 +385,11 @@ body:not(.light) .fute-table td[style*="background:#555"]{
 /* 職業P・興味P ライトモード */
 body.light .sticky-pt-block{
   background:rgba(90,74,58,0.15) !important;
-  color:#2a2420 !important;
+  color:#111 !important;
 }
 body.light .sticky-pt-block span,
 body.light .sticky-pt-block div{
-  color:#2a2420 !important;
+  color:#111 !important;
 }
 body.light #job_remain,
 body.light #int_remain,
@@ -400,8 +398,8 @@ body.light #int_remain_sp{
   color:#2a7a4a !important;
 }
 body.light .pts-bar{
-  background:#ccc0b0 !important;
-  border-color:#b8b0a0 !important;
+  background:#ccc !important;
+  border-color:#aaa !important;
 }
 
 /* PC名ライトモード */
@@ -410,7 +408,7 @@ body.light #sticky-pcname{
 }
 /* ライトモードのヘッダー区切り線 */
 body.light #sticky-header > div:first-child > div:nth-child(2){
-  background:#9a8a78 !important;
+  background:#666 !important;
 }
 
 /* ダークモード skill-sec-hdr */
@@ -430,6 +428,495 @@ body:not(.light) .sticky-pt-block{
   color:var(--text) !important;
 }
 body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
+
+
+/* ===== テーマ修正パッチ3: ライトモード白黒系 ===== */
+
+/* ライトモードのヘッダーを黒系に戻す */
+body.light #sticky-header,
+body.light #hdr{
+  background:#333 !important;
+  color:#fff !important;
+}
+body.light #sticky-header *,
+body.light #hdr *,
+body.light #sticky-pcname{
+  color:#fff !important;
+}
+body.light .sticky-pt-block{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .sticky-pt-block span,
+body.light .sticky-pt-block div{
+  color:#fff !important;
+}
+body.light #job_remain,
+body.light #int_remain,
+body.light #job_remain_sp,
+body.light #int_remain_sp{
+  color:#4dbb88 !important;
+}
+body.light .pts-bar{
+  background:#666 !important;
+  border-color:#555 !important;
+}
+
+/* ライトモードのhdr・acc-headerを黒系に */
+body.light .hdr,
+body.light .acc-header,
+body.light .sub-acc-header,
+body.light .sub2-acc-header,
+body.light .skill-sec-hdr{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードの不定ラベルを黒系に */
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードのsectionを白系に */
+body.light .section{
+  background:#fff !important;
+  border-color:#ccc !important;
+}
+body.light .acc-body,
+body.light .sub-acc-body,
+body.light .sub2-acc-body{
+  background:var(--surface2) !important;
+}
+
+/* ライトモードth */
+body.light th,
+body.light .skill-table th{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードのテキストを黒に */
+body.light{
+  --text:#111 !important;
+  --text-muted:#666 !important;
+  --bg:#d8d8d8 !important;
+  --surface:#fff !important;
+  --surface2:#f0f0f0 !important;
+  --border:#ccc !important;
+}
+
+
+/* ===== アイコンボタン背景修正 ===== */
+/* ライト・ダーク両方でアイコンボタンがヘッダーと同色になるよう固定 */
+#sticky-actions button[title="保存"],
+#sticky-actions button[title="閲覧URL"],
+#sticky-actions button[title="コマ出力"]{
+  background:#333 !important;
+}
+body.light #sticky-actions button[title="保存"],
+body.light #sticky-actions button[title="閲覧URL"],
+body.light #sticky-actions button[title="コマ出力"]{
+  background:#333 !important;
+}
+
+
+/* ===== テーマ最終パッチ（全上書き） ===== */
+
+/* --- ライトモード --- */
+body.light .hdr,
+body.light .acc-header,
+body.light .sub-acc-header,
+body.light .sub2-acc-header,
+body.light .skill-sec-hdr{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light th, body.light .skill-table th{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .section, body.light .acc-body,
+body.light .sub-acc-body, body.light .sub2-acc-body{
+  background:var(--surface2) !important;
+}
+body.light td{ background:#fff !important; }
+
+/* --- ダークモード --- */
+body:not(.light) .hdr,
+body:not(.light) .acc-header,
+body:not(.light) .sub-acc-header,
+body:not(.light) .sub2-acc-header,
+body:not(.light) .skill-sec-hdr{
+  background:#1e1e2e !important;
+  color:var(--text) !important;
+}
+body:not(.light) th,
+body:not(.light) .skill-table th{
+  background:#1e1e2e !important;
+  color:var(--text) !important;
+}
+body:not(.light) .fute-table td[style*="background:#444"],
+body:not(.light) .fute-table td[style*="background:#555"]{
+  background:#1e1e2e !important;
+  color:var(--text) !important;
+}
+body:not(.light) .section,
+body:not(.light) .acc-body,
+body:not(.light) .sub-acc-body,
+body:not(.light) .sub2-acc-body{
+  background:var(--surface2) !important;
+}
+body:not(.light) td{ background:var(--surface) !important; }
+body:not(.light) .derived{ background:var(--surface2) !important; }
+
+
+/* ===== ダークモード強制上書き ===== */
+html body:not(.light) .hdr,
+html body:not(.light) .acc-header,
+html body:not(.light) .sub-acc-header,
+html body:not(.light) .sub2-acc-header,
+html body:not(.light) .skill-sec-hdr,
+html body:not(.light) th,
+html body:not(.light) .skill-table th{
+  background:#1e1e2e !important;
+  color:#e8e4da !important;
+}
+html body:not(.light) .fute-table td[style*="background:#444"],
+html body:not(.light) .fute-table td[style*="background:#555"]{
+  background:#1e1e2e !important;
+  color:#e8e4da !important;
+}
+/* personal-dataのラベルtd */
+html body:not(.light) .personal-data td.hdr,
+html body:not(.light) td.hdr{
+  background:#1e1e2e !important;
+  color:#e8e4da !important;
+}
+
+
+/* ===== 浮き修正パッチ ===== */
+
+/* パーソナルデータのラベル・input・select */
+body:not(.light) .personal-data td,
+body:not(.light) .personal-data th{
+  background:var(--surface) !important;
+}
+body:not(.light) .personal-data td.hdr{
+  background:var(--hdr-bg) !important;
+  color:var(--hdr-text) !important;
+}
+body:not(.light) input[type=text],
+body:not(.light) input[type=number],
+body:not(.light) input[type=password],
+body:not(.light) select,
+body:not(.light) textarea{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* 不定テーブルの入力欄 */
+body:not(.light) .fute-table td{
+  background:var(--surface) !important;
+}
+body:not(.light) .fute-table input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* 武器・所持品inputの背景 */
+body:not(.light) #weapon_rows input,
+body:not(.light) #item_rows input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* うちよそ・関係名 */
+body:not(.light) .relg-name-inp{
+  color:var(--text) !important;
+}
+
+/* ネタバレのパスワード欄 */
+body:not(.light) .secret-pass-row{
+  background:var(--surface2) !important;
+}
+body:not(.light) .secret-pass-row input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* memo-titleなどの薄背景 */
+body:not(.light) .memo-title{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+body:not(.light) .memo-block{
+  background:var(--surface) !important;
+}
+
+/* 一覧バー */
+body:not(.light) #sp-header-divider + div,
+body:not(.light) [style*="background:#f0f0f0"],
+body:not(.light) [style*="background:#f4f4f4"]{
+  background:var(--surface2) !important;
+}
+
+/* skill-nameの背景 */
+body:not(.light) .sk-name{
+  background:var(--surface) !important;
+}
+body:not(.light) .sk-name input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* job_tokki・desc */
+body:not(.light) #job_tokki,
+body:not(.light) #t1_desc,
+body:not(.light) #t2_desc{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+
+/* 一覧に戻るバー */
+body:not(.light) [style*="background:#f0f0f0"]{
+  background:var(--surface2) !important;
+  color:var(--text-muted) !important;
+}
+
+
+/* ===== 浮き修正パッチ2: input全体 ===== */
+body:not(.light) input[type=text],
+body:not(.light) input[type=number],
+body:not(.light) input[type=password],
+body:not(.light) input[type=email],
+body:not(.light) select,
+body:not(.light) textarea{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+  border-color:var(--border) !important;
+}
+/* checkboxは除外 */
+body:not(.light) input[type=checkbox]{
+  background:initial !important;
+}
+/* 全てのtdも */
+body:not(.light) td{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+/* .section内 */
+body:not(.light) .section,
+body:not(.light) .section table,
+body:not(.light) .section td,
+body:not(.light) .section input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+/* .derived */
+body:not(.light) .derived{
+  background:var(--surface2) !important;
+  color:var(--text-muted) !important;
+}
+/* .row-label */
+body:not(.light) .row-label{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+/* フォームのselectの矢印も */
+body:not(.light) select option{
+  background:var(--surface2);
+  color:var(--text);
+}
+
+
+/* ===== ボタン・ヘッダー色統一パッチ ===== */
+
+/* --- 技能表ヘッダー --- */
+/* ベースCSSのacc-headerを変数で上書き */
+.acc-header,.sub-acc-header,.sub2-acc-header{
+  background:var(--hdr-bg) !important;
+  color:var(--hdr-text) !important;
+}
+.acc-header:hover,.sub-acc-header:hover,.sub2-acc-header:hover{
+  filter:brightness(1.15);
+}
+
+/* --- 不定ヘッダー --- */
+.fute-table td[style*="background:#444"],
+.fute-table td[style*="background:#555"],
+.fute-table td[style*="background:var(--hdr-bg"]{
+  background:var(--hdr-bg) !important;
+  color:var(--hdr-text) !important;
+}
+
+/* --- 開く/閉じるボタン --- */
+button[style*="background:#666"]{
+  background:var(--hdr-bg) !important;
+  color:var(--hdr-text) !important;
+  border:1px solid var(--border) !important;
+}
+
+/* --- 解除・変更ボタン --- */
+button[style*="background:#eee"]{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+  border-color:var(--border) !important;
+}
+
+/* --- secret-pass-row --- */
+.secret-pass-row{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+.secret-pass-row span{
+  color:var(--text-muted) !important;
+}
+.secret-pass-row input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+  border-color:var(--border) !important;
+}
+
+/* --- 全td/input --- */
+td{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+.derived{
+  background:var(--surface2) !important;
+}
+.row-label{
+  background:var(--surface2) !important;
+}
+input[type=text],input[type=number],input[type=password],input[type=email]{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+select{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+textarea{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* --- ただしライトモードは元の色を維持 --- */
+body.light td{ background:initial !important; }
+body.light .derived{ background:#e8e8e8 !important; }
+body.light .row-label{ background:#e0e0e0 !important; }
+body.light input[type=text],
+body.light input[type=number],
+body.light input[type=password],
+body.light input[type=email]{ background:#fff !important; color:#111 !important; }
+body.light select{ background:#fff !important; color:#111 !important; }
+body.light textarea{ background:#fff !important; color:#111 !important; }
+body.light .secret-pass-row{ background:#f5f5f5 !important; }
+body.light button[style*="background:#eee"]{ background:#eee !important; color:#333 !important; }
+body.light button[style*="background:#666"]{ background:#666 !important; color:#fff !important; }
+body.light .acc-header,.body.light .sub-acc-header,.body.light .sub2-acc-header{ filter:none; }
+
+
+/* ===== 総合修正パッチ ===== */
+
+/* アイコン周辺をヘッダー色に完全統一 */
+#sticky-header,
+#sticky-actions,
+#sp-row1{
+  background:#333 !important;
+}
+body.light #sticky-header,
+body.light #sticky-actions,
+body.light #sp-row1{
+  background:#333 !important;
+}
+
+/* 技能表の初期値・合計値欄を薄灰色に */
+.sk-base{ background:#eeeeee !important; color:#666 !important; }
+.sk-total{ background:#eeeeee !important; }
+body:not(.light) .sk-base{ background:var(--surface2) !important; color:var(--text-muted) !important; }
+body:not(.light) .sk-total{ background:var(--surface2) !important; }
+
+/* ライトモード: 開く/閉じるボタンの枠線を濃く */
+body.light button[style*="background:#666"],
+body.light .relg-toggle-zone + button{
+  border:1px solid #444 !important;
+}
+
+/* 一覧バーの色 */
+#back-bar{
+  background:#e0e0e0;
+  border-bottom:2px solid #bbb;
+}
+body:not(.light) #back-bar{
+  background:var(--surface2);
+  border-bottom:2px solid var(--border);
+}
+
+/* カラーコードfont-weightをリセット */
+#color_code{ font-weight:normal !important; }
+
+/* メニュー内の文字色を白に統一 */
+#sheet_menu div{ color:#eee !important; }
+
+
+body.light .relg-name-inp{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .secret-item-header{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .secret-item-header input[type=text]{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+
+/* スマホ特徴表の白背景 */
+#row2_tokucho,
+#row2_tokucho > div{
+  background:var(--surface) !important;
+}
+/* コマ出力ダイアログ */
+#coco_palette{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+/* ライトモードの技能合計背景 */
+body.light .sk-total{ background:#e8e8e8 !important; color:#111 !important; }
+/* ダークモードの選択欄 */
+body:not(.light) .row2_tokucho select,
+body:not(.light) #row2_tokucho select{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+/* 開く閉じるボタン枠線 */
+body.light [style*="background:#666"][style*="cursor:pointer"]{
+  border:1px solid #333 !important;
+}
+
+
+/* view: ライトモードのアイコン周り完全修正 */
+#sticky-header{background:#333 !important;}
+#sp-row1{background:#333 !important;}
+#header_left{background:#333 !important;}
+#sticky-actions{background:#333 !important;}
+body.light #sticky-header,
+body.light #sp-row1,
+body.light #header_left,
+body.light #sticky-actions{
+  background:#333 !important;
+}
+body.light .sticky-pt-block{background:#444 !important;}
 
 </style>
 </head>
@@ -486,7 +973,7 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
 <!-- ===== 行1 ===== -->
 <div class="section" id="sec_row1">
 <div id="row1_flex" style="display:flex">
-  <div style="width:378px;min-width:378px;border-right:1px solid #888" class="personal-data">
+  <div style="width:378px;min-width:378px;border-right:1px solid var(--border)" class="personal-data">
     <div class="hdr">パーソナルデータ</div>
     <table>
       <colgroup><col style="width:52px"><col style="width:140px"><col style="width:52px"><col style="width:140px"></colgroup>
@@ -500,7 +987,7 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
         <td colspan="3">
           <div style="display:flex;align-items:center;gap:6px">
             <input type="color" id="txtcolor" value="#000000" oninput="updateColorCode()" style="width:36px;height:16px;border:none;cursor:pointer">
-            <span id="color_code" style="font-size:10px;color:#666">#000000 / RGB(0,0,0)</span>
+            <span id="color_code" style="font-size:10px;color:var(--text);font-family:Georgia,serif">#000000 / RGB(0,0,0)</span>
           </div>
         </td>
       </tr>
@@ -518,7 +1005,7 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
             <option value="lost">ロスト</option>
             <option value="retired">引退</option>
             <option value="missing">行方不明</option>
-            <option value="dead">死亡</option>
+            <option value="dead">継続不可</option>
             <option value="insane">永久狂気</option>
           </select>
         </td>
@@ -581,38 +1068,38 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
         </tr>
       </tbody>
     </table>
-    <div style="display:flex;flex-wrap:wrap;gap:4px;padding:3px 4px;border-top:1px solid #ccc;font-size:11px;align-items:center;background:#f8f8f8">
-      <span style="background:#444;color:#fff;padding:1px 4px">SAN</span>
-      現在<input type="number" id="san_now" style="width:36px;border:1px solid #aaa" oninput="updateSanLine()">
+    <div style="display:flex;flex-wrap:wrap;gap:4px;padding:3px 4px;border-top:1px solid var(--border);font-size:11px;align-items:center;background:var(--surface2)">
+      <span style="background:var(--hdr-bg);color:var(--hdr-text);padding:1px 4px">SAN</span>
+      現在<input type="number" id="san_now" style="width:36px;border:1px solid var(--border)" oninput="updateSanLine()">
       / <span id="max_san">99</span>（不定：<span id="hutel_line" style="font-weight:bold">—</span>）
       &nbsp;&nbsp;
-      <span style="background:#444;color:#fff;padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:8px">0</span>
+      <span style="background:var(--hdr-bg);color:var(--hdr-text);padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:8px">0</span>
     </div>
-    <div style="border-top:1px solid #ccc;background:#f8f8f8">
-      <div style="background:#444;color:#fff;font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
+    <div style="border-top:1px solid var(--border);background:var(--surface2);">
+      <div style="background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
       <div style="padding:2px 4px">
       <table class="fute-table" style="width:100%;border-collapse:collapse;margin-bottom:2px">
         <tr>
-          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
-          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
-          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">内容</td>
+          <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">期間</td>
+          <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
         <tr>
-          <td style="background:#444;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
-          <td colspan="3" style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
+          <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
       </table>
       <table class="fute-table" style="width:100%;border-collapse:collapse">
         <tr>
-          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
-          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
-          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">内容</td>
+          <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">期間</td>
+          <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
         <tr>
-          <td style="background:#444;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
-          <td colspan="3" style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
+          <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
       </table>
     </div>
@@ -625,12 +1112,12 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
 <div class="section" id="sec_row2">
 <div id="row2_flex" style="display:flex">
   <!-- 職業特記 378px固定 -->
-  <div id="row2_job" style="width:378px;min-width:378px;border-right:1px solid #aaa;padding:3px">
+  <div id="row2_job" style="width:378px;min-width:378px;border-right:1px solid var(--border);padding:3px">
     <div class="hdr" style="margin-bottom:4px">職業特記</div>
     <!-- 職業選択 6.5 : 計算式 3.5 -->
-    <div style="display:flex;gap:0;margin-bottom:4px;border:1px solid #e0e0e0;border-radius:3px;overflow:hidden">
-      <select id="job_ref_sel" onchange="onJobRefChange()" style="flex:65;border:none;border-right:1px solid #e0e0e0;font-size:11px;padding:2px 3px;background:#fff;min-width:0"></select>
-      <select id="job_formula_sel" onchange="calcJobPts()" style="flex:35;border:none;font-size:11px;padding:2px 3px;background:#fff;min-width:0">
+    <div style="display:flex;gap:0;margin-bottom:4px;border:1px solid var(--border);border-radius:3px;overflow:hidden">
+      <select id="job_ref_sel" onchange="onJobRefChange()" style="flex:65;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);min-width:0"></select>
+      <select id="job_formula_sel" onchange="calcJobPts()" style="flex:35;border:none;font-size:11px;padding:2px 3px;background:var(--surface);min-width:0">
         <option value="EDU*20">EDU×20</option>
         <option value="EDU*10+STR*10">EDU×10＋STR×10</option>
         <option value="EDU*10+CON*10">EDU×10＋CON×10</option>
@@ -639,15 +1126,15 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
         <option value="EDU*10+APP*10">EDU×10＋APP×10</option>
       </select>
     </div>
-    <div id="job_tokki" style="font-size:11px;color:#333;min-height:28px;padding:3px 4px;line-height:1.7;background:#fafafa;border:1px solid #e0e0e0;border-radius:3px;margin-bottom:4px">職業参照を選択してください</div>
+    <div id="job_tokki" style="font-size:11px;color:#333;min-height:28px;padding:3px 4px;line-height:1.7;background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:4px">職業参照を選択してください</div>
     <div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px">
-      <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">
     </div>
     <div style="font-size:11px;color:#555;margin-bottom:1px">その他特記</div>
-    <textarea class="auto-h" id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;font-size:11px;border:1px solid #ddd;padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
+    <textarea class="auto-h" id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;font-size:11px;border:1px solid var(--border);padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
 
   </div>
   <!-- 特徴表①② -->
@@ -655,29 +1142,29 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
     <div class="hdr" style="margin-bottom:4px">特徴表</div>
 
     <!-- 特徴表① -->
-    <div style="margin-bottom:6px;border:1px solid #e0e0e0;border-radius:3px;overflow:hidden">
-      <div style="display:flex;gap:0;background:#f8f8f8;border-bottom:1px solid #e0e0e0">
-        <select id="t1_sel" onchange="showTokucho(1)" style="flex:7;border:none;border-right:1px solid #e0e0e0;font-size:11px;padding:2px 3px;background:#fff;min-width:0"><option value="">-- 特徴表①を選択 --</option></select>
-        <select id="t1_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:#fff;min-width:0">
+    <div style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden">
+      <div style="display:flex;gap:0;background:#f8f8f8;border-bottom:1px solid var(--border)">
+        <select id="t1_sel" onchange="showTokucho(1)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);min-width:0"><option value="">-- 特徴表①を選択 --</option></select>
+        <select id="t1_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--surface);min-width:0">
           <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
           <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
         </select>
       </div>
-      <div id="t1_desc" style="font-size:11px;color:#333;min-height:28px;background:#fafafa;padding:3px 4px;line-height:1.6"></div>
-      <input type="text" id="t1_memo" placeholder="メモ..." style="border:none;border-top:1px solid #e8e8e8;font-size:11px;text-align:left;padding:2px 4px;width:100%;background:#fff">
+      <div id="t1_desc" style="font-size:11px;color:#333;min-height:28px;background:var(--surface2);padding:3px 4px;line-height:1.6"></div>
+      <input type="text" id="t1_memo" placeholder="メモ..." style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:#fff">
     </div>
 
     <!-- 特徴表② -->
-    <div style="border:1px solid #e0e0e0;border-radius:3px;overflow:hidden">
-      <div style="display:flex;gap:0;background:#f8f8f8;border-bottom:1px solid #e0e0e0">
-        <select id="t2_sel" onchange="showTokucho(2)" style="flex:7;border:none;border-right:1px solid #e0e0e0;font-size:11px;padding:2px 3px;background:#fff;min-width:0"><option value="">-- 特徴表②を選択 --</option></select>
-        <select id="t2_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:#fff;min-width:0">
+    <div style="border:1px solid var(--border);border-radius:3px;overflow:hidden">
+      <div style="display:flex;gap:0;background:#f8f8f8;border-bottom:1px solid var(--border)">
+        <select id="t2_sel" onchange="showTokucho(2)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);min-width:0"><option value="">-- 特徴表②を選択 --</option></select>
+        <select id="t2_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--surface);min-width:0">
           <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
           <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
         </select>
       </div>
-      <div id="t2_desc" style="font-size:11px;color:#333;min-height:28px;background:#fafafa;padding:3px 4px;line-height:1.6"></div>
-      <input type="text" id="t2_memo" placeholder="メモ..." style="border:none;border-top:1px solid #e8e8e8;font-size:11px;text-align:left;padding:2px 4px;width:100%;background:#fff">
+      <div id="t2_desc" style="font-size:11px;color:#333;min-height:28px;background:var(--surface2);padding:3px 4px;line-height:1.6"></div>
+      <input type="text" id="t2_memo" placeholder="メモ..." style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:#fff">
     </div>
   </div>
 </div>
@@ -687,9 +1174,9 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
 <div id="main_flex" style="display:flex;gap:5px;align-items:flex-start">
   <!-- 技能列 -->
   <div id="skill_col" style="flex:0 0 370px;width:370px">
-    <div style="display:flex;align-items:center;gap:6px;padding:2px 6px;background:#444;color:#fff;margin-bottom:2px;border-radius:2px">
+    <div style="display:flex;align-items:center;gap:6px;padding:2px 6px;background:var(--hdr-bg);color:var(--hdr-text);margin-bottom:2px;border-radius:2px">
       <span style="font-size:11px;font-weight:bold;flex:1">技能表</span>
-      <button onclick="toggleAllDefault()" id="tog_all" style="font-size:10px;padding:1px 8px;background:#ccc;border:1px solid #999;border-radius:2px;cursor:pointer">初期値を隠す</button>
+      <button onclick="toggleAllDefault()" id="tog_all" style="font-size:10px;padding:1px 8px;background:#ccc;border:1px solid var(--border);border-radius:2px;cursor:pointer">初期値を隠す</button>
     </div>
     <div style="margin-bottom:2px">
       <div class="skill-sec-hdr">戦闘技能</div>
@@ -744,7 +1231,7 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
             <tbody id="weapon_rows"></tbody>
           </table>
           <button class="add-row-btn" onclick="addWeaponRow()">＋追加</button>
-          <div style="margin-top:5px;font-size:11px">装甲: <input type="text" placeholder="-" style="border:1px solid #aaa;width:180px;font-size:11px;padding:1px 4px;text-align:left;background:#fff"></div>
+          <div style="margin-top:5px;font-size:11px">装甲: <input type="text" placeholder="-" style="border:1px solid var(--border);width:180px;font-size:11px;padding:1px 4px;text-align:left;background:#fff"></div>
         </div>
       </div>
     </div>
@@ -766,13 +1253,13 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
       <div class="acc-body" id="memo_acc">
         <div style="padding:4px">
           <div id="memo_rows">
-            <div class="memo-block" style="margin-bottom:6px;border:1px solid #ddd;border-radius:3px;overflow:hidden">
-              <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid #e8e8e8;font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
-              <textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:#fff;resize:none;display:block" oninput="autoResizeTA(this)"></textarea>
+            <div class="memo-block" style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden">
+              <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
+              <textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:var(--surface);resize:none;display:block" oninput="autoResizeTA(this)"></textarea>
             </div>
           </div>
           <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
-          <div style="margin-top:6px;border:1px solid #777;border-radius:2px">
+          <div style="margin-top:6px;border:1px solid var(--border);border-radius:2px">
             <div class="sub-acc-header" onclick="toggleSubAcc('rel_acc')"><span>▮ 人間関係</span><span id="arr_rel_acc">▶</span></div>
             <div class="sub-acc-body" id="rel_acc">
               <div id="rel_groups_wrap"></div>
@@ -795,31 +1282,31 @@ body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
       <div class="acc-header" onclick="toggleAcc('aftereffect_outer')"><span>▮ 後遺症・AF・呪文</span><span id="arr_aftereffect_outer">▶</span></div>
       <div class="acc-body" id="aftereffect_outer">
         <div style="padding:4px">
-          <div style="border:1px solid #ccc;border-radius:2px;margin-bottom:4px">
+          <div style="border:1px solid var(--border);border-radius:2px;margin-bottom:4px">
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_kouisho')"><span>後遺症</span><span id="arr_ae_kouisho">▶</span></div>
             <div class="sub2-acc-body" id="ae_kouisho">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">後遺症名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#555;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">後遺症名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
                 <tbody id="tbody_kouisho"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_kouisho')">＋追加</button>
             </div>
           </div>
-          <div style="border:1px solid #ccc;border-radius:2px;margin-bottom:4px">
+          <div style="border:1px solid var(--border);border-radius:2px;margin-bottom:4px">
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_af')"><span>AF</span><span id="arr_ae_af">▶</span></div>
             <div class="sub2-acc-body" id="ae_af">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">AF名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#555;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">AF名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
                 <tbody id="tbody_af"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_af')">＋追加</button>
             </div>
           </div>
-          <div style="border:1px solid #ccc;border-radius:2px;margin-bottom:4px">
+          <div style="border:1px solid var(--border);border-radius:2px;margin-bottom:4px">
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_spell')"><span>呪文</span><span id="arr_ae_spell">▶</span></div>
             <div class="sub2-acc-body" id="ae_spell">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">呪文名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#555;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">呪文名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
                 <tbody id="tbody_spell"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_spell')">＋追加</button>
@@ -946,8 +1433,8 @@ function makeSkillRow(name,base,key,hasFree,freeVal,isDefault){
   const tr=document.createElement('tr');
   if(isDefault)tr.classList.add('skill-default-row');
   let nameHtml=name;
-  if(hasFree)nameHtml=`${name}(<input type="text" value="${freeVal||''}" class="free-inp-auto" style="border:none;border-bottom:1px solid #aaa;min-width:44px;width:44px;font-size:11px;outline:none;background:transparent;text-align:left" oninput="autoResize(this)">)`;
-  if(key==='operate')nameHtml=`操縦(<input type="text" style="border:none;border-bottom:1px solid #aaa;width:50px;font-size:11px;outline:none;background:transparent;text-align:left" placeholder="種類">)`;
+  if(hasFree)nameHtml=`${name}(<input type="text" value="${freeVal||''}" class="free-inp-auto" style="border:none;border-bottom:1px solid var(--border);min-width:44px;width:44px;font-size:11px;outline:none;background:transparent;text-align:left" oninput="autoResize(this)">)`;
+  if(key==='operate')nameHtml=`操縦(<input type="text" style="border:none;border-bottom:1px solid var(--border);width:50px;font-size:11px;outline:none;background:transparent;text-align:left" placeholder="種類">)`;
   const isDyn=key==='kaihi'||key==='kokugo';
   const bAttr=isDyn?`data-basekey="${key}"`:`data-base`;
   const bVal=isDyn?(key==='kaihi'?getCur().dex*2:getCur().edu*5):base;
@@ -970,7 +1457,7 @@ function addCustomSkill(tbodyId){
   const tr=document.createElement('tr');
   tr.innerHTML=`
     <td class="sk-chk"><input type="checkbox"></td>
-    <td class="sk-name" data-skill="${key}"><input type="text" placeholder="技能名" style="border:none;border-bottom:1px solid #aaa;width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
+    <td class="sk-name" data-skill="${key}"><input type="text" placeholder="技能名" style="border:none;border-bottom:1px solid var(--border);width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
     <td class="sk-base" data-base>0</td>
     <td class="sk-inp"><input type="number" class="job-inp" oninput="skillChanged(this)"></td>
     <td class="sk-inp"><input type="number" class="int-inp" oninput="skillChanged(this)"></td>
@@ -1269,8 +1756,8 @@ function addMemoRow(){
   const div=document.getElementById('memo_rows');
   const w=document.createElement('div');
   w.className='memo-block';
-  w.style.cssText='margin-bottom:6px;border:1px solid #ddd;border-radius:3px;overflow:hidden;position:relative';
-  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid #e8e8e8;font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:#fff;resize:none;display:block" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.style.cssText='margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden;position:relative';
+  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:var(--surface);resize:none;display:block" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.appendChild(w);
 }
 
@@ -1318,7 +1805,7 @@ function addRelSubRow(bodyId){
 
 function addAERow(tbodyId){
   const tbody=document.getElementById(tbodyId);const tr=document.createElement('tr');
-  tr.innerHTML=`<td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:#fff;font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:#fff;font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="width:16px;border:none;text-align:center;vertical-align:middle"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  tr.innerHTML=`<td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:var(--surface);font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:var(--surface);font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="width:16px;border:none;text-align:center;vertical-align:middle"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
   tbody.appendChild(tr);
 }
 
@@ -1345,17 +1832,17 @@ function addSecretItem(title,pass){
       <button onclick="document.getElementById('${id}').remove()" class="del-btn" style="margin-left:4px">✕</button>
     </div>
     <div class="secret-item-body" id="body_${id}">
-      <div style="padding:3px 6px;background:#fafafa;border-bottom:1px solid #ddd">
-        <input type="text" placeholder="何のネタバレか（概要）" style="border:1px solid #aaa;width:100%;font-size:11px;padding:2px 4px;text-align:left;background:#fff">
+      <div style="padding:3px 6px;background:var(--surface2);border-bottom:1px solid var(--border)">
+        <input type="text" placeholder="何のネタバレか（概要）" style="border:1px solid var(--border);width:100%;font-size:11px;padding:2px 4px;text-align:left;background:#fff">
       </div>
       <div class="secret-pass-row">
         <span style="font-size:10px;color:#666">PASS:</span>
-        <input type="password" id="pass_${id}" placeholder="パスワード" style="border:1px solid #aaa;width:100px;font-size:11px;padding:1px 4px;text-align:left">
-        <button onclick="unlockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid #aaa;background:#eee">解除</button>
+        <input type="password" id="pass_${id}" placeholder="パスワード" style="border:1px solid var(--border);width:100px;font-size:11px;padding:1px 4px;text-align:left">
+        <button onclick="unlockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid var(--border);background:#eee">解除</button>
         <button onclick="lockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid #fcc;background:#fee;margin-left:4px">🔒</button>
         <span style="font-size:10px;color:#888;margin-left:4px">変更後PASS:</span>
-        <input type="password" id="newpass_${id}" placeholder="新PASS" style="border:1px solid #aaa;width:80px;font-size:11px;padding:1px 4px;text-align:left">
-        <button onclick="changeSecretPass('${id}')" style="font-size:11px;padding:1px 6px;cursor:pointer;border:1px solid #aaa;background:#eee">変更</button>
+        <input type="password" id="newpass_${id}" placeholder="新PASS" style="border:1px solid var(--border);width:80px;font-size:11px;padding:1px 4px;text-align:left">
+        <button onclick="changeSecretPass('${id}')" style="font-size:11px;padding:1px 6px;cursor:pointer;border:1px solid var(--border);background:#eee">変更</button>
       </div>
       <div id="content_${id}" style="display:none;padding:4px">
         <select style="width:120px;margin-bottom:4px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select>
@@ -1487,13 +1974,13 @@ function showCharSelectUI(list) {
   modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
 
   modal.innerHTML = `
-    <div style="background:#fff;border-radius:4px;padding:16px;min-width:300px;max-width:480px;width:90%">
+    <div style="background:var(--surface);border-radius:4px;padding:16px;min-width:300px;max-width:480px;width:90%">
       <div style="font-weight:bold;font-size:13px;margin-bottom:8px">キャラクターを選択</div>
       <div id="char_list_inner" style="max-height:240px;overflow-y:auto;margin-bottom:8px">
         ${list.length === 0
           ? '<div style="font-size:11px;color:#888;padding:8px">保存データがありません</div>'
           : list.map(c => `
-            <div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #eee">
+            <div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)">
               <span style="flex:1;font-size:12px">${c.char_name}</span>
               <span style="font-size:10px;color:#888">${new Date(c.updated_at).toLocaleDateString()}</span>
               <button onclick="loadCharById('${c.id}')"
@@ -1671,19 +2158,19 @@ async function initViewMode() {
             style="font-size:10px;padding:0 5px;background:#666;border:none;color:#fff;cursor:pointer;border-radius:2px">▶ 開く</button>
         </div>
         <div class="secret-item-body" style="display:none">
-          <div style="padding:3px 6px;background:#fafafa;border-bottom:1px solid #ddd;font-size:11px">${s.summary || ''}</div>
-          <div style="padding:3px 6px;background:#f5f5f5;border-bottom:1px solid #ddd;display:flex;gap:4px;align-items:center">
+          <div style="padding:3px 6px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px">${s.summary || ''}</div>
+          <div style="padding:3px 6px;background:#f5f5f5;border-bottom:1px solid var(--border);display:flex;gap:4px;align-items:center">
             <span style="font-size:10px;color:#666">PASS:</span>
             <input type="password" placeholder="パスワード" 
-              style="border:1px solid #aaa;width:100px;font-size:11px;padding:1px 4px">
+              style="border:1px solid var(--border);width:100px;font-size:11px;padding:1px 4px">
             <button onclick="unlockViewSecret(this)"
-              style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid #aaa;background:#eee">解除</button>
+              style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid var(--border);background:#eee">解除</button>
           </div>
           <div class="secret-content" style="display:none;padding:4px">
             ${s.contents.map((c,i)=>`
               <div style="margin-bottom:4px">
                 <div style="font-size:10px;color:#666;margin-bottom:2px">${s.cats[i]||''}</div>
-                <div style="font-size:11px;white-space:pre-wrap;background:#fafafa;border:1px solid #eee;padding:3px">${c}</div>
+                <div style="font-size:11px;white-space:pre-wrap;background:var(--surface2);border:1px solid var(--border);padding:3px">${c}</div>
               </div>`).join('')}
           </div>
         </div>`;
@@ -1963,12 +2450,12 @@ function openCocofoliaCopyDialog() {
   modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center';
 
   modal.innerHTML = `
-    <div style="background:#fff;border-radius:6px;padding:16px;width:92%;max-width:680px;max-height:90vh;overflow-y:auto;font-family:inherit">
-      <div style="font-weight:bold;font-size:13px;margin-bottom:8px;color:#333">🐔 ココフォリア駒出力</div>
+    <div style="background:var(--surface);border-radius:6px;padding:16px;width:92%;max-width:680px;max-height:90vh;overflow-y:auto;font-family:inherit">
+      <div style="font-weight:bold;font-size:13px;margin-bottom:8px;color:var(--text)">🐔 ココフォリア駒出力</div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;font-size:11px">
-        <div style="background:#f8f8f8;border:1px solid #ddd;border-radius:3px;padding:8px">
-          <div style="font-weight:bold;color:#555;margin-bottom:4px">📊 ステータス（確認）</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px">
+          <div style="font-weight:bold;color:var(--text);margin-bottom:4px">📊 ステータス（確認）</div>
           <div>PC名: <b>${pcname}</b></div>
           <div>イニシアチブ: <b>${c.dex}</b>（DEX）</div>
           <div>HP: ${hpMax} / ${hpMax} &nbsp; MP: ${mpMax} / ${mpMax}</div>
@@ -1976,15 +2463,15 @@ function openCocofoliaCopyDialog() {
           <div>DB: ${dbVal}</div>
           <div>カラー: <span style="background:${color};color:#fff;padding:0 6px;border-radius:2px">${color}</span></div>
         </div>
-        <div style="background:#f8f8f8;border:1px solid #ddd;border-radius:3px;padding:8px">
-          <div style="font-weight:bold;color:#555;margin-bottom:4px">📋 パラメータ（STR〜DB）</div>
-          ${['str','con','pow','dex','app','siz','int_v','edu'].map(k=>`<span style="background:#eee;border-radius:2px;padding:0 4px;margin:1px;display:inline-block">${k.replace('_v','').toUpperCase()}: ${c[k]||0}</span>`).join('')}
-          <span style="background:#eee;border-radius:2px;padding:0 4px;margin:1px;display:inline-block">DB: ${dbVal}</span>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px">
+          <div style="font-weight:bold;color:var(--text);margin-bottom:4px">📋 パラメータ（STR〜DB）</div>
+          ${['str','con','pow','dex','app','siz','int_v','edu'].map(k=>`<span style="background:var(--surface2);color:var(--text);border-radius:2px;padding:0 4px;margin:1px;display:inline-block">${k.replace('_v','').toUpperCase()}: ${c[k]||0}</span>`).join('')}
+          <span style="background:var(--surface2);color:var(--text);border-radius:2px;padding:0 4px;margin:1px;display:inline-block">DB: ${dbVal}</span>
         </div>
       </div>
 
-      <div style="font-weight:bold;font-size:11px;color:#555;margin-bottom:3px">📝 チャットパレット（プレビュー・編集可）</div>
-      <textarea id="coco_palette_preview" style="width:100%;height:220px;font-size:11px;font-family:monospace;border:1px solid #aaa;padding:4px;resize:vertical;background:#fafafa">${palette}</textarea>
+      <div style="font-weight:bold;font-size:11px;color:var(--text);margin-bottom:3px">📝 チャットパレット（プレビュー・編集可）</div>
+      <textarea id="coco_palette_preview" style="width:100%;height:220px;font-size:11px;font-family:monospace;border:1px solid var(--border);padding:4px;resize:vertical;background:var(--surface2)">${palette}</textarea>
 
       <div id="coco_copy_msg" style="font-size:11px;color:#2a7;display:none;margin:6px 0">✓ クリップボードにコピーしました！</div>
 
