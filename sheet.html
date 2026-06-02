@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" type="image/jpeg" href="data:image/jpeg;base64,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">
 <title>CoC6版 キャラクターシート</title>
@@ -27,7 +27,7 @@ th{background:#444;color:#fff;text-align:center;font-weight:normal;font-size:10p
 input[type=text],input[type=number],input[type=password]{border:none;background:transparent;width:100%;font-size:11px;font-family:inherit;text-align:center;outline:none;padding:0}
 input[type=number]::-webkit-inner-spin-button{display:none}
 select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:none;font-family:inherit}
-textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;resize:vertical;padding:2px}
+textarea{font-size:11px;font-family:inherit;border:1px solid #ddd;width:100%;resize:vertical;padding:2px}
 textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizing:border-box}
 .hdr{background:#444;color:#fff;font-size:11px;padding:2px 5px;font-weight:bold}
 .personal-data td.hdr{text-align:center}
@@ -124,6 +124,8 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
   .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
   #row1_stats{width:100% !important;overflow-x:auto}
   #row1_stats table{min-width:560px}
+  /* 不定エリアのテーブルが見切れないようoverflow-xを設定 */
+  .personal-data > div > div{overflow-x:auto}
 
   /* 行2: 職業特記＋特徴表 → 縦並び */
   #row2_flex{flex-direction:column !important}
@@ -205,8 +207,8 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 </div>
 
 <!-- 一覧に戻るバー（余白のみ）-->
-<div style="background:#f0f0f0;border-bottom:2px solid #ccc;padding:3px 10px;min-height:28px;display:flex;align-items:center">
-  <span style="font-size:10px;color:#999">← メニュー（≡）から一覧に戻れます</span>
+<div style="background:#f0f0f0;border-bottom:2px solid #ccc;padding:3px 10px;min-height:28px;display:flex;align-items:center;justify-content:flex-end">
+  <span style="font-size:10px;color:#999">メニューから一覧に戻れます</span>
 </div>
 
 <!-- ===== 行1 ===== -->
@@ -322,7 +324,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
           <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
           <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
           <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
-          <td style="width:90px;border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
         <tr>
           <td style="background:#444;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
@@ -334,7 +336,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
           <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
           <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
           <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
-          <td style="width:90px;border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
         <tr>
           <td style="background:#444;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
@@ -352,27 +354,28 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 <div id="row2_flex" style="display:flex">
   <!-- 職業特記 378px固定 -->
   <div id="row2_job" style="width:378px;min-width:378px;border-right:1px solid #aaa;padding:3px">
-    <div class="hdr" style="margin-bottom:3px">職業特記</div>
-    <select id="job_ref_sel" onchange="onJobRefChange()" style="width:100%;margin-bottom:3px"></select>
-    <div style="font-size:11px;color:#444;margin-bottom:1px">技能P計算式</div>
-    <select id="job_formula_sel" onchange="calcJobPts()" style="width:100%;margin-bottom:3px">
-      <option value="EDU*20">EDU×20</option>
-      <option value="EDU*10+STR*10">EDU×10＋STR×10</option>
-      <option value="EDU*10+CON*10">EDU×10＋CON×10</option>
-      <option value="EDU*10+POW*10">EDU×10＋POW×10</option>
-      <option value="EDU*10+DEX*10">EDU×10＋DEX×10</option>
-      <option value="EDU*10+APP*10">EDU×10＋APP×10</option>
-    </select>
-    <div id="job_tokki" style="font-size:11px;color:#333;min-height:36px;padding:2px;line-height:1.7;background:#fafafa;border:1px solid #e0e0e0;margin-bottom:4px">職業参照を選択してください</div>
-    <div style="font-size:11px;color:#555;margin-bottom:2px">選択技能（職業P対象・自由入力）</div>
-    <div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px">
-      <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
+    <div class="hdr" style="margin-bottom:4px">職業特記</div>
+    <!-- 職業選択 6.5 : 計算式 3.5 -->
+    <div style="display:flex;gap:0;margin-bottom:4px;border:1px solid #e0e0e0;border-radius:3px;overflow:hidden">
+      <select id="job_ref_sel" onchange="onJobRefChange()" style="flex:65;border:none;border-right:1px solid #e0e0e0;font-size:11px;padding:2px 3px;background:#fff;min-width:0"></select>
+      <select id="job_formula_sel" onchange="calcJobPts()" style="flex:35;border:none;font-size:11px;padding:2px 3px;background:#fff;min-width:0">
+        <option value="EDU*20">EDU×20</option>
+        <option value="EDU*10+STR*10">EDU×10＋STR×10</option>
+        <option value="EDU*10+CON*10">EDU×10＋CON×10</option>
+        <option value="EDU*10+POW*10">EDU×10＋POW×10</option>
+        <option value="EDU*10+DEX*10">EDU×10＋DEX×10</option>
+        <option value="EDU*10+APP*10">EDU×10＋APP×10</option>
+      </select>
     </div>
-    <div style="font-size:11px;color:#555;margin-bottom:1px;margin-top:4px">その他特記</div>
-    <textarea class="auto-h" id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;font-size:11px;border:1px solid #aaa;resize:vertical;padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
+    <div id="job_tokki" style="font-size:11px;color:#333;min-height:28px;padding:3px 4px;line-height:1.7;background:#fafafa;border:1px solid #e0e0e0;border-radius:3px;margin-bottom:4px">職業参照を選択してください</div>
+    <div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px">
+      <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
+    </div>
+    <div style="font-size:11px;color:#555;margin-bottom:1px">その他特記</div>
+    <textarea class="auto-h" id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;font-size:11px;border:1px solid #ddd;padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
 
   </div>
   <!-- 特徴表①② -->
@@ -465,7 +468,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
       <div class="acc-body" id="combat_acc">
         <div style="padding:4px;overflow-x:auto">
           <table>
-            <thead><tr><th style="min-width:80px">武器名</th><th style="min-width:28px;width:32px;font-size:9px;white-space:nowrap">技能%</th><th>ダメージ</th><th>射程</th><th>攻撃回数</th><th>装弾数</th><th>耐久</th><th>故障No.</th><th style="min-width:80px">備考</th><th style="width:18px"></th></tr></thead>
+            <thead><tr><th style="min-width:55px;width:55px">武器名</th><th style="min-width:28px;width:32px;font-size:9px;white-space:nowrap">技能%</th><th style="font-size:9px;white-space:nowrap;width:40px">ダメージ</th><th style="font-size:9px;white-space:nowrap;width:22px;padding:0" title="DB込"><input type="checkbox" disabled style="pointer-events:none;opacity:0.4" title="DB込"></th><th style="font-size:9px;white-space:nowrap;width:28px">射程</th><th style="font-size:9px;white-space:nowrap;width:34px">攻撃回数</th><th style="font-size:9px;white-space:nowrap;width:28px">装弾数</th><th style="font-size:9px;white-space:nowrap;width:24px">耐久</th><th style="font-size:9px;white-space:nowrap;width:30px">故障No.</th><th style="min-width:60px">備考</th><th style="width:18px"></th></tr></thead>
             <tbody id="weapon_rows"></tbody>
           </table>
           <button class="add-row-btn" onclick="addWeaponRow()">＋追加</button>
@@ -491,8 +494,9 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
       <div class="acc-body" id="memo_acc">
         <div style="padding:4px">
           <div id="memo_rows">
-            <div style="position:relative;margin-bottom:4px">
-              <textarea class="auto-h" style="width:100%" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea>
+            <div class="memo-block" style="margin-bottom:6px;border:1px solid #ddd;border-radius:3px;overflow:hidden">
+              <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid #e8e8e8;font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
+              <textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:#fff;resize:none;display:block" oninput="autoResizeTA(this)"></textarea>
             </div>
           </div>
           <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
@@ -507,7 +511,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
       </div>
     </div>
     <div class="section">
-      <div class="acc-header" onclick="toggleAcc('secret_outer')"><span>▮ ネタバレ管理</span><span id="arr_secret_outer">▶</span></div>
+      <div class="acc-header" onclick="toggleAcc('secret_outer')"><span>▮ ネタバレメモ</span><span id="arr_secret_outer">▶</span></div>
       <div class="acc-body" id="secret_outer">
         <div style="padding:4px">
           <div id="secret_items_wrap"></div>
@@ -1059,7 +1063,7 @@ function toggleSub2Acc(id){const body=document.getElementById(id);const arr=docu
 
 function makeWeaponTr(){
   const tr=document.createElement('tr');
-  tr.innerHTML='<td><input type="text" style="text-align:left;background:#fff"></td><td><input type="number" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="number" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="text-align:left;background:#fff"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>';
+  tr.innerHTML='<td><input type="text" style="text-align:left;background:#fff"></td><td><input type="number" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td style="text-align:center;padding:0"><input type="checkbox" class="weapon-db-chk" title="DB込"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="number" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="text-align:left;background:#fff"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>';
   return tr;
 }
 function initWeaponRows(){const tbody=document.getElementById('weapon_rows');for(let i=0;i<6;i++)tbody.appendChild(makeWeaponTr());}
@@ -1075,8 +1079,10 @@ function addItemRow(){document.getElementById('item_rows').appendChild(makeItemT
 
 function addMemoRow(){
   const div=document.getElementById('memo_rows');
-  const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:4px';
-  w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  const w=document.createElement('div');
+  w.className='memo-block';
+  w.style.cssText='margin-bottom:6px;border:1px solid #ddd;border-radius:3px;overflow:hidden;position:relative';
+  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid #e8e8e8;font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:#fff;resize:none;display:block" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.appendChild(w);
 }
 
@@ -1196,6 +1202,8 @@ function addSecretContentRow(contentId){
 
 const SAVE_KEY='coc6_sheet_data';
 function collectData(){
+  // 初期値非表示状態を保存
+  const hideDefault = allDefaultHidden;
   const inputs={};
   // input・textarea・selectすべてidありを保存
   document.querySelectorAll('input[id],textarea[id],select[id]').forEach(el=>{
@@ -1216,8 +1224,9 @@ function collectData(){
   // 武器テーブル
   const weapons=[];
   document.querySelectorAll('#weapon_rows tr').forEach(tr=>{
-    const inps=[...tr.querySelectorAll('input')].map(i=>i.value);
-    if(inps.some(v=>v))weapons.push(inps);
+    const inps=[...tr.querySelectorAll('input[type!=checkbox]')].map(i=>i.value);
+    const dbChk=tr.querySelector('.weapon-db-chk')?.checked||false;
+    if(inps.some(v=>v))weapons.push({vals:inps,db:dbChk});
   });
 
   // 所持品テーブル
@@ -1229,7 +1238,11 @@ function collectData(){
 
   // その他メモ
   const memos=[];
-  document.querySelectorAll('#memo_rows textarea').forEach(ta=>memos.push(ta.value));
+  document.querySelectorAll('#memo_rows .memo-block').forEach(blk=>{
+    const t=blk.querySelector('.memo-title')?.value||'';
+    const b=blk.querySelector('.memo-body')?.value||'';
+    memos.push({title:t,body:b});
+  });
 
   // 通過シナリオ
   const scenarios=[];
@@ -1303,10 +1316,14 @@ function applyData(json){
   // その他メモ
   if(data.memos&&data.memos.length){
     const memoDiv=document.getElementById('memo_rows');
-    const tas=[...memoDiv.querySelectorAll('textarea')];
-    data.memos.forEach((v,i)=>{
-      if(i<tas.length){tas[i].value=v;}
-      else{addMemoRow();const all=memoDiv.querySelectorAll('textarea');all[all.length-1].value=v;}
+    const blks=[...memoDiv.querySelectorAll('.memo-block')];
+    data.memos.forEach((m,i)=>{
+      const v=typeof m==='object'?m:(typeof m==='string'?{title:'',body:m}:{title:'',body:''});
+      let blk=blks[i];
+      if(!blk){addMemoRow();blk=[...memoDiv.querySelectorAll('.memo-block')].pop();}
+      if(!blk)return;
+      const ti=blk.querySelector('.memo-title');if(ti)ti.value=v.title||'';
+      const ta=blk.querySelector('.memo-body');if(ta){ta.value=v.body||'';autoResizeTA(ta);}
     });
   }
 
@@ -1359,6 +1376,12 @@ function applyData(json){
   const _jSel=document.getElementById('job_ref_sel');
   if(_jSel&&_jSel.value)onJobRefChange();
   [1,2].forEach(n=>showTokucho(n));
+  // 初期値非表示状態を復元
+  if(data.hideDefault && !allDefaultHidden){
+    toggleAllDefault();
+  } else if(!data.hideDefault && allDefaultHidden){
+    toggleAllDefault();
+  }
   setTimeout(autoResizeAll,100);
 }
 // 保存ボタン
@@ -1586,7 +1609,7 @@ function buildChatPalette(c) {
   const comboAlreadyAdded = new Set();
 
   // 全技能セクションを走査
-  const allSections = ['tbody_combat','tbody_search','tbody_action','tbody_talk','tbody_know'];
+  const allSections = ['tbody_combat',null,'tbody_search','tbody_action','tbody_talk','tbody_know'];
 
   // 武道(MA)の合計値を先に取得
   const maTr = document.querySelector('[data-skill="ma"]')?.closest('tr');
@@ -1598,6 +1621,21 @@ function buildChatPalette(c) {
   const alwaysKeys = new Set(['kaihi', 'firstaid']);
 
   allSections.forEach(secId => {
+    // null = 武器テーブル挿入ポイント
+    if (secId === null) {
+      document.querySelectorAll('#weapon_rows tr').forEach(wtr => {
+        const wInps = [...wtr.querySelectorAll('input[type!=checkbox]')].map(i=>i.value.trim());
+        const wName = wInps[0]; const wSkillPct = parseInt(wInps[1])||0;
+        const wDmg  = wInps[2]; const dbChk = wtr.querySelector('.weapon-db-chk')?.checked||false;
+        if (!wName || !wSkillPct) return;
+        lines.push(`CCB<=${wSkillPct} 【${wName}】`);
+        if (wDmg) {
+          const dmgLine = dbChk ? `${wDmg}{DB}` : wDmg;
+          lines.push(`${dmgLine} 【${wName}】ダメージ`);
+        }
+      });
+      return;
+    }
     document.querySelectorAll(`#${secId} tr`).forEach(tr => {
       const sc = tr.querySelector('[data-skill]');
       if (!sc) return;

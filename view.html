@@ -23,7 +23,7 @@ th{background:#444;color:#fff;text-align:center;font-weight:normal;font-size:10p
 input[type=text],input[type=number],input[type=password]{border:none;background:transparent;width:100%;font-size:11px;font-family:inherit;text-align:center;outline:none;padding:0}
 input[type=number]::-webkit-inner-spin-button{display:none}
 select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:none;font-family:inherit}
-textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;resize:vertical;padding:2px}
+textarea{font-size:11px;font-family:inherit;border:1px solid #ddd;width:100%;resize:vertical;padding:2px}
 .hdr{background:#444;color:#fff;font-size:11px;padding:2px 5px;font-weight:bold}
 .personal-data td.hdr{text-align:center}
 .personal-data input[type=text],.personal-data input[type=number]{text-align:left}
@@ -294,7 +294,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
           <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
           <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
           <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
-          <td style="width:90px;border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
         <tr>
           <td style="background:#444;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
@@ -306,7 +306,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
           <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
           <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
           <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
-          <td style="width:90px;border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
         <tr>
           <td style="background:#444;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
@@ -324,25 +324,29 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 <div id="row2_flex" style="display:flex">
   <!-- 職業特記 378px固定 -->
   <div id="row2_job" style="width:378px;min-width:378px;border-right:1px solid #aaa;padding:3px">
-    <div class="hdr" style="margin-bottom:3px">職業特記</div>
-    <select id="job_ref_sel" onchange="onJobRefChange()" style="width:100%;margin-bottom:3px"></select>
-    <div style="font-size:11px;color:#444;margin-bottom:1px">技能P計算式</div>
-    <select id="job_formula_sel" onchange="calcJobPts()" style="width:100%;margin-bottom:3px">
-      <option value="EDU*20">EDU×20</option>
-      <option value="EDU*10+STR*10">EDU×10＋STR×10</option>
-      <option value="EDU*10+CON*10">EDU×10＋CON×10</option>
-      <option value="EDU*10+POW*10">EDU×10＋POW×10</option>
-      <option value="EDU*10+DEX*10">EDU×10＋DEX×10</option>
-      <option value="EDU*10+APP*10">EDU×10＋APP×10</option>
-    </select>
-    <div id="job_tokki" style="font-size:11px;color:#333;min-height:36px;padding:2px;line-height:1.7;background:#fafafa;border:1px solid #e0e0e0;margin-bottom:4px">職業参照を選択してください</div>
-    <div style="font-size:11px;color:#555;margin-bottom:2px">選択技能（職業P対象・自由入力）</div>
-    <div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px">
-      <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #aaa;text-align:left;padding:1px 3px;background:#fff">
+    <div class="hdr" style="margin-bottom:4px">職業特記</div>
+    <!-- 職業選択 6.5 : 計算式 3.5 -->
+    <div style="display:flex;gap:0;margin-bottom:4px;border:1px solid #e0e0e0;border-radius:3px;overflow:hidden">
+      <select id="job_ref_sel" onchange="onJobRefChange()" style="flex:65;border:none;border-right:1px solid #e0e0e0;font-size:11px;padding:2px 3px;background:#fff;min-width:0"></select>
+      <select id="job_formula_sel" onchange="calcJobPts()" style="flex:35;border:none;font-size:11px;padding:2px 3px;background:#fff;min-width:0">
+        <option value="EDU*20">EDU×20</option>
+        <option value="EDU*10+STR*10">EDU×10＋STR×10</option>
+        <option value="EDU*10+CON*10">EDU×10＋CON×10</option>
+        <option value="EDU*10+POW*10">EDU×10＋POW×10</option>
+        <option value="EDU*10+DEX*10">EDU×10＋DEX×10</option>
+        <option value="EDU*10+APP*10">EDU×10＋APP×10</option>
+      </select>
     </div>
+    <div id="job_tokki" style="font-size:11px;color:#333;min-height:28px;padding:3px 4px;line-height:1.7;background:#fafafa;border:1px solid #e0e0e0;border-radius:3px;margin-bottom:4px">職業参照を選択してください</div>
+    <div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px">
+      <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
+    </div>
+    <div style="font-size:11px;color:#555;margin-bottom:1px">その他特記</div>
+    <textarea class="auto-h" id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;font-size:11px;border:1px solid #ddd;padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
+
   </div>
   <!-- 特徴表①② -->
   <div id="row2_tokucho" style="flex:1;padding:3px">
@@ -434,7 +438,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <div class="acc-body" id="combat_acc">
         <div style="padding:4px;overflow-x:auto">
           <table>
-            <thead><tr><th style="min-width:80px">武器名</th><th style="min-width:28px;width:32px;font-size:9px;white-space:nowrap">技能%</th><th>ダメージ</th><th>射程</th><th>攻撃回数</th><th>装弾数</th><th>耐久</th><th>故障No.</th><th style="min-width:80px">備考</th><th style="width:18px"></th></tr></thead>
+            <thead><tr><th style="min-width:70px">武器名</th><th style="min-width:28px;width:32px;font-size:9px;white-space:nowrap">技能%</th><th style="font-size:9px;white-space:nowrap;width:40px">ダメージ</th><th style="font-size:9px;white-space:nowrap;width:28px">射程</th><th style="font-size:9px;white-space:nowrap;width:34px">攻撃回数</th><th style="font-size:9px;white-space:nowrap;width:28px">装弾数</th><th style="font-size:9px;white-space:nowrap;width:24px">耐久</th><th style="font-size:9px;white-space:nowrap;width:30px">故障No.</th><th style="min-width:60px">備考</th><th style="width:18px"></th></tr></thead>
             <tbody id="weapon_rows"></tbody>
           </table>
           <button class="add-row-btn" onclick="addWeaponRow()">＋追加</button>
@@ -460,8 +464,9 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
       <div class="acc-body" id="memo_acc">
         <div style="padding:4px">
           <div id="memo_rows">
-            <div style="position:relative;margin-bottom:4px">
-              <textarea class="auto-h" style="width:100%" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea>
+            <div class="memo-block" style="margin-bottom:6px;border:1px solid #ddd;border-radius:3px;overflow:hidden">
+              <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid #e8e8e8;font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
+              <textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:#fff;resize:none;display:block" oninput="autoResizeTA(this)"></textarea>
             </div>
           </div>
           <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
@@ -960,8 +965,10 @@ function addItemRow(){document.getElementById('item_rows').appendChild(makeItemT
 
 function addMemoRow(){
   const div=document.getElementById('memo_rows');
-  const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:4px';
-  w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="メモを入力..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  const w=document.createElement('div');
+  w.className='memo-block';
+  w.style.cssText='margin-bottom:6px;border:1px solid #ddd;border-radius:3px;overflow:hidden;position:relative';
+  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid #e8e8e8;font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:#fff;resize:none;display:block" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.appendChild(w);
 }
 
@@ -1371,6 +1378,9 @@ async function initViewMode() {
       secretWrap.appendChild(div);
     });
   }
+
+  // memo-titleの枠線を非表示に（閲覧モード）
+  document.querySelectorAll('.memo-title').forEach(el=>{el.style.border='none';el.style.background='transparent';});
 
   // 全inputをreadonly表示にする（secret_items_wrap内は除く）
   // disabledは使わず、CSSでpointer-eventsを無効化して文字色を変えない
