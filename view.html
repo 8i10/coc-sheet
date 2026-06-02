@@ -92,6 +92,22 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
   #sticky-actions button{padding:2px 6px;font-size:10px}
   #sticky-actions button img{width:22px;height:22px}
 
+  /* ヘッダー: 2段構成 */
+  #sticky-header{flex-wrap:wrap !important;padding:4px 8px !important;gap:0 !important;flex-direction:column !important;align-items:stretch !important}
+  #sp-row1{display:flex !important;flex-direction:row;align-items:center;width:100%}
+  #header_left{flex-direction:row !important;align-items:center;flex:1;min-width:0;gap:0;overflow:hidden}
+  #sticky-pcname{font-size:14px;max-width:none;flex:1;padding-right:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #header_left > div:nth-child(2){display:none}
+  #header_left > div:nth-child(3){display:none !important}
+  #sticky-actions{gap:4px;align-items:center;margin-left:0;flex-shrink:0}
+  #sp-header-divider{display:block !important}
+  #sp-pts-row{display:flex !important}
+  #sp-pts-row .pts-remain{min-width:0}
+  #sp-pts-row .pts-remain.ok{color:#6ef0a0}
+  #sp-pts-row .pts-remain.warn{color:#ffa040}
+  #sp-pts-row .pts-remain.over{color:#ff6060}
+  body{padding-top:56px}
+
   /* 行1: パーソナル＋能力値 → 縦並び */
   #row1_flex{flex-direction:column !important}
   .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
@@ -101,8 +117,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
   /* 行2: 職業特記＋特徴表 → 縦並び */
   #row2_flex{flex-direction:column !important}
   #row2_job{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
-  #row2_tokucho{width:100% !important;flex-direction:column !important}
-  #row2_tokucho > div{border-right:none !important;border-bottom:1px solid #eee;width:100% !important}
+  #row2_tokucho{width:100% !important;padding:3px}
 
   /* メイン: 技能表＋右パネル → 縦並び */
   #main_flex{flex-direction:column !important}
@@ -118,28 +133,49 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
 </head>
 <body>
 <div id="sticky-header">
-  <div style="display:flex;align-items:center;gap:0;flex:1;min-width:0;overflow:hidden">
-    <!-- PC名 -->
-    <div id="sticky-pcname" style="font-weight:bold;font-size:16px;flex:0 0 auto;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px">キャラクターシート</div>
-    <!-- 区切り線 -->
-    <div style="width:1px;background:#666;align-self:stretch;margin:2px 10px 2px 0;flex-shrink:0"></div>
-    <!-- 職業P・興味P -->
-    <div style="display:flex;gap:6px;align-items:center">
-      <div class="sticky-pt-block" style="gap:3px;padding:2px 6px;border-radius:3px">
-        <div><div style="font-weight:bold;font-size:10px">職業P</div><div style="font-size:9px;opacity:0.9">上限 <span id="job_max_disp">0</span>pt</div></div>
-        <div class="pts-bar" style="background:#666"><div class="pts-bar-fill" id="job_bar" style="width:0%;background:#88bbff"></div></div>
-        <div><div style="font-size:9px;opacity:0.9">使用 <span id="job_used_disp">0</span>pt</div><div class="pts-remain ok" id="job_remain" style="font-size:11px">残0</div></div>
-      </div>
-      <div class="sticky-pt-block" style="gap:3px;padding:2px 6px;border-radius:3px">
-        <div><div style="font-weight:bold;font-size:10px">興味P</div><div style="font-size:9px;opacity:0.9">上限 <span id="int_max_disp">0</span>pt</div></div>
-        <div class="pts-bar" style="background:#666"><div class="pts-bar-fill" id="int_bar" style="width:0%;background:#88ddaa"></div></div>
-        <div><div style="font-size:9px;opacity:0.9">使用 <span id="int_used_disp">0</span>pt</div><div class="pts-remain ok" id="int_remain" style="font-size:11px">残0</div></div>
+  <div id="sp-row1" style="display:contents">
+    <div id="header_left" style="display:flex;align-items:center;gap:0;flex:1;min-width:0;overflow:hidden">
+      <div id="sticky-pcname" style="font-weight:bold;font-size:16px;flex:0 0 auto;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px">キャラクターシート</div>
+      <div style="width:1px;background:#666;align-self:stretch;margin:2px 10px 2px 0;flex-shrink:0"></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div class="sticky-pt-block" style="flex-direction:column;align-items:stretch;gap:1px;padding:2px 8px;border-radius:3px;min-width:120px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-weight:bold;font-size:10px;flex-shrink:0">職業P</span>
+            <span style="font-size:9px;opacity:0.9;flex:1"><span id="job_used_disp">0</span>pt／<span id="job_max_disp">0</span>pt</span>
+            <div class="pts-remain ok" id="job_remain" style="font-size:10px;flex-shrink:0">残0</div>
+          </div>
+          <div class="pts-bar" style="background:#555;width:100%;height:5px;border-radius:2px"><div class="pts-bar-fill" id="job_bar" style="width:0%;background:#88bbff;height:100%;border-radius:2px"></div></div>
+        </div>
+        <div class="sticky-pt-block" style="flex-direction:column;align-items:stretch;gap:1px;padding:2px 8px;border-radius:3px;min-width:120px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-weight:bold;font-size:10px;flex-shrink:0">興味P</span>
+            <span style="font-size:9px;opacity:0.9;flex:1"><span id="int_used_disp">0</span>pt／<span id="int_max_disp">0</span>pt</span>
+            <div class="pts-remain ok" id="int_remain" style="font-size:10px;flex-shrink:0">残0</div>
+          </div>
+          <div class="pts-bar" style="background:#555;width:100%;height:5px;border-radius:2px"><div class="pts-bar-fill" id="int_bar" style="width:0%;background:#88ddaa;height:100%;border-radius:2px"></div></div>
+        </div>
       </div>
     </div>
+    <div id="sticky-actions">
+      <span style="font-size:11px;color:#aaa;padding:2px 8px;border-radius:2px;background:#444">閲覧モード</span>
+      <button id="coco_btn" onclick="openCocofoliaCopyDialog()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px;display:none">🐔駒出力</button>
+    </div>
   </div>
-  <div id="sticky-actions">
-    <span style="font-size:11px;color:#aaa;padding:2px 8px;border-radius:2px;background:#444">閲覧モード</span>
-    <button id="coco_btn" onclick="openCocofoliaCopyDialog()" style="padding:2px 10px;font-size:11px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px;display:none">🐔駒出力</button>
+  <div id="sp-header-divider" style="display:none;width:100%;height:1px;background:#555;margin:3px 0"></div>
+  <div id="sp-pts-row" style="display:none;width:100%;gap:8px;align-items:center;padding:1px 0">
+    <div style="display:flex;align-items:center;gap:2px;flex:1;min-width:0">
+      <span style="font-weight:bold;font-size:10px;flex-shrink:0;color:#fff">職業P</span>
+      <div class="pts-bar" style="background:#555;flex:1;height:5px;border-radius:2px;margin:0 3px"><div class="pts-bar-fill" id="job_bar_sp" style="width:0%;background:#88bbff;height:100%;border-radius:2px"></div></div>
+      <span style="font-size:9px;color:#fff;opacity:0.9;white-space:nowrap"><span id="job_used_disp_sp">0</span>pt／<span id="job_max_disp_sp">0</span>pt</span>
+      <span class="pts-remain ok" id="job_remain_sp" style="font-size:10px;flex-shrink:0;margin-left:2px">残0</span>
+    </div>
+    <div style="width:1px;background:#555;align-self:stretch;flex-shrink:0"></div>
+    <div style="display:flex;align-items:center;gap:2px;flex:1;min-width:0">
+      <span style="font-weight:bold;font-size:10px;flex-shrink:0;color:#fff">興味P</span>
+      <div class="pts-bar" style="background:#555;flex:1;height:5px;border-radius:2px;margin:0 3px"><div class="pts-bar-fill" id="int_bar_sp" style="width:0%;background:#88ddaa;height:100%;border-radius:2px"></div></div>
+      <span style="font-size:9px;color:#fff;opacity:0.9;white-space:nowrap"><span id="int_used_disp_sp">0</span>pt／<span id="int_max_disp_sp">0</span>pt</span>
+      <span class="pts-remain ok" id="int_remain_sp" style="font-size:10px;flex-shrink:0;margin-left:2px">残0</span>
+    </div>
   </div>
 </div>
 <div class="sheet">
@@ -309,28 +345,33 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #aaa;width:100%;res
     </div>
   </div>
   <!-- 特徴表①② -->
-  <div id="row2_tokucho" style="flex:1;display:flex">
-    <div style="flex:1;border-right:1px solid #aaa;padding:3px">
-      <div class="hdr" style="margin-bottom:3px">特徴表①</div>
-      <select id="t1_sel" onchange="showTokucho(1)" style="width:100%;margin-bottom:3px"><option value="">-- 特徴を選択 --</option></select>
-      <div style="font-size:10px;color:#555;margin-bottom:2px">Dボーナス（興味Pに加算）</div>
-      <select id="t1_bonus" onchange="calcJobPts()" style="width:100%;margin-bottom:3px">
-        <option value="0">なし</option><option value="10">+10P</option><option value="20">+20P</option>
-        <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
-      </select>
-      <div id="t1_desc" style="font-size:11px;color:#333;min-height:36px;background:#fafafa;border:1px solid #e0e0e0;padding:2px;line-height:1.6;margin-bottom:3px"></div>
-      <input type="text" id="t1_memo" placeholder="メモ..." style="border:none;border-top:1px solid #ddd;font-size:11px;text-align:left;padding:1px 2px;width:100%;background:#fff">
+  <div id="row2_tokucho" style="flex:1;padding:3px">
+    <div class="hdr" style="margin-bottom:4px">特徴表</div>
+
+    <!-- 特徴表① -->
+    <div style="margin-bottom:6px;border:1px solid #e0e0e0;border-radius:3px;overflow:hidden">
+      <div style="display:flex;gap:0;background:#f8f8f8;border-bottom:1px solid #e0e0e0">
+        <select id="t1_sel" onchange="showTokucho(1)" style="flex:7;border:none;border-right:1px solid #e0e0e0;font-size:11px;padding:2px 3px;background:#fff;min-width:0"><option value="">-- 特徴表①を選択 --</option></select>
+        <select id="t1_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:#fff;min-width:0">
+          <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
+          <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
+        </select>
+      </div>
+      <div id="t1_desc" style="font-size:11px;color:#333;min-height:28px;background:#fafafa;padding:3px 4px;line-height:1.6"></div>
+      <input type="text" id="t1_memo" placeholder="メモ..." style="border:none;border-top:1px solid #e8e8e8;font-size:11px;text-align:left;padding:2px 4px;width:100%;background:#fff">
     </div>
-    <div style="flex:1;padding:3px">
-      <div class="hdr" style="margin-bottom:3px">特徴表②</div>
-      <select id="t2_sel" onchange="showTokucho(2)" style="width:100%;margin-bottom:3px"><option value="">-- 特徴を選択 --</option></select>
-      <div style="font-size:10px;color:#555;margin-bottom:2px">Dボーナス（興味Pに加算）</div>
-      <select id="t2_bonus" onchange="calcJobPts()" style="width:100%;margin-bottom:3px">
-        <option value="0">なし</option><option value="10">+10P</option><option value="20">+20P</option>
-        <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
-      </select>
-      <div id="t2_desc" style="font-size:11px;color:#333;min-height:36px;background:#fafafa;border:1px solid #e0e0e0;padding:2px;line-height:1.6;margin-bottom:3px"></div>
-      <input type="text" id="t2_memo" placeholder="メモ..." style="border:none;border-top:1px solid #ddd;font-size:11px;text-align:left;padding:1px 2px;width:100%;background:#fff">
+
+    <!-- 特徴表② -->
+    <div style="border:1px solid #e0e0e0;border-radius:3px;overflow:hidden">
+      <div style="display:flex;gap:0;background:#f8f8f8;border-bottom:1px solid #e0e0e0">
+        <select id="t2_sel" onchange="showTokucho(2)" style="flex:7;border:none;border-right:1px solid #e0e0e0;font-size:11px;padding:2px 3px;background:#fff;min-width:0"><option value="">-- 特徴表②を選択 --</option></select>
+        <select id="t2_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:#fff;min-width:0">
+          <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
+          <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
+        </select>
+      </div>
+      <div id="t2_desc" style="font-size:11px;color:#333;min-height:28px;background:#fafafa;padding:3px 4px;line-height:1.6"></div>
+      <input type="text" id="t2_memo" placeholder="メモ..." style="border:none;border-top:1px solid #e8e8e8;font-size:11px;text-align:left;padding:2px 4px;width:100%;background:#fff">
     </div>
   </div>
 </div>
@@ -708,6 +749,16 @@ function updatePointBar(){
   const jb=document.getElementById('job_bar'),ib=document.getElementById('int_bar');
   if(jb){jb.style.width=jPct+'%';jb.style.background=jobUsed>jobMax?'#c00':jPct>80?'#e77':'#5588cc';}
   if(ib){ib.style.width=iPct+'%';ib.style.background=intUsed>intMax?'#c00':iPct>80?'#6c6':'#55aa77';}
+  const spSync=(pfx,used,max,pct)=>{
+    const u=document.getElementById(pfx+'_used_disp_sp');const m=document.getElementById(pfx+'_max_disp_sp');
+    const b=document.getElementById(pfx+'_bar_sp');const r=document.getElementById(pfx+'_remain_sp');
+    const rem=max-used;
+    if(u)u.textContent=used;if(m)m.textContent=max;
+    if(b){b.style.width=Math.min(100,pct)+'%';b.style.background=used>max?'#c00':pct>80?(pfx==='job'?'#e77':'#6c6'):(pfx==='job'?'#5588cc':'#55aa77');}
+    if(r){r.textContent=rem>=0?'残'+rem:'超過'+(rem*-1)+'!';r.className='pts-remain '+(rem<0?'over':rem<(pfx==='job'?20:10)?'warn':'ok');}
+  };
+  spSync('job',jobUsed,jobMax,jPct);
+  spSync('int',intUsed,intMax,iPct);
 }
 
 const jobData=[
