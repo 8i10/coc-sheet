@@ -1224,7 +1224,7 @@ function collectData(){
   // 武器テーブル
   const weapons=[];
   document.querySelectorAll('#weapon_rows tr').forEach(tr=>{
-    const inps=[...tr.querySelectorAll('input[type!=checkbox]')].map(i=>i.value);
+    const inps=[...tr.querySelectorAll('input:not([type=checkbox])')].map(i=>i.value);
     const dbChk=tr.querySelector('.weapon-db-chk')?.checked||false;
     if(inps.some(v=>v))weapons.push({vals:inps,db:dbChk});
   });
@@ -1624,7 +1624,7 @@ function buildChatPalette(c) {
     // null = 武器テーブル挿入ポイント
     if (secId === null) {
       document.querySelectorAll('#weapon_rows tr').forEach(wtr => {
-        const wInps = [...wtr.querySelectorAll('input[type!=checkbox]')].map(i=>i.value.trim());
+        const wInps = [...wtr.querySelectorAll('input:not([type=checkbox])')].map(i=>i.value.trim());
         const wName = wInps[0]; const wSkillPct = parseInt(wInps[1])||0;
         const wDmg  = wInps[2]; const dbChk = wtr.querySelector('.weapon-db-chk')?.checked||false;
         if (!wName || !wSkillPct) return;
