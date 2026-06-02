@@ -44,6 +44,13 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
   body{padding-top:44px}
   .container{padding:8px 8px 24px}
   #grid{grid-template-columns:1fr !important}
+  #toolbar{flex-wrap:wrap;gap:6px}
+  #toolbar-right{width:100%;display:flex;gap:6px}
+  #toolbar-right #search_box{flex:1;max-width:none}
+  .card-foot{flex-wrap:wrap}
+}
+  .container{padding:8px 8px 24px}
+  #grid{grid-template-columns:1fr !important}
   #new_btn{padding:5px 12px}
   #search_box{max-width:100%}
   #toolbar{flex-wrap:wrap}
@@ -70,9 +77,13 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
     <div class="auth-row">
       <input class="a-inp" type="email" id="auth_email" placeholder="メールアドレス">
       <input class="a-inp" type="password" id="auth_pass" placeholder="パスワード" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="auth-row">
+      <input class="a-inp" type="password" id="auth_token" placeholder="招待トークン" onkeydown="if(event.key==='Enter')doLogin()">
       <button class="a-btn" style="background:#2a7" onclick="doLogin()">ログイン</button>
       <button class="a-btn" style="background:#558" onclick="doSignup()">新規登録</button>
     </div>
+    <div style="font-size:10px;color:#aaa;margin-top:2px">新規登録には招待トークンが必要です</div>
     <div id="auth_msg"></div>
   </div>
 
@@ -127,11 +138,20 @@ async function doLogin(){
   onLoggedIn(data.user);loadList();
 }
 
+// 有効な招待トークン一覧（ここに追加）
+const VALID_TOKENS = new Set([
+  'coc6-invite-2024',
+]);
+
 async function doSignup(){
   const email=document.getElementById('auth_email').value.trim();
   const pass =document.getElementById('auth_pass').value;
+  const token=(document.getElementById('auth_token')?.value||'').trim();
   const msg  =document.getElementById('auth_msg');
   msg.style.color='#c00';msg.textContent='';
+  if(!VALID_TOKENS.has(token)){
+    msg.textContent='招待トークンが無効です';return;
+  }
   const {error}=await db.auth.signUp({email,password:pass});
   if(error){msg.textContent='エラー: '+error.message;return;}
   msg.style.color='#2a7';msg.textContent='確認メールを送信しました。メールをご確認ください。';
