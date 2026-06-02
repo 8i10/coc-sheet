@@ -1308,11 +1308,15 @@ async function initViewMode() {
 
   // メモ（アコーディオンは開かない）
   if (sheet.memos && sheet.memos.length) {
-    const div = document.getElementById('memo_rows');
-    const tas = [...div.querySelectorAll('textarea')];
-    sheet.memos.forEach((v,i)=>{
-      if(i<tas.length){tas[i].value=v;}
-      else{addMemoRow();[...div.querySelectorAll('textarea')].pop().value=v;}
+    const memoDiv = document.getElementById('memo_rows');
+    const blks = [...memoDiv.querySelectorAll('.memo-block')];
+    sheet.memos.forEach((m,i)=>{
+      const v = typeof m==='object' ? m : {title:'',body:typeof m==='string'?m:''};
+      let blk = blks[i];
+      if(!blk){addMemoRow();blk=[...memoDiv.querySelectorAll('.memo-block')].pop();}
+      if(!blk)return;
+      const ti=blk.querySelector('.memo-title');if(ti)ti.value=v.title||'';
+      const ta=blk.querySelector('.memo-body');if(ta){ta.value=v.body||'';autoResizeTA(ta);}
     });
   }
 
@@ -1344,6 +1348,9 @@ async function initViewMode() {
   [1,2].forEach(n=>showTokucho(n));
   const _jsel=document.getElementById('job_ref_sel');
   if(_jsel&&_jsel.value)onJobRefChange();
+
+  // 初期値非表示状態を復元
+  if(sheet.hideDefault && !allDefaultHidden) toggleAllDefault();
 
   calc();
 
@@ -1382,8 +1389,11 @@ async function initViewMode() {
     });
   }
 
-  // memo-titleの枠線を非表示に（閲覧モード）
-  document.querySelectorAll('.memo-title').forEach(el=>{el.style.border='none';el.style.background='transparent';});
+  // memo-titleの枠線を非表示に（閲覧モード）、空なら行ごと非表示
+  document.querySelectorAll('.memo-title').forEach(el=>{
+    el.style.border='none';el.style.background='transparent';
+    if(!el.value.trim())el.style.display='none';
+  });
 
   // 全inputをreadonly表示にする（secret_items_wrap内は除く）
   // disabledは使わず、CSSでpointer-eventsを無効化して文字色を変えない
