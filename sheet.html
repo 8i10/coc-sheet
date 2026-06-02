@@ -72,7 +72,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 .skill-table th{background:#666;color:#fff;text-align:center;white-space:nowrap}
 .sk-chk{width:18px;text-align:center}
 .sk-name{background:var(--surface2);text-align:left;padding-left:3px}
-.sk-base{width:28px;text-align:center;color:#666}
+.sk-base{width:28px;text-align:center;color:#666 !important;background:#f0f0f0 !important}
 .sk-inp{width:28px}
 .sk-inp input{text-align:center;width:100%;border:none;outline:none;background:var(--surface)}
 .sk-total{width:30px;text-align:center;font-weight:bold;background:#eee}
@@ -553,7 +553,7 @@ body.light .section, body.light .acc-body,
 body.light .sub-acc-body, body.light .sub2-acc-body{
   background:var(--surface2) !important;
 }
-body.light td{ background:#fff !important; }
+body.light td:not(.sk-base):not(.sk-total):not(.derived):not(.row-label):not(.hdr):not(.fute-kikan-hdr):not([style*="hdr-bg"]){ background:#fff !important; }
 
 /* --- ダークモード --- */
 body:not(.light) .hdr,
@@ -816,9 +816,9 @@ textarea{
 }
 
 /* --- ただしライトモードは元の色を維持 --- */
-body.light td{ background:initial !important; }
+
 body.light .derived{ background:#e8e8e8 !important; }
-body.light .row-label{ background:#e0e0e0 !important; }
+body.light .row-label{ background:#444 !important; color:#fff !important; }
 body.light input[type=text],
 body.light input[type=number],
 body.light input[type=password],
@@ -860,7 +860,8 @@ body.light #sp-row1{
 }
 
 /* 技能表の初期値・合計値欄を薄灰色に */
-.sk-base{ background:#eeeeee !important; color:#666 !important; }
+.sk-base{ background:#f0f0f0 !important; color:#666 !important; }
+body:not(.light) [contenteditable].sk-base{ background:var(--surface2) !important; color:var(--text-muted) !important; }
 .sk-total{ background:#eeeeee !important; }
 body:not(.light) .sk-base{ background:var(--surface2) !important; color:var(--text-muted) !important; }
 body:not(.light) .sk-total{ background:var(--surface2) !important; }
@@ -942,6 +943,35 @@ body.light #sticky-header *:not(select):not(input):not(.pts-bar):not(.pts-bar-fi
 }
 /* pt-blockだけ#444に */
 body.light .sticky-pt-block{background:#444 !important;}
+
+
+body.light .sk-base{ background:#f0f0f0 !important; }
+
+body.light .personal-data td.hdr,
+body.light td.hdr{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* スマホ版レイアウト追加調整 */
+@media(max-width:700px){
+  /* 技能テーブルを横スクロール可能に */
+  #skill_col{ overflow-x:auto; }
+  .skill-table{ min-width:320px; }
+
+  /* 後遺症・AF・呪文テーブルを全幅に */
+  .sub2-acc-body table{ width:100% !important; table-layout:fixed; }
+
+  /* sk-baseの背景をスマホでも維持 */
+  .sk-base{ background:#f0f0f0 !important; }
+  body:not(.light) .sk-base{ background:var(--surface2) !important; }
+
+  /* row-labelをスマホでも#444に */
+  body.light .row-label{ background:#444 !important; color:#fff !important; }
+
+  /* パーソナルデータhdrをスマホでも#444に */
+  body.light td.hdr{ background:#444 !important; color:#fff !important; }
+}
 
 </style>
 </head>
@@ -1329,7 +1359,7 @@ body.light .sticky-pt-block{background:#444 !important;}
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_kouisho')"><span>後遺症</span><span id="arr_ae_kouisho">▶</span></div>
             <div class="sub2-acc-body" id="ae_kouisho">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">後遺症名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border);width:35%">後遺症名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border);width:65%">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
                 <tbody id="tbody_kouisho"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_kouisho')">＋追加</button>
@@ -1339,7 +1369,7 @@ body.light .sticky-pt-block{background:#444 !important;}
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_af')"><span>AF</span><span id="arr_ae_af">▶</span></div>
             <div class="sub2-acc-body" id="ae_af">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">AF名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border);width:35%">AF名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border);width:65%">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
                 <tbody id="tbody_af"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_af')">＋追加</button>
@@ -1349,7 +1379,7 @@ body.light .sticky-pt-block{background:#444 !important;}
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_spell')"><span>呪文</span><span id="arr_ae_spell">▶</span></div>
             <div class="sub2-acc-body" id="ae_spell">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">呪文名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border);width:35%">呪文名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border);width:65%">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
                 <tbody id="tbody_spell"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_spell')">＋追加</button>
@@ -1530,13 +1560,19 @@ function addCustomSkill(tbodyId){
   tr.innerHTML=`
     <td class="sk-chk"><input type="checkbox"></td>
     <td class="sk-name" data-skill="${key}"><input type="text" placeholder="技能名" style="border:none;border-bottom:1px solid var(--border);width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
-    <td class="sk-base" data-base>0</td>
+    <td class="sk-base" data-base contenteditable="true" style="outline:none;cursor:text;min-width:28px;text-align:center;background:#f0f0f0"></td>
     <td class="sk-inp"><input type="number" class="job-inp" oninput="skillChanged(this)"></td>
     <td class="sk-inp"><input type="number" class="int-inp" oninput="skillChanged(this)"></td>
     <td class="sk-inp"><input type="number" class="grw-inp" oninput="skillChanged(this)"></td>
     <td class="sk-inp"><input type="number" class="oth-inp" oninput="skillChanged(this)"></td>
     <td class="sk-total">0</td>
     <td class="sk-del"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  // contenteditable の入力で合計を再計算
+  const baseTd = tr.querySelector('[data-base]');
+  baseTd.addEventListener('input', ()=>{
+    const inp = tr.querySelector('.job-inp');
+    if(inp) skillChanged(inp);
+  });
   tbody.appendChild(tr);
 }
 // FIX1: 初期値トグル — skill-default-row かつ未入力のみ非表示
