@@ -10,7 +10,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:11px;background:#d8d8d8;color:#111;padding-top:36px}
-.sheet{background:#f4f4f4;padding:6px;width:980px;margin:0 auto}
+.sheet{background:#f4f4f4;padding:6px;width:980px;margin:0 auto;padding-bottom:40px}
 #sticky-header{position:fixed;top:0;left:0;width:100%;background:#333;color:#fff;z-index:9999;display:flex;align-items:center;gap:8px;padding:4px 10px;font-size:11px;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
 #sticky-pcname{font-weight:bold;font-size:13px;flex:0 0 auto;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #sticky-pts{display:flex;gap:6px;align-items:center;flex:1}
@@ -438,7 +438,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid #ddd;width:100%;res
       <div class="acc-body" id="combat_acc">
         <div style="padding:4px;overflow-x:auto">
           <table>
-            <thead><tr><th style="min-width:55px;width:55px">武器名</th><th style="min-width:28px;width:32px;font-size:9px;white-space:nowrap">技能%</th><th style="font-size:9px;white-space:nowrap;width:40px">ダメージ</th><th style="font-size:9px;white-space:nowrap;width:22px;padding:0" title="DB込"><input type="checkbox" disabled style="pointer-events:none;opacity:0.4"></th><th style="font-size:9px;white-space:nowrap;width:28px">射程</th><th style="font-size:9px;white-space:nowrap;width:34px">攻撃回数</th><th style="font-size:9px;white-space:nowrap;width:28px">装弾数</th><th style="font-size:9px;white-space:nowrap;width:24px">耐久</th><th style="font-size:9px;white-space:nowrap;width:30px">故障No.</th><th style="min-width:60px">備考</th><th style="width:18px"></th></tr></thead>
+            <thead><tr><th style="min-width:80px;width:80px">武器名</th><th style="min-width:28px;width:32px;font-size:9px;white-space:nowrap">技能%</th><th style="font-size:9px;white-space:nowrap;width:40px">ダメージ</th><th style="font-size:9px;white-space:nowrap;width:22px;padding:0" title="DB込"><input type="checkbox" disabled style="pointer-events:none;opacity:0.4"></th><th style="font-size:9px;white-space:nowrap;width:28px">射程</th><th style="font-size:9px;white-space:nowrap;width:34px">攻撃回数</th><th style="font-size:9px;white-space:nowrap;width:28px">装弾数</th><th style="font-size:9px;white-space:nowrap;width:24px">耐久</th><th style="font-size:9px;white-space:nowrap;width:30px">故障No.</th><th style="min-width:40px;width:40px">備考</th><th style="width:18px"></th></tr></thead>
             <tbody id="weapon_rows"></tbody>
           </table>
           <button class="add-row-btn" onclick="addWeaponRow()">＋追加</button>
