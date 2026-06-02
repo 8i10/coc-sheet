@@ -96,22 +96,22 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
   --accent2:#7e9ec8;
   --text:#e8e4da;
   --text-muted:#8a8499;
-  --header-bg:#1a1428;
+  --header-bg:#333;
   --shadow:rgba(0,0,0,0.4);
   --hover:rgba(200,169,126,0.07);
 }
 body.light{
-  --bg:#f4f1ec;
+  --bg:#fff;
   --surface:#ffffff;
-  --surface2:#f0ece4;
-  --border:#d8d0c4;
-  --accent:#8b6d42;
-  --accent2:#3d6e99;
-  --text:#2a2420;
+  --surface2:#eeeeee;
+  --border:#cccccc;
+  --accent:#555555;
+  --accent2:#3366aa;
+  --text:#111;
   --text-muted:#7a6e62;
-  --header-bg:#e8e0d4;
+  --header-bg:#333;
   --shadow:rgba(0,0,0,0.12);
-  --hover:rgba(139,109,66,0.05);
+  --hover:rgba(0,0,0,0.04);
 }
 body{
   background:var(--bg);
@@ -120,12 +120,12 @@ body{
 }
 /* ヘッダー */
 #hdr,#sticky-header{
-  background:linear-gradient(135deg,#0d0d12 0%,var(--header-bg) 50%,#0d0d12 100%) !important;
+  background:#333 !important;
   border-bottom:1px solid var(--border);
   transition:background .25s;
 }
 body.light #hdr,body.light #sticky-header{
-  background:linear-gradient(135deg,#f4f1ec 0%,var(--header-bg) 50%,#f4f1ec 100%) !important;
+  background:#333 !important;
 }
 /* カード・サーフェス */
 .card,.char-card,#auth_box,.sheet{background:var(--surface) !important}
@@ -148,8 +148,8 @@ input[type=text],input[type=number],textarea,select{
 }
 body.light .acc-header,body.light .sub-acc-header,
 body.light .sub2-acc-header,body.light .hdr{
-  background:#b8b0a0 !important;
-  color:#1a1410 !important;
+  background:#444 !important;
+  color:#fff !important;
 }
 .acc-body,.sub-acc-body,.sub2-acc-body,.section{
   background:var(--surface2) !important;
@@ -190,7 +190,7 @@ body.light .s-insane{background:#f0e4ff;color:#6a1a9a}
 body.light .pts-bar{background:#ccc8be !important}
 /* sticky-pt-block */
 .sticky-pt-block{background:#252535 !important}
-body.light .sticky-pt-block{background:#ccc0b0 !important}
+body.light .sticky-pt-block{background:#ccc !important}
 /* テーマ切り替えボタン */
 #theme_btn{
   padding:2px 10px;font-size:12px;cursor:pointer;
@@ -205,9 +205,265 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
 [style*="color:#333"]{color:var(--text) !important}
 [style*="color:#444"]{color:var(--text) !important}
 [style*="color:#555"]{color:var(--text-muted) !important}
+
+/* ===== テーマ修正パッチ ===== */
+
+/* ライトモードのヘッダー文字色 */
+
+
+body.light .sticky-pt-block span,
+body.light .sticky-pt-block div{
+  color:#111 !important;
+}
+
+/* 能力値テーブル・パーソナルデータ・技能テーブル背景を統一 */
+.personal-data,
+.personal-data table,
+.personal-data td,
+.section,
+.skill-table,
+.skill-table td,
+.skill-table th,
+table td, table tr{
+  background:var(--surface) !important;
+}
+/* th だけ少し暗く */
+th, .skill-table th{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+body.light th,
+body.light .skill-table th{
+  background:#ddd8ce !important;
+  color:var(--text) !important;
+}
+
+/* derived（灰色の計算欄）*/
+.derived{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+
+/* 不定エリア */
+.fute-table td[style*="background:#444"],
+.fute-table td[style*="background:#555"]{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードのヘッダーは濃い色に */
+body.light #sticky-header,
+body.light #hdr{
+  background:#333 !important;
+  color:#fff !important;
+}
+body.light #sticky-header *,
+body.light #hdr *{
+  color:#fff !important;
+}
+body.light .pts-remain.ok{color:#2a7a4a !important}
+body.light #sticky-pcname{color:#fff !important}
+
+/* セクション区切りラベル */
+.skill-sec-hdr{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+/* 技能初期値 */
+.sk-base{color:var(--text-muted) !important}
+
+/* row-label */
+.row-label{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+
+/* 不定の白背景tdをsurfaceに */
+.fute-table td[style*="background:#fff"]{
+  background:var(--surface) !important;
+}
+
+/* テーマボタンカラー修正 */
+body.light #theme_btn{
+  background:rgba(255,255,255,0.2);
+  border-color:rgba(255,255,255,0.4);
+  color:#fff;
+}
+
+
+/* ===== テーマ修正パッチ2 ===== */
+
+/* 技能表ヘッダー・不定ヘッダーをテーマに合わせる */
+body.light .hdr,
+body.light .acc-header,
+body.light .sub-acc-header,
+body.light .sub2-acc-header,
+body.light .skill-sec-hdr{
+  background:#444 !important;
+  color:#f8f4ee !important;
+}
+/* sectionの背景をsurfaceに統一 */
+body.light .section{
+  background:var(--surface) !important;
+  border-color:var(--border) !important;
+}
+body:not(.light) .section{
+  background:var(--surface2) !important;
+  border-color:var(--border) !important;
+}
+/* 不定の内容・期間ラベルをhdrと統一 */
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#444 !important;
+  color:#f8f4ee !important;
+}
+body:not(.light) .fute-table td[style*="background:#444"],
+body:not(.light) .fute-table td[style*="background:#555"]{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+
+/* 職業P・興味P ライトモード */
+body.light .sticky-pt-block{
+  background:rgba(90,74,58,0.15) !important;
+  color:#111 !important;
+}
+body.light .sticky-pt-block span,
+body.light .sticky-pt-block div{
+  color:#111 !important;
+}
+body.light #job_remain,
+body.light #int_remain,
+body.light #job_remain_sp,
+body.light #int_remain_sp{
+  color:#2a7a4a !important;
+}
+body.light .pts-bar{
+  background:#ccc !important;
+  border-color:#aaa !important;
+}
+
+/* PC名ライトモード */
+body.light #sticky-pcname{
+  color:#f8f4ee !important;
+}
+/* ライトモードのヘッダー区切り線 */
+body.light #sticky-header > div:first-child > div:nth-child(2){
+  background:#666 !important;
+}
+
+/* ダークモード skill-sec-hdr */
+body:not(.light) .skill-sec-hdr{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+body:not(.light) .hdr,
+body:not(.light) .acc-header,
+body:not(.light) .sub-acc-header,
+body:not(.light) .sub2-acc-header{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+body:not(.light) .sticky-pt-block{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
+
+
+/* ===== テーマ修正パッチ3: ライトモード白黒系 ===== */
+
+/* ライトモードのヘッダーを黒系に戻す */
+body.light #sticky-header,
+body.light #hdr{
+  background:#333 !important;
+  color:#fff !important;
+}
+body.light #sticky-header *,
+body.light #hdr *,
+body.light #sticky-pcname{
+  color:#fff !important;
+}
+body.light .sticky-pt-block{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .sticky-pt-block span,
+body.light .sticky-pt-block div{
+  color:#fff !important;
+}
+body.light #job_remain,
+body.light #int_remain,
+body.light #job_remain_sp,
+body.light #int_remain_sp{
+  color:#4dbb88 !important;
+}
+body.light .pts-bar{
+  background:#666 !important;
+  border-color:#555 !important;
+}
+
+/* ライトモードのhdr・acc-headerを黒系に */
+body.light .hdr,
+body.light .acc-header,
+body.light .sub-acc-header,
+body.light .sub2-acc-header,
+body.light .skill-sec-hdr{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードの不定ラベルを黒系に */
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードのsectionを白系に */
+body.light .section{
+  background:#fff !important;
+  border-color:#ccc !important;
+}
+body.light .acc-body,
+body.light .sub-acc-body,
+body.light .sub2-acc-body{
+  background:#f8f8f8 !important;
+}
+
+/* ライトモードth */
+body.light th,
+body.light .skill-table th{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードのテキストを黒に */
+body.light{
+  --text:#111 !important;
+  --text-muted:#666 !important;
+  --bg:#d8d8d8 !important;
+  --surface:#fff !important;
+  --surface2:#f0f0f0 !important;
+  --border:#ccc !important;
+}
+
+
+/* ダークモード一覧: 文字色を見やすく */
+body:not(.light) .card-furigana{ color:#aaa !important; }
+body:not(.light) .card-meta{ color:#bbb !important; }
+body:not(.light) .card-job{ color:#ccc !important; }
+body:not(.light) .card-date{ color:#888 !important; }
+body:not(.light) .card-pcname{ color:var(--text) !important; }
+
 </style>
 </head>
-<body>
+<body class="light">
 
 <!-- ヘッダー -->
 <div id="hdr">
@@ -456,14 +712,18 @@ async function deleteChar(id,btn){
 
 // テーマ切り替え
 const THEME_KEY = 'coc_theme';
+const THEME_VER = 'v2'; // ライトデフォルト化バージョン
 function applyTheme(mode){
   document.body.classList.toggle('light', mode==='light');
   localStorage.setItem(THEME_KEY, mode);
+  localStorage.setItem(THEME_KEY+'_ver', THEME_VER);
   const btn = document.getElementById('theme_btn');
   if(btn) btn.textContent = mode==='light' ? '🌙' : '☀️';
 }
 (function(){
-  const saved = localStorage.getItem(THEME_KEY) || 'dark';
+  // バージョンが変わった場合はlightにリセット
+  const ver = localStorage.getItem(THEME_KEY+'_ver');
+  const saved = (ver === THEME_VER) ? (localStorage.getItem(THEME_KEY) || 'light') : 'light';
   applyTheme(saved);
 })();
 

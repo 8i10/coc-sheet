@@ -255,9 +255,185 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
 [style*="color:#333"]{color:var(--text) !important}
 [style*="color:#444"]{color:var(--text) !important}
 [style*="color:#555"]{color:var(--text-muted) !important}
+
+/* ===== テーマ修正パッチ ===== */
+
+/* ライトモードのヘッダー文字色 */
+body.light #sticky-header,
+body.light #hdr{
+  color:#2a2420 !important;
+}
+body.light #sticky-header *,
+body.light #hdr *{
+  color:#2a2420 !important;
+}
+body.light .sticky-pt-block span,
+body.light .sticky-pt-block div{
+  color:#2a2420 !important;
+}
+
+/* 能力値テーブル・パーソナルデータ・技能テーブル背景を統一 */
+.personal-data,
+.personal-data table,
+.personal-data td,
+.section,
+.skill-table,
+.skill-table td,
+.skill-table th,
+table td, table tr{
+  background:var(--surface) !important;
+}
+/* th だけ少し暗く */
+th, .skill-table th{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+body.light th,
+body.light .skill-table th{
+  background:#ddd8ce !important;
+  color:var(--text) !important;
+}
+
+/* derived（灰色の計算欄）*/
+.derived{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+
+/* 不定エリア */
+.fute-table td[style*="background:#444"],
+.fute-table td[style*="background:#555"]{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#b8b0a0 !important;
+  color:#1a1410 !important;
+}
+
+/* ライトモードのヘッダーは濃い色に */
+body.light #sticky-header,
+body.light #hdr{
+  background:linear-gradient(135deg,#5a4a3a 0%,#3d2e1e 50%,#5a4a3a 100%) !important;
+  color:#f4f1ec !important;
+}
+body.light #sticky-header *,
+body.light #hdr *{
+  color:#f4f1ec !important;
+}
+body.light .pts-remain.ok{color:#2a7a4a !important}
+body.light #sticky-pcname{color:#f4f1ec !important}
+
+/* セクション区切りラベル */
+.skill-sec-hdr{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+/* 技能初期値 */
+.sk-base{color:var(--text-muted) !important}
+
+/* row-label */
+.row-label{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+
+/* 不定の白背景tdをsurfaceに */
+.fute-table td[style*="background:#fff"]{
+  background:var(--surface) !important;
+}
+
+/* テーマボタンカラー修正 */
+body.light #theme_btn{
+  background:rgba(255,255,255,0.2);
+  border-color:rgba(255,255,255,0.4);
+  color:#f4f1ec;
+}
+
+
+/* ===== テーマ修正パッチ2 ===== */
+
+/* 技能表ヘッダー・不定ヘッダーをテーマに合わせる */
+body.light .hdr,
+body.light .acc-header,
+body.light .sub-acc-header,
+body.light .sub2-acc-header,
+body.light .skill-sec-hdr{
+  background:#8a7a6a !important;
+  color:#f8f4ee !important;
+}
+/* sectionの背景をsurfaceに統一 */
+body.light .section{
+  background:var(--surface) !important;
+  border-color:var(--border) !important;
+}
+body:not(.light) .section{
+  background:var(--surface2) !important;
+  border-color:var(--border) !important;
+}
+/* 不定の内容・期間ラベルをhdrと統一 */
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#8a7a6a !important;
+  color:#f8f4ee !important;
+}
+body:not(.light) .fute-table td[style*="background:#444"],
+body:not(.light) .fute-table td[style*="background:#555"]{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+
+/* 職業P・興味P ライトモード */
+body.light .sticky-pt-block{
+  background:rgba(90,74,58,0.15) !important;
+  color:#2a2420 !important;
+}
+body.light .sticky-pt-block span,
+body.light .sticky-pt-block div{
+  color:#2a2420 !important;
+}
+body.light #job_remain,
+body.light #int_remain,
+body.light #job_remain_sp,
+body.light #int_remain_sp{
+  color:#2a7a4a !important;
+}
+body.light .pts-bar{
+  background:#ccc0b0 !important;
+  border-color:#b8b0a0 !important;
+}
+
+/* PC名ライトモード */
+body.light #sticky-pcname{
+  color:#f8f4ee !important;
+}
+/* ライトモードのヘッダー区切り線 */
+body.light #sticky-header > div:first-child > div:nth-child(2){
+  background:#9a8a78 !important;
+}
+
+/* ダークモード skill-sec-hdr */
+body:not(.light) .skill-sec-hdr{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+body:not(.light) .hdr,
+body:not(.light) .acc-header,
+body:not(.light) .sub-acc-header,
+body:not(.light) .sub2-acc-header{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+body:not(.light) .sticky-pt-block{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
+
 </style>
 </head>
-<body>
+<body class="light">
 <div id="sticky-header">
   <div id="sp-row1" style="display:contents">
     <div id="header_left" style="display:flex;align-items:center;gap:0;flex:1;min-width:0;overflow:hidden">
@@ -1880,14 +2056,18 @@ function doCocofolicaCopy() {
 
 // テーマ切り替え
 const THEME_KEY = 'coc_theme';
+const THEME_VER = 'v2'; // ライトデフォルト化バージョン
 function applyTheme(mode){
   document.body.classList.toggle('light', mode==='light');
   localStorage.setItem(THEME_KEY, mode);
+  localStorage.setItem(THEME_KEY+'_ver', THEME_VER);
   const btn = document.getElementById('theme_btn');
   if(btn) btn.textContent = mode==='light' ? '🌙' : '☀️';
 }
 (function(){
-  const saved = localStorage.getItem(THEME_KEY) || 'dark';
+  // バージョンが変わった場合はlightにリセット
+  const ver = localStorage.getItem(THEME_KEY+'_ver');
+  const saved = (ver === THEME_VER) ? (localStorage.getItem(THEME_KEY) || 'light') : 'light';
   applyTheme(saved);
 })();
 

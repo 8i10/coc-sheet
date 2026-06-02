@@ -24,71 +24,71 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:11px;ba
 #sticky-pcname{font-weight:bold;font-size:13px;flex:0 0 auto;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #sticky-pts{display:flex;gap:6px;align-items:center}
 .sticky-pt{background:#444;border-radius:3px;padding:2px 6px;font-size:11px}
-#sticky-actions{display:flex;gap:4px;margin-left:auto}
+#sticky-actions{display:flex;gap:0;margin-left:auto;align-items:center;background:#333;padding:0 4px}
 .sticky-pt-block{display:flex;align-items:center;gap:5px;background:#444;border-radius:3px;padding:2px 8px;font-size:11px;color:#fff;flex-shrink:0}
-.sheet{background:#f4f4f4;padding:6px;width:980px;margin:0 auto;padding-bottom:40px}
+.sheet{background:var(--bg);padding:6px;width:980px;margin:0 auto;padding-bottom:40px}
 table{border-collapse:collapse;width:100%}
-td,th{border:1px solid #888;padding:0 3px;height:20px}
-th{background:#444;color:#fff;text-align:center;font-weight:normal;font-size:10px}
+td,th{border:1px solid var(--border);padding:0 3px;height:20px}
+th{background:var(--hdr-bg);color:var(--hdr-text);text-align:center;font-weight:normal;font-size:10px}
 input[type=text],input[type=number],input[type=password]{border:none;background:transparent;width:100%;font-size:11px;font-family:inherit;text-align:center;outline:none;padding:0}
 input[type=number]::-webkit-inner-spin-button{display:none}
-select{font-size:11px;border:1px solid #aaa;background:#fff;width:100%;outline:none;font-family:inherit}
-textarea{font-size:11px;font-family:inherit;border:1px solid #ddd;width:100%;resize:vertical;padding:2px}
+select{font-size:11px;border:1px solid var(--border);background:var(--surface);width:100%;outline:none;font-family:inherit}
+textarea{font-size:11px;font-family:inherit;border:1px solid var(--border);width:100%;resize:vertical;padding:2px}
 textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizing:border-box}
 .memo-title::placeholder{color:#ccc}
-.hdr{background:#444;color:#fff;font-size:11px;padding:2px 5px;font-weight:bold}
+.hdr{background:var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;padding:2px 5px;font-weight:bold}
 .personal-data td.hdr{text-align:center}
 .personal-data input[type=text],.personal-data input[type=number]{text-align:left}
 #furigana{text-align:center !important}
 .personal-data input[type=text],.personal-data input[type=number]{text-align:left}
 #furigana{text-align:center !important}
-.section{border:1px solid #777;margin-bottom:5px;background:#fff}
-.derived{background:#e8e8e8;text-align:center;min-width:28px}
-.row-label{background:#444;color:#fff;font-size:11px;text-align:center;padding:1px 3px;white-space:nowrap}
+.section{border:1px solid var(--border);margin-bottom:5px;background:var(--surface)}
+.derived{background:var(--surface2);text-align:center;min-width:28px}
+.row-label{background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;text-align:center;padding:1px 3px;white-space:nowrap}
 /* FIX5: pts-block を職業特記幅に合わせるため width:100% の親で包む */
-.pts-block{display:flex;align-items:center;gap:3px;padding:2px 4px;border:1px solid #bbb;border-radius:3px;background:#fff;font-size:11px;flex:1;min-width:0}
+.pts-block{display:flex;align-items:center;gap:3px;padding:2px 4px;border:1px solid var(--border);border-radius:3px;background:var(--surface);font-size:11px;flex:1;min-width:0}
 .pts-remain{font-size:11px;font-weight:bold;min-width:36px;text-align:right}
 .pts-remain.ok{color:#2a7}
 .pts-remain.warn{color:#e60}
 .pts-remain.over{color:#c00;animation:blink .6s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.pts-bar{height:5px;border-radius:3px;background:#ddd;width:40px;overflow:hidden;border:1px solid #ccc;flex-shrink:0}
+.pts-bar{height:5px;border-radius:3px;background:#ddd;width:40px;overflow:hidden;border:1px solid var(--border);flex-shrink:0}
 .pts-bar-fill{height:100%;border-radius:3px;transition:width .2s,background .2s}
-.acc-header{background:#333;color:#fff;padding:3px 8px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.acc-header{background:var(--hdr-bg);color:var(--hdr-text);padding:3px 8px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none}
 .acc-header:hover{background:#222}
 .acc-body{display:none}
 .acc-body.open{display:block}
-.sub-acc-header{background:#555;color:#fff;padding:2px 6px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;border-bottom:1px solid #444}
+.sub-acc-header{background:var(--hdr-bg);color:var(--hdr-text);padding:2px 6px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;border-bottom:1px solid var(--border)}
 .sub-acc-header:hover{background:#444}
 .sub-acc-body{display:none;padding:4px}
 .sub-acc-body.open{display:block}
-.sub2-acc-header{background:#555;color:#fff;padding:2px 5px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;margin-bottom:1px}
+.sub2-acc-header{background:var(--hdr-bg);color:var(--hdr-text);padding:2px 5px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none;margin-bottom:1px}
 .sub2-acc-header:hover{background:#444}
 .sub2-acc-body{display:none;padding:3px}
 .sub2-acc-body.open{display:block}
-.skill-sec-hdr{background:#555;color:#fff;font-size:11px;padding:2px 4px}
+.skill-sec-hdr{background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;padding:2px 4px}
 .skill-table{width:100%;border-collapse:collapse;table-layout:fixed}
-.skill-table td,.skill-table th{border:1px solid #aaa;padding:1px 2px;font-size:11px;overflow:hidden}
+.skill-table td,.skill-table th{border:1px solid var(--border);padding:1px 2px;font-size:11px;overflow:hidden}
 .skill-table th{background:#666;color:#fff;text-align:center;white-space:nowrap}
 .sk-chk{width:18px;text-align:center}
-.sk-name{background:#f8f8f8;text-align:left;padding-left:3px}
+.sk-name{background:var(--surface2);text-align:left;padding-left:3px}
 .sk-base{width:28px;text-align:center;color:#666}
 .sk-inp{width:28px}
-.sk-inp input{text-align:center;width:100%;border:none;outline:none;background:#fff}
+.sk-inp input{text-align:center;width:100%;border:none;outline:none;background:var(--surface)}
 .sk-total{width:30px;text-align:center;font-weight:bold;background:#eee}
 /* FIX5: 合計列右の余白（sk-del列）を幅0・border無しで消す */
 .sk-del{width:0;padding:0;border:none;overflow:visible}
-.add-row-btn{font-size:11px;padding:1px 7px;cursor:pointer;margin:2px 2px 2px 0;background:#eee;border:1px solid #aaa;border-radius:2px}
+.add-row-btn{font-size:11px;padding:1px 7px;cursor:pointer;margin:2px 2px 2px 0;background:#eee;border:1px solid var(--border);border-radius:2px}
 .del-btn{font-size:11px;padding:0 3px;cursor:pointer;background:none;border:none;color:#bbb;line-height:1;font-weight:normal;transition:color .15s}.del-btn:hover{color:#933}
 .right-panel{display:flex;flex-direction:column;gap:5px}
-.secret-item{border:1px solid #ccc;border-radius:3px;margin-bottom:4px;overflow:hidden}
-.secret-item-header{background:#555;color:#fff;padding:2px 6px;display:flex;align-items:center;gap:4px;font-size:11px}
+.secret-item{border:1px solid var(--border);border-radius:3px;margin-bottom:4px;overflow:hidden}
+.secret-item-header{background:var(--hdr-bg);color:var(--hdr-text);padding:2px 6px;display:flex;align-items:center;gap:4px;font-size:11px}
 .secret-item-body{display:none;padding:0}
 .secret-item-body.open{display:block}
-.secret-pass-row{background:#f5f5f5;padding:3px 6px;border-bottom:1px solid #ddd;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.secret-pass-row{background:#f5f5f5;padding:3px 6px;border-bottom:1px solid var(--border);display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 /* FIX1: 技能初期値トグル対象は skill-default-row のみ */
 .skill-table tbody tr.skill-default-row.hidden{display:none}
-.item-input{height:22px;line-height:22px;border:none;outline:none;background:#fff;width:100%;font-size:11px;font-family:inherit;padding:0 2px;text-align:left}
+.item-input{height:22px;line-height:22px;border:none;outline:none;background:var(--surface);width:100%;font-size:11px;font-family:inherit;padding:0 2px;text-align:left}
 /* FIX2: うちよそグループ header */
 .relg-header{background:#666;color:#fff;padding:2px 5px;font-size:11px;display:flex;align-items:center;gap:4px;user-select:none;margin-bottom:1px}
 .relg-header:hover{background:#555}
@@ -128,7 +128,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 
   /* 行1: パーソナル＋能力値 → 縦並び */
   #row1_flex{flex-direction:column !important}
-  .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
+  .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid var(--border)}
   #row1_stats{width:100% !important;overflow-x:auto}
   #row1_stats table{min-width:560px}
   /* 不定エリアのテーブルが見切れないようにする */
@@ -140,7 +140,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 
   /* 行2: 職業特記＋特徴表 → 縦並び */
   #row2_flex{flex-direction:column !important}
-  #row2_job{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid #aaa}
+  #row2_job{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid var(--border)}
   #row2_tokucho{width:100% !important;padding:3px}
 
   /* メイン: 技能表＋右パネル → 縦並び */
@@ -164,22 +164,26 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
   --accent2:#7e9ec8;
   --text:#e8e4da;
   --text-muted:#8a8499;
-  --header-bg:#1a1428;
+  --header-bg:#111116;
   --shadow:rgba(0,0,0,0.4);
   --hover:rgba(200,169,126,0.07);
+  --hdr-bg:#1e1e2e;
+  --hdr-text:#e8e4da;
 }
 body.light{
-  --bg:#f4f1ec;
+  --bg:#fff;
   --surface:#ffffff;
-  --surface2:#f0ece4;
-  --border:#d8d0c4;
-  --accent:#8b6d42;
-  --accent2:#3d6e99;
-  --text:#2a2420;
+  --surface2:#eeeeee;
+  --border:#cccccc;
+  --accent:#555555;
+  --accent2:#3366aa;
+  --text:#111;
   --text-muted:#7a6e62;
-  --header-bg:#e8e0d4;
+  --header-bg:#333;
   --shadow:rgba(0,0,0,0.12);
-  --hover:rgba(139,109,66,0.05);
+  --hover:rgba(0,0,0,0.04);
+  --hdr-bg:#444;
+  --hdr-text:#fff;
 }
 body{
   background:var(--bg);
@@ -188,12 +192,12 @@ body{
 }
 /* ヘッダー */
 #hdr,#sticky-header{
-  background:linear-gradient(135deg,#0d0d12 0%,var(--header-bg) 50%,#0d0d12 100%) !important;
+  background:var(--header-bg,#333) !important;
   border-bottom:1px solid var(--border);
   transition:background .25s;
 }
 body.light #hdr,body.light #sticky-header{
-  background:linear-gradient(135deg,#f4f1ec 0%,var(--header-bg) 50%,#f4f1ec 100%) !important;
+  background:#333 !important;
 }
 /* カード・サーフェス */
 .card,.char-card,#auth_box,.sheet{background:var(--surface) !important}
@@ -216,8 +220,8 @@ input[type=text],input[type=number],textarea,select{
 }
 body.light .acc-header,body.light .sub-acc-header,
 body.light .sub2-acc-header,body.light .hdr{
-  background:#b8b0a0 !important;
-  color:#1a1410 !important;
+  background:#444 !important;
+  color:#fff !important;
 }
 .acc-body,.sub-acc-body,.sub2-acc-body,.section{
   background:var(--surface2) !important;
@@ -238,7 +242,7 @@ body.light .s-alive{background:#d4f5e4;color:#1a7a45}
 body.light .s-lost{background:#fde8e8;color:#b03030}
 body.light .s-retired{background:#e8eef5;color:#3a5a8a}
 body.light .s-missing{background:#fff3d4;color:#8a6000}
-body.light .s-dead{background:#e8e8e8;color:#555}
+body.light .s-dead{background:var(--surface2);color:#555}
 body.light .s-insane{background:#f0e4ff;color:#6a1a9a}
 /* コンテナ・パネル */
 .container{background:transparent !important}
@@ -258,7 +262,7 @@ body.light .s-insane{background:#f0e4ff;color:#6a1a9a}
 body.light .pts-bar{background:#ccc8be !important}
 /* sticky-pt-block */
 .sticky-pt-block{background:#252535 !important}
-body.light .sticky-pt-block{background:#ccc0b0 !important}
+body.light .sticky-pt-block{background:#ccc !important}
 /* テーマ切り替えボタン */
 #theme_btn{
   padding:2px 10px;font-size:12px;cursor:pointer;
@@ -267,24 +271,591 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
 }
 #theme_btn:hover{border-color:var(--accent);color:var(--accent)}
 /* fafafa → surface2 */
-[style*="background:#fafafa"],[style*="background: #fafafa"]{background:var(--surface2) !important}
-[style*="background:#f8f8f8"]{background:var(--surface2) !important}
-[style*="background:#f0f0f0"]{background:var(--surface2) !important}
+[style*="background:var(--surface2)"],[style*="background: #fafafa"]{background:var(--surface2) !important}
+[style*="background:var(--surface2)"]{background:var(--surface2) !important}
+[style*="background:var(--surface2)"]{background:var(--surface2) !important}
 [style*="color:#333"]{color:var(--text) !important}
 [style*="color:#444"]{color:var(--text) !important}
 [style*="color:#555"]{color:var(--text-muted) !important}
+
+/* ===== テーマ修正パッチ ===== */
+
+/* ライトモードのヘッダー文字色 */
+
+
+body.light .sticky-pt-block span,
+body.light .sticky-pt-block div{
+  color:#111 !important;
+}
+
+/* 能力値テーブル・パーソナルデータ・技能テーブル背景を統一 */
+.personal-data,
+.personal-data table,
+.personal-data td,
+.section,
+.skill-table,
+.skill-table td,
+.skill-table th,
+table td, table tr{
+  background:var(--surface) !important;
+}
+/* th だけ少し暗く */
+th, .skill-table th{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+body.light th,
+body.light .skill-table th{
+  background:#ddd8ce !important;
+  color:var(--text) !important;
+}
+
+/* derived（灰色の計算欄）*/
+.derived{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+
+/* 不定エリア */
+.fute-table td[style*="background:#444"],
+.fute-table td[style*="background:#555"]{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードのヘッダーは濃い色に */
+body.light #sticky-header,
+body.light #hdr{
+  background:#333 !important;
+  color:#fff !important;
+}
+body.light #sticky-header *,
+body.light #hdr *{
+  color:#fff !important;
+}
+body.light .pts-remain.ok{color:#2a7a4a !important}
+body.light #sticky-pcname{color:#fff !important}
+
+/* セクション区切りラベル */
+.skill-sec-hdr{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+/* 技能初期値 */
+.sk-base{color:var(--text-muted) !important}
+
+/* row-label */
+.row-label{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+
+/* 不定の白背景tdをsurfaceに */
+.fute-table td[style*="background:#fff"]{
+  background:var(--surface) !important;
+}
+
+/* テーマボタンカラー修正 */
+body.light #theme_btn{
+  background:rgba(255,255,255,0.2);
+  border-color:rgba(255,255,255,0.4);
+  color:#fff;
+}
+
+
+/* ===== テーマ修正パッチ2 ===== */
+
+/* 技能表ヘッダー・不定ヘッダーをテーマに合わせる */
+body.light .hdr,
+body.light .acc-header,
+body.light .sub-acc-header,
+body.light .sub2-acc-header,
+body.light .skill-sec-hdr{
+  background:#444 !important;
+  color:#f8f4ee !important;
+}
+/* sectionの背景をsurfaceに統一 */
+body.light .section{
+  background:var(--surface) !important;
+  border-color:var(--border) !important;
+}
+body:not(.light) .section{
+  background:var(--surface2) !important;
+  border-color:var(--border) !important;
+}
+/* 不定の内容・期間ラベルをhdrと統一 */
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#444 !important;
+  color:#f8f4ee !important;
+}
+body:not(.light) .fute-table td[style*="background:#444"],
+body:not(.light) .fute-table td[style*="background:#555"]{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+
+/* 職業P・興味P ライトモード */
+body.light .sticky-pt-block{
+  background:rgba(90,74,58,0.15) !important;
+  color:#111 !important;
+}
+body.light .sticky-pt-block span,
+body.light .sticky-pt-block div{
+  color:#111 !important;
+}
+body.light #job_remain,
+body.light #int_remain,
+body.light #job_remain_sp,
+body.light #int_remain_sp{
+  color:#2a7a4a !important;
+}
+body.light .pts-bar{
+  background:#ccc !important;
+  border-color:#aaa !important;
+}
+
+/* PC名ライトモード */
+body.light #sticky-pcname{
+  color:#f8f4ee !important;
+}
+/* ライトモードのヘッダー区切り線 */
+body.light #sticky-header > div:first-child > div:nth-child(2){
+  background:#666 !important;
+}
+
+/* ダークモード skill-sec-hdr */
+body:not(.light) .skill-sec-hdr{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+body:not(.light) .hdr,
+body:not(.light) .acc-header,
+body:not(.light) .sub-acc-header,
+body:not(.light) .sub2-acc-header{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+body:not(.light) .sticky-pt-block{
+  background:#252535 !important;
+  color:var(--text) !important;
+}
+body:not(.light) .pts-remain.ok{ color:#7ec8a0 !important }
+
+
+/* ===== テーマ修正パッチ3: ライトモード白黒系 ===== */
+
+/* ライトモードのヘッダーを黒系に戻す */
+body.light #sticky-header,
+body.light #hdr{
+  background:#333 !important;
+  color:#fff !important;
+}
+body.light #sticky-header *,
+body.light #hdr *,
+body.light #sticky-pcname{
+  color:#fff !important;
+}
+body.light .sticky-pt-block{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .sticky-pt-block span,
+body.light .sticky-pt-block div{
+  color:#fff !important;
+}
+body.light #job_remain,
+body.light #int_remain,
+body.light #job_remain_sp,
+body.light #int_remain_sp{
+  color:#4dbb88 !important;
+}
+body.light .pts-bar{
+  background:#666 !important;
+  border-color:#555 !important;
+}
+
+/* ライトモードのhdr・acc-headerを黒系に */
+body.light .hdr,
+body.light .acc-header,
+body.light .sub-acc-header,
+body.light .sub2-acc-header,
+body.light .skill-sec-hdr{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードの不定ラベルを黒系に */
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードのsectionを白系に */
+body.light .section{
+  background:#fff !important;
+  border-color:#ccc !important;
+}
+body.light .acc-body,
+body.light .sub-acc-body,
+body.light .sub2-acc-body{
+  background:var(--surface2) !important;
+}
+
+/* ライトモードth */
+body.light th,
+body.light .skill-table th{
+  background:#444 !important;
+  color:#fff !important;
+}
+
+/* ライトモードのテキストを黒に */
+body.light{
+  --text:#111 !important;
+  --text-muted:#666 !important;
+  --bg:#d8d8d8 !important;
+  --surface:#fff !important;
+  --surface2:#f0f0f0 !important;
+  --border:#ccc !important;
+}
+
+
+
+
+
+/* ===== テーマ最終パッチ（全上書き） ===== */
+
+/* --- ライトモード --- */
+body.light .hdr,
+body.light .acc-header,
+body.light .sub-acc-header,
+body.light .sub2-acc-header,
+body.light .skill-sec-hdr{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light th, body.light .skill-table th{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .fute-table td[style*="background:#444"],
+body.light .fute-table td[style*="background:#555"]{
+  background:#444 !important;
+  color:#fff !important;
+}
+body.light .section, body.light .acc-body,
+body.light .sub-acc-body, body.light .sub2-acc-body{
+  background:var(--surface2) !important;
+}
+body.light td{ background:#fff !important; }
+
+/* --- ダークモード --- */
+body:not(.light) .hdr,
+body:not(.light) .acc-header,
+body:not(.light) .sub-acc-header,
+body:not(.light) .sub2-acc-header,
+body:not(.light) .skill-sec-hdr{
+  background:#1e1e2e !important;
+  color:var(--text) !important;
+}
+body:not(.light) th,
+body:not(.light) .skill-table th{
+  background:#1e1e2e !important;
+  color:var(--text) !important;
+}
+body:not(.light) .fute-table td[style*="background:#444"],
+body:not(.light) .fute-table td[style*="background:#555"]{
+  background:#1e1e2e !important;
+  color:var(--text) !important;
+}
+body:not(.light) .section,
+body:not(.light) .acc-body,
+body:not(.light) .sub-acc-body,
+body:not(.light) .sub2-acc-body{
+  background:var(--surface2) !important;
+}
+body:not(.light) td{ background:var(--surface) !important; }
+body:not(.light) .derived{ background:var(--surface2) !important; }
+
+
+/* ===== ダークモード強制上書き ===== */
+html body:not(.light) .hdr,
+html body:not(.light) .acc-header,
+html body:not(.light) .sub-acc-header,
+html body:not(.light) .sub2-acc-header,
+html body:not(.light) .skill-sec-hdr,
+html body:not(.light) th,
+html body:not(.light) .skill-table th{
+  background:#1e1e2e !important;
+  color:#e8e4da !important;
+}
+html body:not(.light) .fute-table td[style*="background:#444"],
+html body:not(.light) .fute-table td[style*="background:#555"]{
+  background:#1e1e2e !important;
+  color:#e8e4da !important;
+}
+/* personal-dataのラベルtd */
+html body:not(.light) .personal-data td.hdr,
+html body:not(.light) td.hdr{
+  background:#1e1e2e !important;
+  color:#e8e4da !important;
+}
+
+
+/* ===== 浮き修正パッチ ===== */
+
+/* パーソナルデータのラベル・input・select */
+body:not(.light) .personal-data td,
+body:not(.light) .personal-data th{
+  background:var(--surface) !important;
+}
+body:not(.light) .personal-data td.hdr{
+  background:var(--hdr-bg) !important;
+  color:var(--hdr-text) !important;
+}
+body:not(.light) input[type=text],
+body:not(.light) input[type=number],
+body:not(.light) input[type=password],
+body:not(.light) select,
+body:not(.light) textarea{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* 不定テーブルの入力欄 */
+body:not(.light) .fute-table td{
+  background:var(--surface) !important;
+}
+body:not(.light) .fute-table input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* 武器・所持品inputの背景 */
+body:not(.light) #weapon_rows input,
+body:not(.light) #item_rows input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* うちよそ・関係名 */
+body:not(.light) .relg-name-inp{
+  color:var(--text) !important;
+}
+
+/* ネタバレのパスワード欄 */
+body:not(.light) .secret-pass-row{
+  background:var(--surface2) !important;
+}
+body:not(.light) .secret-pass-row input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* memo-titleなどの薄背景 */
+body:not(.light) .memo-title{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+body:not(.light) .memo-block{
+  background:var(--surface) !important;
+}
+
+/* 一覧バー */
+body:not(.light) #sp-header-divider + div,
+body:not(.light) [style*="background:#f0f0f0"],
+body:not(.light) [style*="background:#f4f4f4"]{
+  background:var(--surface2) !important;
+}
+
+/* skill-nameの背景 */
+body:not(.light) .sk-name{
+  background:var(--surface) !important;
+}
+body:not(.light) .sk-name input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* job_tokki・desc */
+body:not(.light) #job_tokki,
+body:not(.light) #t1_desc,
+body:not(.light) #t2_desc{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+
+/* 一覧に戻るバー */
+body:not(.light) [style*="background:#f0f0f0"]{
+  background:var(--surface2) !important;
+  color:var(--text-muted) !important;
+}
+
+
+/* ===== 浮き修正パッチ2: input全体 ===== */
+body:not(.light) input[type=text],
+body:not(.light) input[type=number],
+body:not(.light) input[type=password],
+body:not(.light) input[type=email],
+body:not(.light) select,
+body:not(.light) textarea{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+  border-color:var(--border) !important;
+}
+/* checkboxは除外 */
+body:not(.light) input[type=checkbox]{
+  background:initial !important;
+}
+/* 全てのtdも */
+body:not(.light) td{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+/* .section内 */
+body:not(.light) .section,
+body:not(.light) .section table,
+body:not(.light) .section td,
+body:not(.light) .section input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+/* .derived */
+body:not(.light) .derived{
+  background:var(--surface2) !important;
+  color:var(--text-muted) !important;
+}
+/* .row-label */
+body:not(.light) .row-label{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+/* フォームのselectの矢印も */
+body:not(.light) select option{
+  background:var(--surface2);
+  color:var(--text);
+}
+
+
+/* ===== ボタン・ヘッダー色統一パッチ ===== */
+
+/* --- 技能表ヘッダー --- */
+/* ベースCSSのacc-headerを変数で上書き */
+.acc-header,.sub-acc-header,.sub2-acc-header{
+  background:var(--hdr-bg) !important;
+  color:var(--hdr-text) !important;
+}
+.acc-header:hover,.sub-acc-header:hover,.sub2-acc-header:hover{
+  filter:brightness(1.15);
+}
+
+/* --- 不定ヘッダー --- */
+.fute-table td[style*="background:#444"],
+.fute-table td[style*="background:#555"],
+.fute-table td[style*="background:var(--hdr-bg"]{
+  background:var(--hdr-bg) !important;
+  color:var(--hdr-text) !important;
+}
+
+/* --- 開く/閉じるボタン --- */
+button[style*="background:#666"]{
+  background:var(--hdr-bg) !important;
+  color:var(--hdr-text) !important;
+  border:1px solid var(--border) !important;
+}
+
+/* --- 解除・変更ボタン --- */
+button[style*="background:#eee"]{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+  border-color:var(--border) !important;
+}
+
+/* --- secret-pass-row --- */
+.secret-pass-row{
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+}
+.secret-pass-row span{
+  color:var(--text-muted) !important;
+}
+.secret-pass-row input{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+  border-color:var(--border) !important;
+}
+
+/* --- 全td/input --- */
+td{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+.derived{
+  background:var(--surface2) !important;
+}
+.row-label{
+  background:var(--surface2) !important;
+}
+input[type=text],input[type=number],input[type=password],input[type=email]{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+select{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+textarea{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+}
+
+/* --- ただしライトモードは元の色を維持 --- */
+body.light td{ background:initial !important; }
+body.light .derived{ background:#e8e8e8 !important; }
+body.light .row-label{ background:#f0f0f0 !important; }
+body.light input[type=text],
+body.light input[type=number],
+body.light input[type=password],
+body.light input[type=email]{ background:#fff !important; color:#111 !important; }
+body.light select{ background:#fff !important; color:#111 !important; }
+body.light textarea{ background:#fff !important; color:#111 !important; }
+body.light .secret-pass-row{ background:#f5f5f5 !important; }
+body.light button[style*="background:#eee"]{ background:#eee !important; color:#333 !important; }
+body.light button[style*="background:#666"]{ background:#666 !important; color:#fff !important; }
+body.light .acc-header,.body.light .sub-acc-header,.body.light .sub2-acc-header{ filter:none; }
+
+
+/* ライトモード時アイコンボタン背景をヘッダー色に固定 */
+body.light #sticky-actions button{
+  background:#333 !important;
+}
+
+body.light #sticky-actions button,
+body:not(.light) #sticky-actions button{
+  margin-left:8px;
+}
+body.light #sticky-actions button:first-child,
+body:not(.light) #sticky-actions button:first-child{
+  margin-left:0;
+}
 </style>
 </head>
-<body>
+<body class="light">
 
 <!-- ≡ メニュー（fixed配置）-->
-<div id="sheet_menu" style="display:none;position:fixed;top:38px;right:10px;background:#fff;border:1px solid #bbb;border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.25);min-width:160px;z-index:99999;overflow:hidden">
-  <div onclick="location.href='index.html';closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid #eee;color:#333;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''"><span>←</span> 一覧に戻る</div>
-  <div id="menu_coco" onclick="openCocofoliaCopyDialog();closeMenu()" style="display:none;padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid #eee;color:#333;display:none;align-items:center;gap:8px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''"">🐔 駒出力</div>
-  <div onclick="applyTheme(document.body.classList.contains('light')?'dark':'light');closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#333'" onmouseout="this.style.background=''">🌙 テーマ切替</div>
-  <div onclick="exportJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid #eee;color:#333;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''"><span>⬇</span> JSON出力</div>
-  <div onclick="importJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid #eee;color:#333;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''"><span>⬆</span> JSON読込</div>
-  <div onclick="importSpreadsheetHTML();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;color:#333;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''"><span>📥</span> スプシ取込</div>
+<div id="sheet_menu" style="display:none;position:fixed;top:38px;right:10px;background:#1a1a1a;border:1px solid var(--border);border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.4);min-width:160px;z-index:99999;overflow:hidden">
+  <div onclick="location.href='index.html';closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>←</span> 一覧に戻る</div>
+  <div id="menu_coco" onclick="openCocofoliaCopyDialog();closeMenu()" style="display:none;padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#333;display:none;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"">🐔 駒出力</div>
+  <div onclick="applyTheme(document.body.classList.contains('light')?'dark':'light');closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#333'" onmouseout="this.style.background=''">🌙 テーマ切替</div>
+  <div onclick="exportJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>⬇</span> JSON出力</div>
+  <div onclick="importJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>⬆</span> JSON読込</div>
+  <div onclick="importSpreadsheetHTML();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>📥</span> スプシ取込</div>
 </div>
 <div class="sheet">
 
@@ -314,10 +885,10 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
     </div>
     <div id="sticky-actions">
       <div id="save_msg" style="font-size:11px;color:#FFF;display:none">✓ 保存しました</div>
-      <button onclick="saveToStorage()" title="保存" style="padding:3px;cursor:pointer;border:none;background:transparent;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;transition:opacity .15s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAAEIElEQVR4nO3cv04qTRgG8GdmluWfUW/AxGBiSWtlCK3egJdCa+PVYGIlDY13YU5DtMFWRGR32X2/wswIBzzw5bA7x/D8ko2owCzvMzMMJDsAERERERERERERERHtvFKpBAAwxgAAtNYLfy/yHGzb9lyKPAevgiCA1hpKKQBAGIYAvgqSJ9uGbVMpBa01giDIve1/xqpC215YhFVtFRF+Eda+iiAIkGUZAKBcLn8+SGs0m030+33JW7/fl2az6QpuzyHLst0ZBcYY1Ot193uj0cB4PBYRkTRNcz1ERMbjsTQaDdd+vV4vdAR6ValUlm73ej0ZjUa5935rNBpJr9eT785nJ9RqNQBAq9WC7ZlZlhVy2JHWarUWzmVnzL/gwWDgemWRI0BEZDAYyKpz2glBEOD6+lqiKHKFSZKksBBEPkfBzc2NrDo/uzydV8T7xJ9WaHbZ/tfCMESj0cDLy4ubEmazWSFFtyHbdqfTqRwdHaFcLkMptfQiwzBc+IBm75PXMd9urquy29tbtyopuuf/3t7Dw4PYD2O1Wg1hGK7sbUWtlOanw/39fQCfKzX74fGvnZ2dQUQkjmM3BSVJ4gLxEcbV1dXSVFQqlRCGIYwxrodqrXM9AKBarbr2gS2vzowx6Ha7rgDT6dRNB0WaTCZL7Xa7XTk/P8fJyclCb1s1NeVFKbWypx8eHm6nAa01bNFtj397exMRKSSIJEkW3vijKHKjwK6OsiyTOI6XHrvqb3l4f393t5+fn+Xi4gLA18j4Y4CbhCAiAgBJkkAp5b6eKKKnZVnmhnoURSiXy0jT1M3vSZLAGOPuIyJI07SwrylEBCICrfVC25eXl+r+/n7t4zeq3mw2E2MMZrMZgiBAkiTevgqO4xhhGOL19RUHBwdL/xcR1zlsUfJkO2AURQtfmz89PeH4+Hhtff/XCJg33zN33Xe1UBtMD6ygZwzAMwbgGQPwjAF4xgA8YwCeMQDPGIBnDMAzBuAZA/CMAXjGADxjAJ4xAM8YgGcMwDMG4BkD8IwBeMYAPGMAnjEAzxiAZwzAMwbgGQPwjAF4xgA8YwCeMQDPGIBnDMAzBuAZA/CMAXjGADxjAJ5tFIC9TDiOY7eBn/1JWKhJHMcAsPEF4usvJNYaaZouPJu9Wj3vq9B/CqWUq8k8Y4xa11HXbqiQZRkeHx9xenqKNE2XLv8valeSf5Wthd0nIssyGGPw69evjWaJjXa06HQ66u7uTuyTG2Pw8fGBarW681OR1trVAoDbuKPT6WynZ1YqFSil0G63MRwO3RYwk8mkkK1gfgJbiziOZTgcSrvdhlJquxs37e3tudt291r6Ml+T+VptxXe7omy9oR/ouxpsbScZ+0Raa/cuXyqVdmfr4A0YY9xeQWEYLtSMiIiIiIiIiIiIiIjoP/6JGwyWyLU/AAAAAElFTkSuQmCC" style="width:24px;height:24px;display:block" alt="保存"></button>
-      <button onclick="copyViewURL()" title="閲覧URL" style="padding:3px;cursor:pointer;border:none;background:transparent;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;transition:opacity .15s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'"><img src="data:image/png;base64,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" style="width:24px;height:24px;display:block" alt="閲覧URL"></button>
-      <button onclick="openCocofoliaCopyDialog()" title="コマ出力" style="padding:3px;cursor:pointer;border:none;background:transparent;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;transition:opacity .15s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'"><img src="data:image/png;base64,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" style="width:24px;height:24px;display:block" alt="コマ出力"></button>
-      <button id="menu_btn" onclick="toggleMenu(event)" style="padding:2px 10px;font-size:14px;cursor:pointer;background:#555;color:#fff;border:none;border-radius:2px;line-height:1.2">≡</button>
+      <button onclick="saveToStorage()" title="保存" style="padding:4px;cursor:pointer;border:none;background:transparent;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;transition:opacity .15s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAADLklEQVR4nO3cv07rMBQG8M9O2vKnTAgkFkaeiddh4WnK3KULb4FYisQACwNKKY0d+9yhN6EFXWGqm57Sfj8pS5Uo7vliJxlyACIiIiIiIiIiIiIiIiKizTQajaRto9FItP9nm8yqB04mEzk8PESM8X+O5wtrLd7e3tDv91ce6yazqxw0HA6lLry1ttUNAGKMGA6HWzkTVrqqQghirYXIempijEGMEVmWbd0s+PEMGI/HYq1FURQwxqxlK4oC1lqMx+OtnAXJrq6upCzL5gbpvW/9JrwohCDX19dbFcKPpvTz87Ocnp7CGIMQArIsa2tcjaqqkOc5RATGGJRlib29va1ZipKXoJubGzk5OYExBlVVraX4AJDnOaqqgjHzmvd6Pdze3m7VLEgiIuKca5Yg772EENa6BNXnFRG5vLzcnRAGg0FTgNlsJjHGtRd+Op1+Oe9gMPj1ISStpbPZTLrdLkQE1lpMJhP0+/1mXW5TVVWIMaLb7QIAnHOw1iLPcxRFgaOjI4gIqqpCp9NZOtZ7/+W3NkynUxwcHAAAHh8fcX5+nlyUpB1F5g/83nsYY5DnOWKMzWNim2KMzQtZWZbo9XpLDwDee2RZ1uwjIgghIM/zVsdVE5Hmwlw8t0ksTNJNOIQAAE3xvfew1rZefABNYYH5Ddg5hyzL8Pr6CgDodDpL+9TjrN/U6wK1tRljYK1FWZZNEADw8PCQtDz+aAYsWrwyd92/apEyC1hBZQxAGQNQxgCUMQBlDEAZA1DGAJQxAGUMQBkDUMYAlDEAZQxAGQNQxgCUMQBlDEAZA1DGAJQxAGUMQBkDUMYAlDEAZQxAGQNQxgCUMQBlDEAZA1DGAJQxAGUMQBkDUMYAlDEAZQxAGQNQlhRA/Zmwc675ALrtXnG/yWJNnHMAPmr2nZU+1HbOoe4dQfMv8+uafPr92/omNVS4u7vDxcUFQgj43CtuHe0KNlldi7pPxN/edri/v086Prl6IiJ19yoAeH9/x/7+/s4vRdbaphbAR4ev1GYdyS1FjDHm6elJjo+Pl1rAsF/EB+89Xl5ecHZ2ttvLAhERERERERERERERERFtij/et3O0ADrT0gAAAABJRU5ErkJggg==" style="width:24px;height:24px;display:block" alt="保存"></button>
+      <button onclick="copyViewURL()" title="閲覧URL" style="padding:4px;cursor:pointer;border:none;background:transparent;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;transition:opacity .15s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'"><img src="data:image/png;base64,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" style="width:24px;height:24px;display:block" alt="閲覧URL"></button>
+      <button onclick="openCocofoliaCopyDialog()" title="コマ出力" style="padding:4px;cursor:pointer;border:none;background:transparent;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;transition:opacity .15s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'"><img src="data:image/png;base64,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" style="width:24px;height:24px;display:block" alt="コマ出力"></button>
+      <button id="menu_btn" onclick="toggleMenu(event)" style="width:28px;height:28px;font-size:14px;cursor:pointer;background:transparent;color:#fff;border:none;line-height:1;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;transition:opacity .15s;flex-shrink:0" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">≡</button>
     </div>
   </div>
   <div id="sp-header-divider" style="display:none;width:100%;height:1px;background:#555;margin:3px 0"></div>
@@ -339,14 +910,14 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
 </div>
 
 <!-- 一覧に戻るバー（余白のみ）-->
-<div style="background:#f0f0f0;border-bottom:2px solid #ccc;padding:3px 10px;min-height:28px;display:flex;align-items:center;justify-content:flex-end">
+<div style="background:#333;border-bottom:2px solid #222;padding:3px 10px;min-height:28px;display:flex;align-items:center;justify-content:flex-end">
   <span style="font-size:10px;color:#999">メニューから一覧に戻れます</span>
 </div>
 
 <!-- ===== 行1 ===== -->
 <div class="section" id="sec_row1">
 <div id="row1_flex" style="display:flex">
-  <div style="width:378px;min-width:378px;border-right:1px solid #888" class="personal-data">
+  <div style="width:378px;min-width:378px;border-right:1px solid var(--border)" class="personal-data">
     <div class="hdr">パーソナルデータ</div>
     <table>
       <colgroup><col style="width:52px"><col style="width:140px"><col style="width:52px"><col style="width:140px"></colgroup>
@@ -360,7 +931,7 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
         <td colspan="3">
           <div style="display:flex;align-items:center;gap:6px">
             <input type="color" id="txtcolor" value="#000000" oninput="updateColorCode()" style="width:36px;height:16px;border:none;cursor:pointer">
-            <span id="color_code" style="font-size:10px;color:#666">#000000 / RGB(0,0,0)</span>
+            <span id="color_code" style="font-size:10px;color:var(--text);font-family:Georgia,serif;font-weight:bold">#000000 / RGB(0,0,0)</span>
           </div>
         </td>
       </tr>
@@ -441,38 +1012,38 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
         </tr>
       </tbody>
     </table>
-    <div style="display:flex;flex-wrap:wrap;gap:4px;padding:3px 4px;border-top:1px solid #ccc;font-size:11px;align-items:center;background:#f8f8f8">
-      <span style="background:#444;color:#fff;padding:1px 4px">SAN</span>
-      現在<input type="number" id="san_now" style="width:36px;border:1px solid #aaa" oninput="updateSanLine()">
+    <div style="display:flex;flex-wrap:wrap;gap:4px;padding:3px 4px;border-top:1px solid var(--border);font-size:11px;align-items:center;background:var(--surface2)">
+      <span style="background:var(--hdr-bg);color:var(--hdr-text);padding:1px 4px">SAN</span>
+      現在<input type="number" id="san_now" style="width:36px;border:1px solid var(--border)" oninput="updateSanLine()">
       / <span id="max_san">99</span>（不定：<span id="hutel_line" style="font-weight:bold">—</span>）
       &nbsp;&nbsp;
-      <span style="background:#444;color:#fff;padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:8px">0</span>
+      <span style="background:var(--hdr-bg);color:var(--hdr-text);padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:8px">0</span>
     </div>
-    <div style="border-top:1px solid #ccc;background:#f8f8f8">
-      <div style="background:#444;color:#fff;font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
+    <div style="border-top:1px solid var(--border);background:var(--surface2);">
+      <div style="background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
       <div style="padding:2px 4px">
       <table class="fute-table" style="width:100%;border-collapse:collapse;margin-bottom:2px">
         <tr>
-          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
-          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-          <td class="fute-kikan-hdr" style="background:#444;color:#fff;white-space:nowrap;width:36px;min-width:28px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
-          <td class="fute-kikan-val" style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">内容</td>
+          <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td class="fute-kikan-hdr" style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;min-width:28px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">期間</td>
+          <td class="fute-kikan-val" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
         <tr>
-          <td style="background:#444;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
-          <td colspan="3" style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
+          <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
       </table>
       <table class="fute-table" style="width:100%;border-collapse:collapse">
         <tr>
-          <td style="background:#444;color:#fff;white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">内容</td>
-          <td style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-          <td class="fute-kikan-hdr" style="background:#444;color:#fff;white-space:nowrap;width:36px;min-width:28px;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">期間</td>
-          <td class="fute-kikan-val" style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">内容</td>
+          <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td class="fute-kikan-hdr" style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;min-width:28px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">期間</td>
+          <td class="fute-kikan-val" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
         <tr>
-          <td style="background:#444;color:#fff;white-space:nowrap;text-align:center;font-size:10px;border:1px solid #bbb;padding:1px 2px">詳細</td>
-          <td colspan="3" style="border:1px solid #bbb;padding:1px 2px;background:#fff"><input type="text" style="background:#fff;border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
+          <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
       </table>
     </div>
@@ -485,12 +1056,12 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
 <div class="section" id="sec_row2">
 <div id="row2_flex" style="display:flex">
   <!-- 職業特記 378px固定 -->
-  <div id="row2_job" style="width:378px;min-width:378px;border-right:1px solid #aaa;padding:3px">
+  <div id="row2_job" style="width:378px;min-width:378px;border-right:1px solid var(--border);padding:3px">
     <div class="hdr" style="margin-bottom:4px">職業特記</div>
     <!-- 職業選択 6.5 : 計算式 3.5 -->
-    <div style="display:flex;gap:0;margin-bottom:4px;border:1px solid #e0e0e0;border-radius:3px;overflow:hidden">
-      <select id="job_ref_sel" onchange="onJobRefChange()" style="flex:65;border:none;border-right:1px solid #e0e0e0;font-size:11px;padding:2px 3px;background:#fff;min-width:0"></select>
-      <select id="job_formula_sel" onchange="calcJobPts()" style="flex:35;border:none;font-size:11px;padding:2px 3px;background:#fff;min-width:0">
+    <div style="display:flex;gap:0;margin-bottom:4px;border:1px solid var(--border);border-radius:3px;overflow:hidden">
+      <select id="job_ref_sel" onchange="onJobRefChange()" style="flex:65;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);min-width:0"></select>
+      <select id="job_formula_sel" onchange="calcJobPts()" style="flex:35;border:none;font-size:11px;padding:2px 3px;background:var(--surface);min-width:0">
         <option value="EDU*20">EDU×20</option>
         <option value="EDU*10+STR*10">EDU×10＋STR×10</option>
         <option value="EDU*10+CON*10">EDU×10＋CON×10</option>
@@ -499,15 +1070,15 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
         <option value="EDU*10+APP*10">EDU×10＋APP×10</option>
       </select>
     </div>
-    <div id="job_tokki" style="font-size:11px;color:#333;min-height:28px;padding:3px 4px;line-height:1.7;background:#fafafa;border:1px solid #e0e0e0;border-radius:3px;margin-bottom:4px">職業参照を選択してください</div>
+    <div id="job_tokki" style="font-size:11px;color:#333;min-height:28px;padding:3px 4px;line-height:1.7;background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:4px">職業参照を選択してください</div>
     <div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px">
-      <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
-      <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid #ddd;text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">
+      <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">
     </div>
     <div style="font-size:11px;color:#555;margin-bottom:1px">その他特記</div>
-    <textarea class="auto-h" id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;font-size:11px;border:1px solid #ddd;padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
+    <textarea class="auto-h" id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;font-size:11px;border:1px solid var(--border);padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
 
   </div>
   <!-- 特徴表①② -->
@@ -515,29 +1086,29 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
     <div class="hdr" style="margin-bottom:4px">特徴表</div>
 
     <!-- 特徴表① -->
-    <div style="margin-bottom:6px;border:1px solid #e0e0e0;border-radius:3px;overflow:hidden">
-      <div style="display:flex;gap:0;background:#f8f8f8;border-bottom:1px solid #e0e0e0">
-        <select id="t1_sel" onchange="showTokucho(1)" style="flex:7;border:none;border-right:1px solid #e0e0e0;font-size:11px;padding:2px 3px;background:#fff;min-width:0"><option value="">-- 特徴表①を選択 --</option></select>
-        <select id="t1_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:#fff;min-width:0">
+    <div style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden">
+      <div style="display:flex;gap:0;background:#f8f8f8;border-bottom:1px solid var(--border)">
+        <select id="t1_sel" onchange="showTokucho(1)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);min-width:0"><option value="">-- 特徴表①を選択 --</option></select>
+        <select id="t1_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--surface);min-width:0">
           <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
           <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
         </select>
       </div>
-      <div id="t1_desc" style="font-size:11px;color:#333;min-height:28px;background:#fafafa;padding:3px 4px;line-height:1.6"></div>
-      <input type="text" id="t1_memo" placeholder="メモ..." style="border:none;border-top:1px solid #e8e8e8;font-size:11px;text-align:left;padding:2px 4px;width:100%;background:#fff">
+      <div id="t1_desc" style="font-size:11px;color:#333;min-height:28px;background:var(--surface2);padding:3px 4px;line-height:1.6"></div>
+      <input type="text" id="t1_memo" placeholder="メモ..." style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:#fff">
     </div>
 
     <!-- 特徴表② -->
-    <div style="border:1px solid #e0e0e0;border-radius:3px;overflow:hidden">
-      <div style="display:flex;gap:0;background:#f8f8f8;border-bottom:1px solid #e0e0e0">
-        <select id="t2_sel" onchange="showTokucho(2)" style="flex:7;border:none;border-right:1px solid #e0e0e0;font-size:11px;padding:2px 3px;background:#fff;min-width:0"><option value="">-- 特徴表②を選択 --</option></select>
-        <select id="t2_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:#fff;min-width:0">
+    <div style="border:1px solid var(--border);border-radius:3px;overflow:hidden">
+      <div style="display:flex;gap:0;background:#f8f8f8;border-bottom:1px solid var(--border)">
+        <select id="t2_sel" onchange="showTokucho(2)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);min-width:0"><option value="">-- 特徴表②を選択 --</option></select>
+        <select id="t2_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--surface);min-width:0">
           <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
           <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
         </select>
       </div>
-      <div id="t2_desc" style="font-size:11px;color:#333;min-height:28px;background:#fafafa;padding:3px 4px;line-height:1.6"></div>
-      <input type="text" id="t2_memo" placeholder="メモ..." style="border:none;border-top:1px solid #e8e8e8;font-size:11px;text-align:left;padding:2px 4px;width:100%;background:#fff">
+      <div id="t2_desc" style="font-size:11px;color:#333;min-height:28px;background:var(--surface2);padding:3px 4px;line-height:1.6"></div>
+      <input type="text" id="t2_memo" placeholder="メモ..." style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:#fff">
     </div>
   </div>
 </div>
@@ -547,9 +1118,9 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
 <div id="main_flex" style="display:flex;gap:5px;align-items:flex-start">
   <!-- 技能列 -->
   <div id="skill_col" style="flex:0 0 370px;width:370px">
-    <div style="display:flex;align-items:center;gap:6px;padding:2px 6px;background:#444;color:#fff;margin-bottom:2px;border-radius:2px">
+    <div style="display:flex;align-items:center;gap:6px;padding:2px 6px;background:var(--hdr-bg);color:var(--hdr-text);margin-bottom:2px;border-radius:2px">
       <span style="font-size:11px;font-weight:bold;flex:1">技能表</span>
-      <button onclick="toggleAllDefault()" id="tog_all" style="font-size:10px;padding:1px 8px;background:#ccc;border:1px solid #999;border-radius:2px;cursor:pointer">初期値を隠す</button>
+      <button onclick="toggleAllDefault()" id="tog_all" style="font-size:10px;padding:1px 8px;background:#ccc;border:1px solid var(--border);border-radius:2px;cursor:pointer">初期値を隠す</button>
     </div>
     <div style="margin-bottom:2px">
       <div class="skill-sec-hdr">戦闘技能</div>
@@ -604,7 +1175,7 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
             <tbody id="weapon_rows"></tbody>
           </table>
           <button class="add-row-btn" onclick="addWeaponRow()">＋追加</button>
-          <div style="margin-top:5px;font-size:11px">装甲: <input type="text" placeholder="-" style="border:1px solid #aaa;width:180px;font-size:11px;padding:1px 4px;text-align:left;background:#fff"></div>
+          <div style="margin-top:5px;font-size:11px">装甲: <input type="text" placeholder="-" style="border:1px solid var(--border);width:180px;font-size:11px;padding:1px 4px;text-align:left;background:#fff"></div>
         </div>
       </div>
     </div>
@@ -626,13 +1197,13 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
       <div class="acc-body" id="memo_acc">
         <div style="padding:4px">
           <div id="memo_rows">
-            <div class="memo-block" style="margin-bottom:6px;border:1px solid #ddd;border-radius:3px;overflow:hidden">
-              <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid #e8e8e8;font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
-              <textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:#fff;resize:none;display:block" oninput="autoResizeTA(this)"></textarea>
+            <div class="memo-block" style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden">
+              <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
+              <textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:var(--surface);resize:none;display:block" oninput="autoResizeTA(this)"></textarea>
             </div>
           </div>
           <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
-          <div style="margin-top:6px;border:1px solid #777;border-radius:2px">
+          <div style="margin-top:6px;border:1px solid var(--border);border-radius:2px">
             <div class="sub-acc-header" onclick="toggleSubAcc('rel_acc')"><span>▮ 人間関係</span><span id="arr_rel_acc">▶</span></div>
             <div class="sub-acc-body" id="rel_acc">
               <div id="rel_groups_wrap"></div>
@@ -655,31 +1226,31 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
       <div class="acc-header" onclick="toggleAcc('aftereffect_outer')"><span>▮ 後遺症・AF・呪文</span><span id="arr_aftereffect_outer">▶</span></div>
       <div class="acc-body" id="aftereffect_outer">
         <div style="padding:4px">
-          <div style="border:1px solid #ccc;border-radius:2px;margin-bottom:4px">
+          <div style="border:1px solid var(--border);border-radius:2px;margin-bottom:4px">
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_kouisho')"><span>後遺症</span><span id="arr_ae_kouisho">▶</span></div>
             <div class="sub2-acc-body" id="ae_kouisho">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">後遺症名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#555;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">後遺症名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
                 <tbody id="tbody_kouisho"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_kouisho')">＋追加</button>
             </div>
           </div>
-          <div style="border:1px solid #ccc;border-radius:2px;margin-bottom:4px">
+          <div style="border:1px solid var(--border);border-radius:2px;margin-bottom:4px">
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_af')"><span>AF</span><span id="arr_ae_af">▶</span></div>
             <div class="sub2-acc-body" id="ae_af">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">AF名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#555;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">AF名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
                 <tbody id="tbody_af"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_af')">＋追加</button>
             </div>
           </div>
-          <div style="border:1px solid #ccc;border-radius:2px;margin-bottom:4px">
+          <div style="border:1px solid var(--border);border-radius:2px;margin-bottom:4px">
             <div class="sub2-acc-header" onclick="toggleSub2Acc('ae_spell')"><span>呪文</span><span id="arr_ae_spell">▶</span></div>
             <div class="sub2-acc-body" id="ae_spell">
               <table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:110px"><col><col style="width:16px"></colgroup>
-                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">呪文名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid #aaa">備考</th><th style="background:#555;color:#fff;border:1px solid #aaa;width:16px"></th></tr></thead>
+                <thead><tr><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">呪文名</th><th style="background:#555;color:#fff;font-size:11px;padding:1px 3px;border:1px solid var(--border)">備考</th><th style="background:#555;color:#fff;border:1px solid var(--border);width:16px"></th></tr></thead>
                 <tbody id="tbody_spell"></tbody>
               </table>
               <button class="add-row-btn" onclick="addAERow('tbody_spell')">＋追加</button>
@@ -704,15 +1275,15 @@ body.light .sticky-pt-block{background:#ccc0b0 !important}
 
 <!-- ログインUI -->
 <div id="auth_modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:6px;padding:20px;min-width:300px">
+  <div style="background:var(--surface);border-radius:6px;padding:20px;min-width:300px">
     <div style="font-weight:bold;font-size:14px;margin-bottom:12px;text-align:center">ログイン / 新規登録</div>
     <div style="margin-bottom:8px">
       <label style="font-size:11px">メールアドレス</label>
-      <input type="email" id="auth_email" style="border:1px solid #aaa;width:100%;font-size:12px;padding:4px;margin-top:2px;box-sizing:border-box">
+      <input type="email" id="auth_email" style="border:1px solid var(--border);width:100%;font-size:12px;padding:4px;margin-top:2px;box-sizing:border-box">
     </div>
     <div style="margin-bottom:12px">
       <label style="font-size:11px">パスワード</label>
-      <input type="password" id="auth_pass" style="border:1px solid #aaa;width:100%;font-size:12px;padding:4px;margin-top:2px;box-sizing:border-box">
+      <input type="password" id="auth_pass" style="border:1px solid var(--border);width:100%;font-size:12px;padding:4px;margin-top:2px;box-sizing:border-box">
     </div>
     <div style="display:flex;gap:8px">
       <button onclick="authLogin()" style="flex:1;padding:6px;background:#558;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:12px">ログイン</button>
@@ -835,8 +1406,8 @@ function makeSkillRow(name,base,key,hasFree,freeVal,isDefault){
   const tr=document.createElement('tr');
   if(isDefault)tr.classList.add('skill-default-row');
   let nameHtml=name;
-  if(hasFree)nameHtml=`${name}(<input type="text" value="${freeVal||''}" class="free-inp-auto" style="border:none;border-bottom:1px solid #aaa;min-width:44px;width:44px;font-size:11px;outline:none;background:transparent;text-align:left" oninput="autoResize(this)">)`;
-  if(key==='operate')nameHtml=`操縦(<input type="text" style="border:none;border-bottom:1px solid #aaa;width:50px;font-size:11px;outline:none;background:transparent;text-align:left" placeholder="種類">)`;
+  if(hasFree)nameHtml=`${name}(<input type="text" value="${freeVal||''}" class="free-inp-auto" style="border:none;border-bottom:1px solid var(--border);min-width:44px;width:44px;font-size:11px;outline:none;background:transparent;text-align:left" oninput="autoResize(this)">)`;
+  if(key==='operate')nameHtml=`操縦(<input type="text" style="border:none;border-bottom:1px solid var(--border);width:50px;font-size:11px;outline:none;background:transparent;text-align:left" placeholder="種類">)`;
   const isDyn=key==='kaihi'||key==='kokugo';
   const bAttr=isDyn?`data-basekey="${key}"`:`data-base`;
   const bVal=isDyn?(key==='kaihi'?getCur().dex*2:getCur().edu*5):base;
@@ -859,7 +1430,7 @@ function addCustomSkill(tbodyId){
   const tr=document.createElement('tr');
   tr.innerHTML=`
     <td class="sk-chk"><input type="checkbox"></td>
-    <td class="sk-name" data-skill="${key}"><input type="text" placeholder="技能名" style="border:none;border-bottom:1px solid #aaa;width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
+    <td class="sk-name" data-skill="${key}"><input type="text" placeholder="技能名" style="border:none;border-bottom:1px solid var(--border);width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
     <td class="sk-base" data-base>0</td>
     <td class="sk-inp"><input type="number" class="job-inp" oninput="skillChanged(this)"></td>
     <td class="sk-inp"><input type="number" class="int-inp" oninput="skillChanged(this)"></td>
@@ -1213,8 +1784,8 @@ function addMemoRow(){
   const div=document.getElementById('memo_rows');
   const w=document.createElement('div');
   w.className='memo-block';
-  w.style.cssText='margin-bottom:6px;border:1px solid #ddd;border-radius:3px;overflow:hidden;position:relative';
-  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid #e8e8e8;font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:#fff;resize:none;display:block" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.style.cssText='margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden;position:relative';
+  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:var(--surface);resize:none;display:block" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.appendChild(w);
 }
 
@@ -1262,7 +1833,7 @@ function addRelSubRow(bodyId){
 
 function addAERow(tbodyId){
   const tbody=document.getElementById(tbodyId);const tr=document.createElement('tr');
-  tr.innerHTML=`<td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:#fff;font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:#fff;font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="width:16px;border:none;text-align:center;vertical-align:middle"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  tr.innerHTML=`<td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:var(--surface);font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:var(--surface);font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="width:16px;border:none;text-align:center;vertical-align:middle"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
   tbody.appendChild(tr);
 }
 
@@ -1289,17 +1860,17 @@ function addSecretItem(title,pass){
       <button onclick="document.getElementById('${id}').remove()" class="del-btn" style="margin-left:4px">✕</button>
     </div>
     <div class="secret-item-body" id="body_${id}">
-      <div style="padding:3px 6px;background:#fafafa;border-bottom:1px solid #ddd">
-        <input type="text" placeholder="何のネタバレか（概要）" style="border:1px solid #aaa;width:100%;font-size:11px;padding:2px 4px;text-align:left;background:#fff">
+      <div style="padding:3px 6px;background:var(--surface2);border-bottom:1px solid var(--border)">
+        <input type="text" placeholder="何のネタバレか（概要）" style="border:1px solid var(--border);width:100%;font-size:11px;padding:2px 4px;text-align:left;background:#fff">
       </div>
       <div class="secret-pass-row">
         <span style="font-size:10px;color:#666">PASS:</span>
-        <input type="password" id="pass_${id}" placeholder="パスワード" style="border:1px solid #aaa;width:100px;font-size:11px;padding:1px 4px;text-align:left">
-        <button onclick="unlockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid #aaa;background:#eee">解除</button>
+        <input type="password" id="pass_${id}" placeholder="パスワード" style="border:1px solid var(--border);width:100px;font-size:11px;padding:1px 4px;text-align:left">
+        <button onclick="unlockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid var(--border);background:#eee">解除</button>
         <button onclick="lockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid #fcc;background:#fee;margin-left:4px">🔒</button>
         <span style="font-size:10px;color:#888;margin-left:4px">変更後PASS:</span>
-        <input type="password" id="newpass_${id}" placeholder="新PASS" style="border:1px solid #aaa;width:80px;font-size:11px;padding:1px 4px;text-align:left">
-        <button onclick="changeSecretPass('${id}')" style="font-size:11px;padding:1px 6px;cursor:pointer;border:1px solid #aaa;background:#eee">変更</button>
+        <input type="password" id="newpass_${id}" placeholder="新PASS" style="border:1px solid var(--border);width:80px;font-size:11px;padding:1px 4px;text-align:left">
+        <button onclick="changeSecretPass('${id}')" style="font-size:11px;padding:1px 6px;cursor:pointer;border:1px solid var(--border);background:#eee">変更</button>
       </div>
       <div id="content_${id}" style="display:none;padding:4px">
         <textarea class="auto-h" style="width:100%" placeholder="KP秘匿情報・後遺症など" oninput="autoResizeTA(this)"></textarea>
@@ -1588,13 +2159,13 @@ function showCharSelectUI(list) {
   modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
 
   modal.innerHTML = `
-    <div style="background:#fff;border-radius:4px;padding:16px;min-width:300px;max-width:480px;width:90%">
+    <div style="background:var(--surface);border-radius:4px;padding:16px;min-width:300px;max-width:480px;width:90%">
       <div style="font-weight:bold;font-size:13px;margin-bottom:8px">キャラクターを選択</div>
       <div id="char_list_inner" style="max-height:240px;overflow-y:auto;margin-bottom:8px">
         ${list.length === 0
           ? '<div style="font-size:11px;color:#888;padding:8px">保存データがありません</div>'
           : list.map(c => `
-            <div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #eee">
+            <div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)">
               <span style="flex:1;font-size:12px">${c.char_name}</span>
               <span style="font-size:10px;color:#888">${new Date(c.updated_at).toLocaleDateString()}</span>
               <button onclick="loadCharById('${c.id}')"
@@ -1874,11 +2445,11 @@ function openCocofoliaCopyDialog(){
   modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center';
 
   modal.innerHTML = `
-    <div style="background:#fff;border-radius:6px;padding:16px;width:92%;max-width:680px;max-height:90vh;overflow-y:auto;font-family:inherit">
+    <div style="background:var(--surface);border-radius:6px;padding:16px;width:92%;max-width:680px;max-height:90vh;overflow-y:auto;font-family:inherit">
       <div style="font-weight:bold;font-size:13px;margin-bottom:8px;color:#333">🐔 ココフォリア駒出力</div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;font-size:11px">
-        <div style="background:#f8f8f8;border:1px solid #ddd;border-radius:3px;padding:8px">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px">
           <div style="font-weight:bold;color:#555;margin-bottom:4px">📊 ステータス（確認）</div>
           <div>PC名: <b>${pcname}</b></div>
           <div>イニシアチブ: <b>${c.dex}</b>（DEX）</div>
@@ -1887,7 +2458,7 @@ function openCocofoliaCopyDialog(){
           <div>DB: ${dbVal}</div>
           <div>カラー: <span style="background:${color};color:#fff;padding:0 6px;border-radius:2px">${color}</span></div>
         </div>
-        <div style="background:#f8f8f8;border:1px solid #ddd;border-radius:3px;padding:8px">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px">
           <div style="font-weight:bold;color:#555;margin-bottom:4px">📋 パラメータ（STR〜DB）</div>
           ${['str','con','pow','dex','app','siz','int_v','edu'].map(k=>`<span style="background:#eee;border-radius:2px;padding:0 4px;margin:1px;display:inline-block">${k.replace('_v','').toUpperCase()}: ${c[k]||0}</span>`).join('')}
           <span style="background:#eee;border-radius:2px;padding:0 4px;margin:1px;display:inline-block">DB: ${dbVal}</span>
@@ -1895,7 +2466,7 @@ function openCocofoliaCopyDialog(){
       </div>
 
       <div style="font-weight:bold;font-size:11px;color:#555;margin-bottom:3px">📝 チャットパレット（プレビュー・編集可）</div>
-      <textarea id="coco_palette_preview" style="width:100%;height:220px;font-size:11px;font-family:monospace;border:1px solid #aaa;padding:4px;resize:vertical;background:#fafafa">${palette}</textarea>
+      <textarea id="coco_palette_preview" style="width:100%;height:220px;font-size:11px;font-family:monospace;border:1px solid var(--border);padding:4px;resize:vertical;background:var(--surface2)">${palette}</textarea>
 
       <div id="coco_copy_msg" style="font-size:11px;color:#2a7;display:none;margin:6px 0">✓ クリップボードにコピーしました！</div>
 
@@ -2603,7 +3174,7 @@ function parseSpreadsheetHTML(html){
     const tr=document.createElement('tr');
     tr.innerHTML=`
       <td class="sk-chk"><input type="checkbox"></td>
-      <td class="sk-name" data-skill="${key}"><input type="text" value="${cr.name}" style="border:none;border-bottom:1px solid #aaa;width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
+      <td class="sk-name" data-skill="${key}"><input type="text" value="${cr.name}" style="border:none;border-bottom:1px solid var(--border);width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
       <td class="sk-base" data-base>0</td>
       <td class="sk-inp"><input type="number" class="job-inp" value="${cr.job}" oninput="skillChanged(this)"></td>
       <td class="sk-inp"><input type="number" class="int-inp" value="${cr.int}" oninput="skillChanged(this)"></td>
@@ -2868,14 +3439,18 @@ document.addEventListener('click',function(e){
 
 // テーマ切り替え
 const THEME_KEY = 'coc_theme';
+const THEME_VER = 'v2'; // ライトデフォルト化バージョン
 function applyTheme(mode){
   document.body.classList.toggle('light', mode==='light');
   localStorage.setItem(THEME_KEY, mode);
+  localStorage.setItem(THEME_KEY+'_ver', THEME_VER);
   const btn = document.getElementById('theme_btn');
   if(btn) btn.textContent = mode==='light' ? '🌙' : '☀️';
 }
 (function(){
-  const saved = localStorage.getItem(THEME_KEY) || 'dark';
+  // バージョンが変わった場合はlightにリセット
+  const ver = localStorage.getItem(THEME_KEY+'_ver');
+  const saved = (ver === THEME_VER) ? (localStorage.getItem(THEME_KEY) || 'light') : 'light';
   applyTheme(saved);
 })();
 
