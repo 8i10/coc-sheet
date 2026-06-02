@@ -905,7 +905,8 @@ body.light [style*="background:#666"][style*="cursor:pointer"]{
 }
 
 
-/* view: ライトモードのアイコン周り完全修正 */
+
+/* ライトモードのアイコン周り最終修正(view) */
 #sticky-header{background:#333 !important;}
 #sp-row1{background:#333 !important;}
 #header_left{background:#333 !important;}
@@ -916,7 +917,11 @@ body.light #header_left,
 body.light #sticky-actions{
   background:#333 !important;
 }
+body.light #sticky-header *:not(select):not(input):not(.pts-bar):not(.pts-bar-fill){
+  background:#333 !important;
+}
 body.light .sticky-pt-block{background:#444 !important;}
+
 
 </style>
 </head>
@@ -1839,7 +1844,7 @@ function addSecretItem(title,pass){
         <span style="font-size:10px;color:#666">PASS:</span>
         <input type="password" id="pass_${id}" placeholder="パスワード" style="border:1px solid var(--border);width:100px;font-size:11px;padding:1px 4px;text-align:left">
         <button onclick="unlockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid var(--border);background:#eee">解除</button>
-        <button onclick="lockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid #fcc;background:#fee;margin-left:4px">🔒</button>
+        <button onclick="lockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:none;background:#e05555;color:#fff;margin-left:4px">🔒</button>
         <span style="font-size:10px;color:#888;margin-left:4px">変更後PASS:</span>
         <input type="password" id="newpass_${id}" placeholder="新PASS" style="border:1px solid var(--border);width:80px;font-size:11px;padding:1px 4px;text-align:left">
         <button onclick="changeSecretPass('${id}')" style="font-size:11px;padding:1px 6px;cursor:pointer;border:1px solid var(--border);background:#eee">変更</button>

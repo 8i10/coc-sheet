@@ -38,8 +38,8 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 /* ツールバー */
 #toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 #toolbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
-#new_btn{display:flex;align-items:center;gap:5px;padding:6px 16px;font-size:12px;cursor:pointer;background:#5a3a8a;color:#fff;border:none;border-radius:3px;font-family:inherit;font-weight:bold;white-space:nowrap}
-#new_btn:hover{background:#4a2a7a}
+#new_btn{display:flex;align-items:center;gap:5px;padding:6px 16px;font-size:12px;cursor:pointer;background:#2a7a4a !important;color:#fff !important;border:none;border-radius:3px;font-family:inherit;font-weight:bold;white-space:nowrap}
+#new_btn:hover{background:#1a6a3a}
 #search_box{flex:1;min-width:180px;max-width:340px;border:1px solid #bbb;border-radius:3px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;background:#fff}
 #search_box:focus{border-color:#5588cc}
 #search_hint{font-size:10px;color:#aaa}
@@ -48,7 +48,7 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 #grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 
 /* カード */
-.card{background:#fff;border-radius:5px;border:1px solid #ccc;overflow:hidden;transition:box-shadow .15s}
+.card{background:var(--surface);border-radius:5px;border:1px solid var(--border);overflow:hidden;transition:box-shadow .15s}
 .card:hover{box-shadow:0 3px 10px rgba(0,0,0,.15)}
 .card-top{display:flex;align-items:stretch;gap:0}
 .card-bar{width:5px;flex-shrink:0}
@@ -65,7 +65,7 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 .s-missing{background:#fff3d4;color:#8a6000}
 .s-dead{background:#e8e8e8;color:#555}
 .s-insane{background:#f0e4ff;color:#6a1a9a}
-.card-foot{display:flex;align-items:center;padding:5px 10px;border-top:1px solid #f0f0f0;background:#fafafa;gap:6px}
+.card-foot{display:flex;align-items:center;padding:5px 10px;border-top:1px solid var(--border);background:var(--surface2);gap:6px}
 .card-date{font-size:10px;color:#bbb;flex:1}
 .cbtn{padding:2px 9px;font-size:11px;cursor:pointer;border:none;border-radius:2px;font-family:inherit}
 
@@ -178,11 +178,12 @@ body.light .s-insane{background:#f0e4ff;color:#6a1a9a}
 .personal-data table{background:var(--surface) !important}
 /* toolbar */
 #toolbar{background:transparent}
-#search_box,#new_btn,.a-inp{
+#search_box,.a-inp{
   background:var(--surface) !important;
   color:var(--text) !important;
   border-color:var(--border) !important;
 }
+#new_btn{background:#2a7a4a !important;color:#fff !important;border:none !important;}
 /* ボタン */
 .add-row-btn{background:var(--surface2) !important;color:var(--accent) !important;border-color:var(--border) !important}
 /* pts-bar */
@@ -501,7 +502,7 @@ body:not(.light) .card-top{ border:none !important; }
 
   <!-- ツールバー -->
   <div id="toolbar" style="display:none">
-    <button id="new_btn" onclick="goNew()" style="background:#2a7;color:#fff">＋ 新規作成</button>
+    <button id="new_btn" onclick="goNew()">＋ 新規作成</button>
     <div id="toolbar-right">
       <input id="search_box" type="text" placeholder="PC名・ふりがな・職業・特徴表で検索..." oninput="filterCards()">
       <span id="search_hint"></span>
@@ -685,9 +686,9 @@ function makeCard(char){
     </div>
     <div class="card-foot">
       <span class="card-date">更新 ${updDate}</span>
-      <button class="cbtn" style="background:#558;color:#fff" onclick="openEdit('${char.id}')">✏️ 編集</button>
+      <button class="cbtn" style="background:#2a7a4a;color:#fff" onclick="openEdit('${char.id}')">✏️ 編集</button>
       <button class="cbtn" style="background:#7755aa;color:#fff" onclick="openView('${char.id}')">👁 閲覧</button>
-      <button class="cbtn" style="background:#c00;color:#fff;border:1px solid #900" onclick="deleteChar('${char.id}',this)">🗑</button>
+      <button class="cbtn" style="background:#e05555;color:#fff;border:none" onclick="deleteChar('${char.id}',this)">🗑</button>
     </div>`;
   return card;
 }
