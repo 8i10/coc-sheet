@@ -2180,10 +2180,13 @@ function applyData(json){
   if(data.weapons&&data.weapons.length){
     const tbody=document.getElementById('weapon_rows');
     const rows=[...tbody.querySelectorAll('tr')];
-    data.weapons.forEach((vals,i)=>{
+    data.weapons.forEach((w,i)=>{
+      const vals=Array.isArray(w)?w:(w.vals||[]);
+      const dbChk=typeof w==='object'&&!Array.isArray(w)?(w.db||false):false;
       let tr=rows[i];
       if(!tr){tr=makeWeaponTr();tbody.appendChild(tr);}
-      [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
+      [...tr.querySelectorAll('input:not([type=checkbox])')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
+      const chk=tr.querySelector('.weapon-db-chk');if(chk)chk.checked=dbChk;
     });
   }
 
