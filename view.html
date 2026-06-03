@@ -2209,6 +2209,10 @@ async function initViewMode() {
   // 特徴表・職業特記の表示
   [1,2].forEach(n=>showTokucho(n));
   const _jsel=document.getElementById('job_ref_sel');
+  // job_ref_selのvalueをinputsから明示的に設定
+  if(_jsel && sheet.inputs?.job_ref_sel){
+    _jsel.value = sheet.inputs.job_ref_sel;
+  }
   if(_jsel&&_jsel.value){
     const savedTokki=sheet.inputs?.job_tokki||'';
     if(_jsel.value==='シナリオ指定'){
@@ -2220,8 +2224,10 @@ async function initViewMode() {
     } else {
       onJobRefChange();
       if(savedTokki){
-        const el=document.getElementById('job_tokki');
-        if(el)el.textContent=savedTokki;
+        setTimeout(()=>{
+          const el=document.getElementById('job_tokki');
+          if(el&&el.tagName==='DIV')el.textContent=savedTokki;
+        },50);
       }
     }
   }
