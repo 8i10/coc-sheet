@@ -2209,7 +2209,8 @@ async function initViewMode() {
   const _jsel=document.getElementById('job_ref_sel');
   if(_jsel&&_jsel.value){
     if(_jsel.value==='シナリオ指定'){
-      const saved=document.getElementById('job_tokki')?.textContent||document.getElementById('job_tokki')?.value||'';
+      // inputs.job_tokkiの値を先に取得してからtextareaに変換
+      const saved=sheet.inputs?.job_tokki||'';
       onJobRefChange();
       setTimeout(()=>{const ta=document.getElementById('job_tokki');if(ta&&ta.tagName==='TEXTAREA'){ta.value=saved;autoResizeTA(ta);}},50);
     } else {
