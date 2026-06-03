@@ -1673,6 +1673,7 @@ const jobData=[
 function populateJobs(){
   const sel=document.getElementById('job_ref_sel');
   const o=document.createElement('option');o.value='';o.textContent='-- 職業参照 --';sel.appendChild(o);
+  const oSc=document.createElement('option');oSc.value='シナリオ指定';oSc.textContent='シナリオ指定';sel.appendChild(oSc);
   jobData.forEach(j=>{const op=document.createElement('option');op.value=j.name;op.textContent=j.name;sel.appendChild(op);});
 }
 function onJobRefChange(){
@@ -2213,10 +2214,8 @@ async function initViewMode() {
   const _jsel=document.getElementById('job_ref_sel');
   const savedJobRef = sheet.inputs?.job_ref_sel || '';
   const savedTokki = sheet.inputs?.job_tokki || '';
-  console.log('[DEBUG] job_ref_sel:', savedJobRef, '| job_tokki:', savedTokki, '| _jsel options:', _jsel?.options?.length);
   if(_jsel && savedJobRef){
     _jsel.value = savedJobRef;
-    console.log('[DEBUG] after set, _jsel.value:', _jsel.value);
     if(savedJobRef === 'シナリオ指定'){
       onJobRefChange();
       const ta = document.getElementById('job_tokki');
