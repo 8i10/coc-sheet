@@ -1107,7 +1107,9 @@ body.light .sk-base{ background:#f0f0f0 !important; }
       現在<input type="number" id="san_now" style="width:36px;border:1px solid var(--border)" oninput="updateSanLine()">
       / <span id="max_san">99</span>（不定：<span id="hutel_line" style="font-weight:bold">—</span>）
       &nbsp;&nbsp;
-      <span style="background:var(--hdr-bg);color:var(--hdr-text);padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:8px">0</span>
+      <span style="background:var(--hdr-bg);color:var(--hdr-text);padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:12px">0</span>
+      <span style="font-size:10px;color:var(--text-muted);margin-right:3px">追加職業P</span><input type="number" id="job_add" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center;margin-right:10px" oninput="calcJobPts()">
+      <span style="font-size:10px;color:var(--text-muted);margin-right:3px">追加興味P</span><input type="number" id="int_add" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center" oninput="calcJobPts()">
     </div>
     <div style="border-top:1px solid var(--border);background:var(--surface2);">
       <div style="background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
