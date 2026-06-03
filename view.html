@@ -2118,7 +2118,7 @@ async function initViewMode() {
   const sheet = JSON.parse(data.data);
 
   // アコーディオン状態キーとjob_tokkiは除外して入力値を流し込む
-  const ACC_SKIP = new Set(['combat_acc','items_acc','memo_acc','scenario_outer','rel_acc','secret_outer','aftereffect_outer','job_tokki']);
+  const ACC_SKIP = new Set(['combat_acc','items_acc','memo_acc','scenario_outer','rel_acc','secret_outer','aftereffect_outer','job_tokki','job_ref_sel']);
   if (sheet.inputs) {
     Object.entries(sheet.inputs).forEach(([key, val]) => {
       if (ACC_SKIP.has(key)) return;
