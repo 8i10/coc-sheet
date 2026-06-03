@@ -1164,16 +1164,15 @@ body.light td.hdr{
       <span style="font-size:10px;color:var(--text-muted);margin-right:3px">追加興味P</span><input type="number" id="int_add" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center" oninput="calcJobPts()"></span>
     </div>
     <!-- スマホ用: 追加P行（SAN行の下） -->
-    <div id="sp_add_p" style="display:none;padding:3px 4px;border-top:1px solid var(--border);background:var(--surface2);font-size:11px;align-items:center;gap:8px;flex-wrap:wrap">
+    <div id="sp_add_p" style="display:none;padding:3px 4px;border-top:1px solid var(--border);background:var(--surface2);font-size:11px;align-items:center;gap:6px;flex-wrap:wrap">
       <span style="font-size:10px;color:var(--text-muted)">追加職業P</span>
-      <span id="sp_job_add_disp" style="font-weight:bold">-</span>
-      <span style="font-size:10px;color:var(--text-muted);margin-left:8px">追加興味P</span>
-      <span id="sp_int_add_disp" style="font-weight:bold">-</span>
+      <input type="number" id="job_add_sp" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center" oninput="document.getElementById('job_add').value=this.value;calcJobPts()">
+      <span style="font-size:10px;color:var(--text-muted);margin-left:4px">追加興味P</span>
+      <input type="number" id="int_add_sp" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center" oninput="document.getElementById('int_add').value=this.value;calcJobPts()">
     </div>
-  </div>
-  <!-- 不定（能力値テーブルと分離） -->
-  <div id="fute_area" style="border:1px solid var(--border);margin-top:4px;background:var(--surface2)">
-    <div style="background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
+    <!-- 不定（能力値テーブルの下） -->
+    <div id="fute_area" style="border:1px solid var(--border);margin-top:4px;background:var(--surface2)">
+      <div style="background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
       <div style="padding:2px 4px">
       <table class="fute-table" style="width:100%;border-collapse:collapse;margin-bottom:2px">
         <tr>
@@ -1199,11 +1198,11 @@ body.light td.hdr{
           <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
         </tr>
       </table>
-    </div>
-    </div>
-  </div><!-- /fute_area -->
+      </div>
+    </div><!-- /fute_area -->
+  </div>
 </div>
-</div>
+
 
 <!-- ===== 行2 ===== -->
 <div class="section" id="sec_row2">
@@ -1831,10 +1830,11 @@ function calcJobPts(){
   tx('job_max_disp',pts+jobAdd);
   tx('int_max_disp',c.int*10+b1+b2+intAdd);
   // スマホ用追加P表示を同期
-  const spJob=document.getElementById('sp_job_add_disp');
-  const spInt=document.getElementById('sp_int_add_disp');
-  if(spJob)spJob.textContent=jobAdd||0;
-  if(spInt)spInt.textContent=intAdd||0;
+  // スマホ用入力欄に同期
+  const spJobInp=document.getElementById('job_add_sp');
+  const spIntInp=document.getElementById('int_add_sp');
+  if(spJobInp&&spJobInp.value!==String(jobAdd))spJobInp.value=jobAdd||'';
+  if(spIntInp&&spIntInp.value!==String(intAdd))spIntInp.value=intAdd||'';
   updatePointBar();
 }
 
