@@ -1017,7 +1017,7 @@ body.light .sk-base{ background:#f0f0f0 !important; }
     <div class="hdr">パーソナルデータ</div>
     <table>
       <colgroup><col style="width:52px"><col style="width:140px"><col style="width:52px"><col style="width:140px"></colgroup>
-      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana"></td></tr>
+      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana" style="text-align:center"></td></tr>
       <tr>
         <td class="hdr" style="vertical-align:middle">PC名</td>
         <td colspan="3"><input type="text" id="pcname" style="font-size:15px;font-weight:bold;height:52px;text-align:center;padding:2px 4px;display:block;width:100%"></td>
@@ -1696,8 +1696,10 @@ function calcJobPts(){
   else if(f==='EDU*10+APP*10')pts=c.edu*10+c.app*10;
   const b1=parseInt(document.getElementById('t1_bonus').value)||0;
   const b2=parseInt(document.getElementById('t2_bonus').value)||0;
-  tx('job_max_disp',pts);
-  tx('int_max_disp',c.int*10+b1+b2);
+  const jobAdd=parseInt(document.getElementById('job_add')?.value)||0;
+  const intAdd=parseInt(document.getElementById('int_add')?.value)||0;
+  tx('job_max_disp',pts+jobAdd);
+  tx('int_max_disp',c.int*10+b1+b2+intAdd);
   updatePointBar();
 }
 
@@ -2184,8 +2186,15 @@ async function initViewMode() {
   if(sheet.hideDefault && !allDefaultHidden) toggleAllDefault();
 
   // アコーディオン状態を復元
-  if(sheet.accState){
-    Object.entries(sheet.accState).forEach(([id,isOpen])=>{
+  const accStateData = sheet.accState || {};
+  // accStateがない場合はinputsからも取得（後方互換）
+  if(!sheet.accState && sheet.inputs){
+    ['memo_acc','combat_acc','items_acc','scenario_outer'].forEach(id=>{
+      if(sheet.inputs[id]!==undefined) accStateData[id]=sheet.inputs[id];
+    });
+  }
+  if(Object.keys(accStateData).length){
+    Object.entries(accStateData).forEach(([id,isOpen])=>{
       const body=document.getElementById(id);
       const arr=document.getElementById('arr_'+id);
       if(!body)return;
