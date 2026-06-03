@@ -2261,7 +2261,25 @@ async function initViewMode() {
 
   calc();
 
-// ネタバレメモを再構築
+  // 職業選択と特記をsetTimeoutで確実に反映（populateJobs完了後）
+  setTimeout(()=>{
+    const jsel=document.getElementById('job_ref_sel');
+    if(jsel && sheet.inputs?.job_ref_sel){
+      jsel.value = sheet.inputs.job_ref_sel;
+    }
+    if(jsel && jsel.value){
+      const savedTokki=sheet.inputs?.job_tokki||'';
+      if(jsel.value==='シナリオ指定'){
+        onJobRefChange();
+        setTimeout(()=>{
+          const ta=document.getElementById('job_tokki');
+          if(ta&&ta.tagName==='TEXTAREA'){ta.value=savedTokki;autoResizeTA(ta);}
+        },100);
+      } else {
+        onJobRefChange();
+      }
+    }
+  },200);
   const secretWrap = document.getElementById('secret_items_wrap');
   secretWrap.innerHTML = '';
   if (sheet.secrets) {
