@@ -2219,13 +2219,14 @@ async function initViewMode() {
       },100);
     } else {
       onJobRefChange();
-      // 通常職業でもjob_tokkiに保存値があれば上書き（カスタム入力対応）
       if(savedTokki){
         const el=document.getElementById('job_tokki');
         if(el)el.textContent=savedTokki;
       }
     }
   }
+  // カラーコード更新
+  if(typeof updateColorCode==='function') updateColorCode();
 
   // 初期値非表示状態を復元
   if(sheet.hideDefault && !allDefaultHidden) toggleAllDefault();
