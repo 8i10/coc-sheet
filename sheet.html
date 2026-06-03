@@ -2085,6 +2085,10 @@ function collectData(){
     if(!el.id)return;
     inputs[el.id]=el.type==='checkbox'?el.checked:el.value;
   });
+  // job_tokkiがtextareaの場合も収集（シナリオ指定時）
+  const tokkiEl=document.getElementById('job_tokki');
+  if(tokkiEl&&tokkiEl.tagName==='TEXTAREA') inputs['job_tokki']=tokkiEl.value;
+  else if(tokkiEl&&tokkiEl.tagName==='DIV') inputs['job_tokki']=tokkiEl.textContent||'';
 
   // 技能テーブル（freeValも含む）
   const skills=[];
@@ -2256,11 +2260,10 @@ function applyData(json){
   // 職業特記・特徴表の表示を再描画
   const _jSel=document.getElementById('job_ref_sel');
   if(_jSel&&_jSel.value){
+    const savedTokki=data.inputs?.job_tokki||'';
     if(_jSel.value==='シナリオ指定'){
-      // textareaに変換してから値を復元
-      const saved=document.getElementById('job_tokki')?.textContent||document.getElementById('job_tokki')?.value||'';
       onJobRefChange();
-      setTimeout(()=>{const ta=document.getElementById('job_tokki');if(ta&&ta.tagName==='TEXTAREA'){ta.value=saved;autoResizeTA(ta);}},50);
+      setTimeout(()=>{const ta=document.getElementById('job_tokki');if(ta&&ta.tagName==='TEXTAREA'){ta.value=savedTokki;autoResizeTA(ta);}},100);
     } else {
       onJobRefChange();
     }
