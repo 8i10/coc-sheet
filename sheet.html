@@ -904,8 +904,10 @@ body.light .secret-item-header input[type=text]{
 
 
 /* スマホ特徴表の白背景 */
-#row2_tokucho,
-#row2_tokucho > div{
+#row2_tokucho{
+  background:var(--surface) !important;
+}
+#row2_tokucho > div:not(.hdr){
   background:var(--surface) !important;
 }
 /* コマ出力ダイアログ */
@@ -972,6 +974,10 @@ body.light td.hdr{
   /* パーソナルデータhdrをスマホでも#444に */
   body.light td.hdr{ background:#444 !important; color:#fff !important; }
 }
+
+
+
+
 
 </style>
 </head>
@@ -1214,13 +1220,13 @@ body.light td.hdr{
   </div>
   <!-- 特徴表①② -->
   <div id="row2_tokucho" style="flex:1;padding:3px">
-    <div class="hdr" style="margin-bottom:4px">特徴表</div>
+    <div class="hdr" style="margin-bottom:4px;background:var(--hdr-bg);color:var(--hdr-text)">特徴表</div>
 
     <!-- 特徴表① -->
-    <div style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden">
-      <div style="display:flex;gap:0;background:var(--hdr-bg);border-bottom:1px solid var(--border)">
-        <select id="t1_sel" onchange="showTokucho(1)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--hdr-bg);color:var(--hdr-text);min-width:0"><option value="">-- 特徴表①を選択 --</option></select>
-        <select id="t1_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--hdr-bg);color:var(--hdr-text);min-width:0">
+    <div style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--surface)">
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border)">
+        <select id="t1_sel" onchange="showTokucho(1)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0"><option value="">-- 特徴表①を選択 --</option></select>
+        <select id="t1_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0">
           <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
           <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
         </select>
@@ -1230,10 +1236,10 @@ body.light td.hdr{
     </div>
 
     <!-- 特徴表② -->
-    <div style="border:1px solid var(--border);border-radius:3px;overflow:hidden">
-      <div style="display:flex;gap:0;background:var(--hdr-bg);border-bottom:1px solid var(--border)">
-        <select id="t2_sel" onchange="showTokucho(2)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--hdr-bg);color:var(--hdr-text);min-width:0"><option value="">-- 特徴表②を選択 --</option></select>
-        <select id="t2_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--hdr-bg);color:var(--hdr-text);min-width:0">
+    <div style="border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--surface)">
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border)">
+        <select id="t2_sel" onchange="showTokucho(2)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0"><option value="">-- 特徴表②を選択 --</option></select>
+        <select id="t2_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0">
           <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
           <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
         </select>
