@@ -114,6 +114,12 @@ textarea{font-size:11px;font-family:inherit;border:1px solid var(--border);width
   #sp-pts-row .pts-remain.over{color:#ff6060}
   body{padding-top:56px;overflow-x:hidden;padding-bottom:80px}
 
+  /* 不定エリアを分離して全幅に */
+  #fute_area{width:100% !important;box-sizing:border-box;margin-top:4px}
+  #fute_area .fute-table{table-layout:fixed;width:100%}
+  /* PC版の追加Pを非表示にして、スマホ用を表示 */
+  #add_p_pc{display:none !important}
+  #sp_add_p{display:flex !important}
   /* 行1: パーソナル＋能力値 → 縦並び */
   #row1_flex{flex-direction:column !important}
   .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid var(--border)}
@@ -1108,17 +1114,27 @@ body.light .sk-base{ background:#f0f0f0 !important; }
         </tr>
       </tbody>
     </table>
-    <div style="display:flex;flex-wrap:wrap;gap:4px;padding:3px 4px;border-top:1px solid var(--border);font-size:11px;align-items:center;background:var(--surface2)">
+    <!-- SAN行・追加P -->
+    <div id="san_row" style="display:flex;flex-wrap:wrap;gap:4px;padding:3px 4px;border-top:1px solid var(--border);font-size:11px;align-items:center;background:var(--surface2)">
       <span style="background:var(--hdr-bg);color:var(--hdr-text);padding:1px 4px">SAN</span>
       現在<input type="number" id="san_now" style="width:36px;border:1px solid var(--border)" oninput="updateSanLine()">
       / <span id="max_san">99</span>（不定：<span id="hutel_line" style="font-weight:bold">—</span>）
       &nbsp;&nbsp;
       <span style="background:var(--hdr-bg);color:var(--hdr-text);padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:12px">0</span>
-      <span style="margin-left:auto"></span><span style="font-size:10px;color:var(--text-muted);margin-right:3px">追加職業P</span><input type="number" id="job_add" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center;margin-right:10px" oninput="calcJobPts()">
-      <span style="font-size:10px;color:var(--text-muted);margin-right:3px">追加興味P</span><input type="number" id="int_add" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center" oninput="calcJobPts()">
+      <span style="margin-left:auto"></span><span id="add_p_pc" style="display:flex;align-items:center;gap:4px"><span style="font-size:10px;color:var(--text-muted);margin-right:3px">追加職業P</span><input type="number" id="job_add" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center;margin-right:10px" oninput="calcJobPts()">
+      <span style="font-size:10px;color:var(--text-muted);margin-right:3px">追加興味P</span><input type="number" id="int_add" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center" oninput="calcJobPts()"></span>
     </div>
-    <div style="border-top:1px solid var(--border);background:var(--surface2);">
-      <div style="background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
+    <!-- スマホ用: 追加P行 -->
+    <div id="sp_add_p" style="display:none;padding:3px 4px;border-top:1px solid var(--border);background:var(--surface2);font-size:11px;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:10px;color:var(--text-muted)">追加職業P</span>
+      <span id="sp_job_add_disp" style="font-weight:bold">-</span>
+      <span style="font-size:10px;color:var(--text-muted);margin-left:8px">追加興味P</span>
+      <span id="sp_int_add_disp" style="font-weight:bold">-</span>
+    </div>
+  </div>
+  <!-- 不定（分離） -->
+  <div id="fute_area" style="border:1px solid var(--border);margin-top:4px;background:var(--surface2)">
+    <div style="background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
       <div style="padding:2px 4px">
       <table class="fute-table" style="width:100%;border-collapse:collapse;margin-bottom:2px">
         <tr>
@@ -1146,7 +1162,7 @@ body.light .sk-base{ background:#f0f0f0 !important; }
       </table>
     </div>
     </div>
-  </div>
+  </div><!-- /fute_area -->
 </div>
 </div>
 
@@ -1269,7 +1285,7 @@ body.light .sk-base{ background:#f0f0f0 !important; }
       <div class="acc-body" id="combat_acc">
         <div style="padding:4px">
           <table style="table-layout:fixed;width:100%">
-            <thead><tr><th style="width:90px">武器名</th><th style="width:30px;font-size:9px">技能%</th><th style="width:46px;font-size:9px">ダメージ</th><th style="width:22px;font-size:9px">DB込</th><th style="width:26px;font-size:9px">射程</th><th style="width:30px;font-size:9px">攻撃回数</th><th style="width:26px;font-size:9px">装弾数</th><th style="width:22px;font-size:9px">耐久</th><th style="width:26px;font-size:9px">故障No.</th><th style="width:50px;font-size:9px">備考</th><th style="width:16px"></th></tr></thead>
+            <thead><tr><th style="width:90px">武器名</th><th style="width:30px;font-size:9px">技能%</th><th style="width:46px;font-size:9px">ダメージ</th><th style="width:22px;font-size:9px">DB</th><th style="width:26px;font-size:9px">射程</th><th style="width:30px;font-size:9px">攻撃回数</th><th style="width:26px;font-size:9px">装弾数</th><th style="width:22px;font-size:9px">耐久</th><th style="width:26px;font-size:9px">故障No.</th><th style="width:50px;font-size:9px">備考</th><th style="width:16px"></th></tr></thead>
             <tbody id="weapon_rows"></tbody>
           </table>
           <button class="add-row-btn" onclick="addWeaponRow()">＋追加</button>
@@ -1728,6 +1744,10 @@ function calcJobPts(){
   const intAdd=parseInt(document.getElementById('int_add')?.value)||0;
   tx('job_max_disp',pts+jobAdd);
   tx('int_max_disp',c.int*10+b1+b2+intAdd);
+  const spJob=document.getElementById('sp_job_add_disp');
+  const spInt=document.getElementById('sp_int_add_disp');
+  if(spJob)spJob.textContent=jobAdd||0;
+  if(spInt)spInt.textContent=intAdd||0;
   updatePointBar();
 }
 
