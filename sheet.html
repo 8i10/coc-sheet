@@ -2116,7 +2116,13 @@ function collectData(){
     secrets.push({id,title,pass,summary,contents,cats});
   });
 
-  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,hideDefault,ts:Date.now()});
+  // アコーディオン状態を保存
+  const accState={};
+  ['memo_acc','combat_acc','items_acc','scenario_outer','rel_acc','secret_outer','aftereffect_outer'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)accState[id]=el.classList.contains('open');
+  });
+  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,hideDefault,accState,ts:Date.now()});
 }
 
 function applyData(json){
@@ -2224,6 +2230,20 @@ function applyData(json){
   const _jSel=document.getElementById('job_ref_sel');
   if(_jSel&&_jSel.value)onJobRefChange();
   [1,2].forEach(n=>showTokucho(n));
+  // アコーディオン状態を復元
+  if(data.accState){
+    Object.entries(data.accState).forEach(([id,isOpen])=>{
+      const body=document.getElementById(id);
+      const arr=document.getElementById('arr_'+id);
+      if(!body)return;
+      const currently=body.classList.contains('open');
+      if(isOpen!==currently){
+        body.classList.toggle('open');
+        if(arr)arr.textContent=isOpen?'▼':'▶';
+      }
+    });
+    setTimeout(autoResizeAll,50);
+  }
   // 初期値非表示状態を復元
   if(data.hideDefault && !allDefaultHidden){
     toggleAllDefault();

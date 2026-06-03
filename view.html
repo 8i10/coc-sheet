@@ -2183,6 +2183,21 @@ async function initViewMode() {
   // 初期値非表示状態を復元
   if(sheet.hideDefault && !allDefaultHidden) toggleAllDefault();
 
+  // アコーディオン状態を復元
+  if(sheet.accState){
+    Object.entries(sheet.accState).forEach(([id,isOpen])=>{
+      const body=document.getElementById(id);
+      const arr=document.getElementById('arr_'+id);
+      if(!body)return;
+      const currently=body.classList.contains('open');
+      if(isOpen!==currently){
+        body.classList.toggle('open');
+        if(arr)arr.textContent=isOpen?'▼':'▶';
+      }
+    });
+    setTimeout(autoResizeAll,50);
+  }
+
   calc();
 
 // ネタバレメモを再構築
