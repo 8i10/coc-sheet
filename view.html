@@ -1677,8 +1677,35 @@ function populateJobs(){
 }
 function onJobRefChange(){
   const name=document.getElementById('job_ref_sel').value;
+  const tokkiDiv=document.getElementById('job_tokki');
   const j=jobData.find(x=>x.name===name);
-  if(!j){tx('job_tokki','職業参照を選択してください');return;}
+
+  // シナリオ指定の場合は入力可能なtextareaに切り替え
+  if(name==='シナリオ指定'){
+    if(tokkiDiv&&tokkiDiv.tagName==='DIV'){
+      const cur=tokkiDiv.getAttribute('data-custom')||'';
+      const ta=document.createElement('textarea');
+      ta.id='job_tokki';ta.className='auto-h';
+      ta.style.cssText='font-size:11px;color:var(--text);min-height:36px;padding:3px 4px;line-height:1.7;background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:4px;width:100%;resize:vertical';
+      ta.placeholder='職業特記を入力...';ta.value=cur;
+      ta.oninput=function(){autoResizeTA(this);};
+      tokkiDiv.replaceWith(ta);
+      setTimeout(()=>autoResizeTA(ta),50);
+    }
+    calcJobPts();
+    return;
+  }
+
+  // 通常職業の場合はDIVに戻す
+  const curEl=document.getElementById('job_tokki');
+  if(curEl&&curEl.tagName==='TEXTAREA'){
+    const div=document.createElement('div');
+    div.id='job_tokki';
+    div.style.cssText='font-size:11px;color:#333;min-height:28px;padding:3px 4px;line-height:1.7;background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:4px';
+    curEl.replaceWith(div);
+  }
+
+  if(!j){tx('job_tokki','職業参照を選択してください');calcJobPts();return;}
   tx('job_tokki',j.tokki);
   const fs=document.getElementById('job_formula_sel');
   for(let i=0;i<fs.options.length;i++){if(fs.options[i].value===j.formula){fs.selectedIndex=i;break;}}
@@ -2180,7 +2207,15 @@ async function initViewMode() {
   // 特徴表・職業特記の表示
   [1,2].forEach(n=>showTokucho(n));
   const _jsel=document.getElementById('job_ref_sel');
-  if(_jsel&&_jsel.value)onJobRefChange();
+  if(_jsel&&_jsel.value){
+    if(_jsel.value==='シナリオ指定'){
+      const saved=document.getElementById('job_tokki')?.textContent||document.getElementById('job_tokki')?.value||'';
+      onJobRefChange();
+      setTimeout(()=>{const ta=document.getElementById('job_tokki');if(ta&&ta.tagName==='TEXTAREA'){ta.value=saved;autoResizeTA(ta);}},50);
+    } else {
+      onJobRefChange();
+    }
+  }
 
   // 初期値非表示状態を復元
   if(sheet.hideDefault && !allDefaultHidden) toggleAllDefault();

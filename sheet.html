@@ -1753,7 +1753,34 @@ function populateJobs(){
 }
 function onJobRefChange(){
   const name=document.getElementById('job_ref_sel').value;
+  const tokkiDiv=document.getElementById('job_tokki');
   const j=jobData.find(x=>x.name===name);
+
+  // シナリオ指定の場合は入力可能なtextareaに切り替え
+  if(name==='シナリオ指定'){
+    // textareaに変換済みでなければ変換
+    if(tokkiDiv.tagName==='DIV'){
+      const cur=tokkiDiv.getAttribute('data-custom')||'';
+      const ta=document.createElement('textarea');
+      ta.id='job_tokki';ta.className='auto-h';
+      ta.style.cssText='font-size:11px;color:var(--text);min-height:36px;padding:3px 4px;line-height:1.7;background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:4px;width:100%;resize:vertical';
+      ta.placeholder='職業特記を入力...';ta.value=cur;
+      ta.oninput=function(){autoResizeTA(this);saveDraft();};
+      tokkiDiv.replaceWith(ta);
+      setTimeout(()=>autoResizeTA(ta),50);
+    }
+    return;
+  }
+
+  // 通常職業の場合はDIVに戻す
+  const curEl=document.getElementById('job_tokki');
+  if(curEl&&curEl.tagName==='TEXTAREA'){
+    const div=document.createElement('div');
+    div.id='job_tokki';
+    div.style.cssText='font-size:11px;color:#333;min-height:28px;padding:3px 4px;line-height:1.7;background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:4px';
+    curEl.replaceWith(div);
+  }
+
   if(!j){tx('job_tokki','職業参照を選択してください');return;}
   tx('job_tokki',j.tokki);
   // 職業名を自動入力
@@ -2228,7 +2255,16 @@ function applyData(json){
   calc();
   // 職業特記・特徴表の表示を再描画
   const _jSel=document.getElementById('job_ref_sel');
-  if(_jSel&&_jSel.value)onJobRefChange();
+  if(_jSel&&_jSel.value){
+    if(_jSel.value==='シナリオ指定'){
+      // textareaに変換してから値を復元
+      const saved=document.getElementById('job_tokki')?.textContent||document.getElementById('job_tokki')?.value||'';
+      onJobRefChange();
+      setTimeout(()=>{const ta=document.getElementById('job_tokki');if(ta&&ta.tagName==='TEXTAREA'){ta.value=saved;autoResizeTA(ta);}},50);
+    } else {
+      onJobRefChange();
+    }
+  }
   [1,2].forEach(n=>showTokucho(n));
   // アコーディオン状態を復元
   if(data.accState){
