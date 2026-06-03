@@ -2325,9 +2325,14 @@ async function initViewMode() {
 // sk-del列を非表示
 document.querySelectorAll('.sk-del').forEach(el => el.style.display = 'none');
 
-// 削除ボタン列のthを非表示
+// 削除ボタン列のthを非表示（武器・所持品テーブルは除外）
 document.querySelectorAll('th:last-child:empty, th:last-child').forEach(el => {
-  if (el.textContent.trim() === '') el.style.display = 'none';
+  if (el.textContent.trim() === '' && !el.closest('#weapon_rows') && !el.closest('#item_rows')) {
+    const table = el.closest('table');
+    if (!table || (!table.querySelector('#weapon_rows') && !table.querySelector('#item_rows'))) {
+      el.style.display = 'none';
+    }
+  }
 });
 
   // ococofolia駒出力ボタンを表示（閲覧モード完了後）
