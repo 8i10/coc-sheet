@@ -2208,27 +2208,19 @@ async function initViewMode() {
 
   // 特徴表・職業特記の表示
   [1,2].forEach(n=>showTokucho(n));
+
+  // 職業選択を直接設定してonJobRefChangeを呼ぶ
   const _jsel=document.getElementById('job_ref_sel');
-  // job_ref_selのvalueをinputsから明示的に設定
-  if(_jsel && sheet.inputs?.job_ref_sel){
-    _jsel.value = sheet.inputs.job_ref_sel;
-  }
-  if(_jsel&&_jsel.value){
-    const savedTokki=sheet.inputs?.job_tokki||'';
-    if(_jsel.value==='シナリオ指定'){
+  const savedJobRef = sheet.inputs?.job_ref_sel || '';
+  const savedTokki = sheet.inputs?.job_tokki || '';
+  if(_jsel && savedJobRef){
+    _jsel.value = savedJobRef;
+    if(savedJobRef === 'シナリオ指定'){
       onJobRefChange();
-      setTimeout(()=>{
-        const ta=document.getElementById('job_tokki');
-        if(ta&&ta.tagName==='TEXTAREA'){ta.value=savedTokki;autoResizeTA(ta);}
-      },100);
+      const ta = document.getElementById('job_tokki');
+      if(ta && ta.tagName==='TEXTAREA'){ ta.value = savedTokki; autoResizeTA(ta); }
     } else {
       onJobRefChange();
-      if(savedTokki){
-        setTimeout(()=>{
-          const el=document.getElementById('job_tokki');
-          if(el&&el.tagName==='DIV')el.textContent=savedTokki;
-        },50);
-      }
     }
   }
   // カラーコード更新
@@ -2261,25 +2253,6 @@ async function initViewMode() {
 
   calc();
 
-  // 職業選択と特記をsetTimeoutで確実に反映（populateJobs完了後）
-  setTimeout(()=>{
-    const jsel=document.getElementById('job_ref_sel');
-    if(jsel && sheet.inputs?.job_ref_sel){
-      jsel.value = sheet.inputs.job_ref_sel;
-    }
-    if(jsel && jsel.value){
-      const savedTokki=sheet.inputs?.job_tokki||'';
-      if(jsel.value==='シナリオ指定'){
-        onJobRefChange();
-        setTimeout(()=>{
-          const ta=document.getElementById('job_tokki');
-          if(ta&&ta.tagName==='TEXTAREA'){ta.value=savedTokki;autoResizeTA(ta);}
-        },100);
-      } else {
-        onJobRefChange();
-      }
-    }
-  },200);
   const secretWrap = document.getElementById('secret_items_wrap');
   secretWrap.innerHTML = '';
   if (sheet.secrets) {
