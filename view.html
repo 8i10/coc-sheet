@@ -1121,15 +1121,15 @@ body.light .sk-base{ background:#f0f0f0 !important; }
       / <span id="max_san">99</span>（不定：<span id="hutel_line" style="font-weight:bold">—</span>）
       &nbsp;&nbsp;
       <span style="background:var(--hdr-bg);color:var(--hdr-text);padding:1px 4px">DB</span><span id="db" style="font-weight:bold;margin-right:12px">0</span>
-      <span style="margin-left:auto"></span><span id="add_p_pc" style="display:flex;align-items:center;gap:4px"><span style="font-size:10px;color:var(--text-muted);margin-right:3px">追加職業P</span><input type="number" id="job_add" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center;margin-right:10px" oninput="calcJobPts()">
-      <span style="font-size:10px;color:var(--text-muted);margin-right:3px">追加興味P</span><input type="number" id="int_add" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center" oninput="calcJobPts()"></span>
+      <span style="margin-left:auto"></span><span id="add_p_pc" style="display:flex;align-items:center;gap:3px"><span style="font-size:9px;color:var(--text-muted)">追加職業P</span><input type="number" id="job_add" placeholder="0" style="width:40px;font-size:10px;border:1px solid var(--border);padding:0 2px;height:16px;background:var(--surface);color:var(--text);text-align:center;margin-right:8px" oninput="calcJobPts()">
+      <span style="font-size:9px;color:var(--text-muted)">追加興味P</span><input type="number" id="int_add" placeholder="0" style="width:40px;font-size:10px;border:1px solid var(--border);padding:0 2px;height:16px;background:var(--surface);color:var(--text);text-align:center" oninput="calcJobPts()"></span>
     </div>
     <!-- スマホ用: 追加P行 -->
-    <div id="sp_add_p" style="display:none;padding:3px 4px;border-top:1px solid var(--border);background:var(--surface2);font-size:11px;align-items:center;gap:6px;flex-wrap:wrap">
-      <span style="font-size:10px;color:var(--text-muted)">追加職業P</span>
-      <input type="number" id="job_add_sp" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center" oninput="document.getElementById('job_add').value=this.value;calcJobPts()">
-      <span style="font-size:10px;color:var(--text-muted);margin-left:4px">追加興味P</span>
-      <input type="number" id="int_add_sp" placeholder="0" style="width:46px;font-size:11px;border:1px solid var(--border);padding:1px 3px;background:var(--surface);color:var(--text);text-align:center" oninput="document.getElementById('int_add').value=this.value;calcJobPts()">
+    <div id="sp_add_p" style="display:none;padding:3px 4px;border-top:1px solid var(--border);background:var(--surface2);font-size:10px;align-items:center;gap:4px;flex-wrap:wrap;justify-content:flex-end">
+      <span style="font-size:9px;color:var(--text-muted)">追加職業P</span>
+      <input type="number" id="job_add_sp" placeholder="0" style="width:40px;font-size:10px;border:1px solid var(--border);padding:0 2px;height:16px;background:var(--surface);color:var(--text);text-align:center" oninput="document.getElementById('job_add').value=this.value;calcJobPts()">
+      <span style="font-size:9px;color:var(--text-muted)">追加興味P</span>
+      <input type="number" id="int_add_sp" placeholder="0" style="width:40px;font-size:10px;border:1px solid var(--border);padding:0 2px;height:16px;background:var(--surface);color:var(--text);text-align:center" oninput="document.getElementById('int_add').value=this.value;calcJobPts()">
     </div>
   </div>
   <!-- 不定（分離） -->
