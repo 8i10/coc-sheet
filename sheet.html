@@ -2265,6 +2265,8 @@ function applyData(json){
       onJobRefChange();
     }
   }
+  // カラーコード更新
+  if(typeof updateColorCode==='function') updateColorCode();
   [1,2].forEach(n=>showTokucho(n));
   // アコーディオン状態を復元
   if(data.accState){

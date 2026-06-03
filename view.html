@@ -2117,8 +2117,8 @@ async function initViewMode() {
 
   const sheet = JSON.parse(data.data);
 
-  // アコーディオン状態キーは除外して入力値を流し込む
-  const ACC_SKIP = new Set(['combat_acc','items_acc','memo_acc','scenario_outer','rel_acc','secret_outer','aftereffect_outer']);
+  // アコーディオン状態キーとjob_tokkiは除外して入力値を流し込む
+  const ACC_SKIP = new Set(['combat_acc','items_acc','memo_acc','scenario_outer','rel_acc','secret_outer','aftereffect_outer','job_tokki']);
   if (sheet.inputs) {
     Object.entries(sheet.inputs).forEach(([key, val]) => {
       if (ACC_SKIP.has(key)) return;
@@ -2127,6 +2127,8 @@ async function initViewMode() {
       if (el.type === 'checkbox') el.checked = val;
       else el.value = val;
     });
+    // カラーコード更新
+    if(typeof updateColorCode==='function') updateColorCode();
   }
 
   // 技能を流し込む
@@ -2208,13 +2210,20 @@ async function initViewMode() {
   [1,2].forEach(n=>showTokucho(n));
   const _jsel=document.getElementById('job_ref_sel');
   if(_jsel&&_jsel.value){
+    const savedTokki=sheet.inputs?.job_tokki||'';
     if(_jsel.value==='シナリオ指定'){
-      // inputs.job_tokkiの値を先に取得してからtextareaに変換
-      const saved=sheet.inputs?.job_tokki||'';
       onJobRefChange();
-      setTimeout(()=>{const ta=document.getElementById('job_tokki');if(ta&&ta.tagName==='TEXTAREA'){ta.value=saved;autoResizeTA(ta);}},50);
+      setTimeout(()=>{
+        const ta=document.getElementById('job_tokki');
+        if(ta&&ta.tagName==='TEXTAREA'){ta.value=savedTokki;autoResizeTA(ta);}
+      },100);
     } else {
       onJobRefChange();
+      // 通常職業でもjob_tokkiに保存値があれば上書き（カスタム入力対応）
+      if(savedTokki){
+        const el=document.getElementById('job_tokki');
+        if(el)el.textContent=savedTokki;
+      }
     }
   }
 
