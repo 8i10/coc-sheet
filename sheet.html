@@ -131,16 +131,14 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
   /* 不定エリアを分離して全幅に */
   #fute_area{width:100% !important;box-sizing:border-box;margin-top:4px}
   #fute_area .fute-table{table-layout:fixed;width:100%}
-  #char_image_ctrl{display:none !important}
-  #char_image_ctrl_sp{display:flex !important;flex-direction:column !important;width:100% !important;border-bottom:1px solid var(--border) !important}
-  #char_icon_wrap{width:100% !important;min-width:0 !important;height:130px !important;border-right:none !important;align-self:auto !important;border-bottom:1px solid var(--border) !important}
   /* PC版の追加Pを非表示にして、スマホ用を表示 */
   #add_p_pc{display:none !important}
   #sp_add_p{display:flex !important}
   /* 行1: パーソナル＋能力値 → 縦並び */
-  #row1_flex{flex-direction:column !important}
-  .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid var(--border)}
-  #row1_stats{width:100% !important}
+  #row1_flex{flex-wrap:wrap !important}
+  #row1_stats{width:100% !important;flex:none !important}
+  .personal-data{flex:0 0 calc(100% - 70px) !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid var(--border)}
+  #char_icon_wrap{width:70px !important;min-width:70px !important;height:auto !important;align-self:stretch !important;flex-shrink:0 !important}
   #stats_scroll{overflow-x:auto}
   #stats_scroll table{min-width:560px}
   /* 不定エリアのテーブルが見切れないようにする */

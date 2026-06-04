@@ -123,9 +123,10 @@ textarea{font-size:11px;font-family:inherit;border:1px solid var(--border);width
   #add_p_pc{display:none !important}
   #sp_add_p{display:flex !important}
   /* 行1: パーソナル＋能力値 → 縦並び */
-  #row1_flex{flex-direction:column !important}
-  .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid var(--border)}
-  #row1_stats{width:100% !important}
+  #row1_flex{flex-wrap:wrap !important}
+  #row1_stats{width:100% !important;flex:none !important}
+  .personal-data{flex:0 0 calc(100% - 70px) !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid var(--border)}
+  #char_icon_wrap{width:70px !important;min-width:70px !important;height:auto !important;align-self:stretch !important;flex-shrink:0 !important}
   #stats_scroll{overflow-x:auto}
   #stats_scroll table{min-width:560px}
 
