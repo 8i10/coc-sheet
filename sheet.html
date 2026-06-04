@@ -2324,7 +2324,9 @@ function collectData(){
 
   // 後遺症・AF・呪文
   const ae={kouisho:[],af:[],spell:[],fute:[]};
-  document.querySelectorAll('#tbody_kouisho tr').forEach(tr=>{const inps=[...tr.querySelectorAll('input')].map(i=>i.value);if(inps.some(v=>v))ae.kouisho.push(inps);});
+  console.log('[AE DEBUG] tbody_kouisho rows:', document.querySelectorAll('#tbody_kouisho tr').length);
+  console.log('[AE DEBUG] tbody_fute rows:', document.querySelectorAll('#tbody_fute tr').length);
+  document.querySelectorAll('#tbody_kouisho tr').forEach(tr=>{const inps=[...tr.querySelectorAll('input')].map(i=>i.value);console.log('[AE] kouisho row:',inps);if(inps.some(v=>v))ae.kouisho.push(inps);});
   document.querySelectorAll('#tbody_af tr').forEach(tr=>{const inps=[...tr.querySelectorAll('input')].map(i=>i.value);if(inps.some(v=>v))ae.af.push(inps);});
   document.querySelectorAll('#tbody_spell tr').forEach(tr=>{const inps=[...tr.querySelectorAll('input')].map(i=>i.value);if(inps.some(v=>v))ae.spell.push(inps);});
   // 不定：2行1グループでまとめる
