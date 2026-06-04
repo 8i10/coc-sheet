@@ -994,6 +994,16 @@ if (('standalone' in navigator) && navigator.standalone) {
 <div style="display:none"><div id="save_msg"></div></div>
 
 <!-- アイコン画像表示バー -->
+<div id="char_image_ctrl" style="display:none;flex-direction:column;gap:3px;padding:3px 10px;border-bottom:1px solid var(--border);background:var(--surface2)">
+  <div style="display:flex;align-items:center;gap:6px">
+    <span style="font-size:9px;color:var(--text-muted);white-space:nowrap">アイコン画像URL</span>
+    <input type="text" id="char_image_url" placeholder="https://www.dropbox.com/..." style="flex:1;font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text)">
+  </div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <span style="font-size:9px;color:var(--text-muted);white-space:nowrap">ズーム</span>
+    <input type="range" id="char_image_zoom" min="50" max="300" value="130" style="flex:1">
+  </div>
+</div>
 <!-- ===== 行1 ===== -->
 <div class="section" id="sec_row1">
 <div id="row1_flex" style="display:flex;align-items:stretch">
@@ -1026,7 +1036,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       <tr><td class="hdr" style="font-size:9px">髪の色</td><td><input type="text" id="hair"></td><td class="hdr" style="font-size:9px">瞳の色</td><td><input type="text" id="eye"></td><td class="hdr" style="font-size:9px">時代</td><td><input type="text" id="era"></td></tr>
     </table>
   </div>
-  <div id="row1_stats" style="flex:1;min-width:0">
+  <div id="row1_stats" style="flex:1;min-width:0;display:flex;flex-direction:column">
   <div id="stats_scroll" style="overflow-x:auto">
     <table>
       <thead>
@@ -1104,13 +1114,9 @@ if (('standalone' in navigator) && navigator.standalone) {
       <input type="number" id="int_add_sp" placeholder="0" style="width:40px;font-size:10px;border:1px solid var(--border);padding:0 2px;height:16px;background:var(--surface);color:var(--text);text-align:center" oninput="document.getElementById('int_add').value=this.value;calcJobPts()">
     </div>
   <!-- アイコン画像URL・ズーム（SAN行の下） -->
-  <div id="char_image_ctrl" style="display:none;flex-direction:column;gap:3px;padding:4px 6px;border-top:1px solid var(--border);background:var(--surface2)">
-    <div style="font-size:9px;color:var(--text-muted)">アイコン画像URL（DropboxリンクまたはURL）</div>
-    <input type="text" id="char_image_url" placeholder="https://www.dropbox.com/..." style="font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text);width:100%" oninput="previewCharImage(this.value)">
-    <div style="display:flex;align-items:center;gap:4px">
-      <span style="font-size:9px;color:var(--text-muted);white-space:nowrap">ズーム</span>
-      <input type="range" id="char_image_zoom" min="50" max="300" value="130" style="flex:1" oninput="charImageZoomFromSlider(this.value)">
-    </div>
+  <!-- 自由メモ欄 -->
+  <div id="row1_free_memo" style="flex:1;border-top:1px solid var(--border);padding:4px">
+    <textarea id="row1_memo" class="auto-h" placeholder="自由メモ..." style="width:100%;min-height:50px;border:none;background:var(--surface);color:var(--text);font-size:11px;resize:none;outline:none" oninput="autoResizeTA(this)"></textarea>
   </div>
   </div><!-- /row1_stats -->
 </div><!-- /row1_flex -->
@@ -1119,7 +1125,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 <div class="section" id="sec_row2">
 <div id="row2_flex" style="display:flex">
   <!-- 職業特記 378px固定 -->
-  <div id="row2_job" style="width:378px;min-width:378px;border-right:1px solid var(--border);padding:3px"><div class="hdr" style="margin-bottom:4px">職業特記</div><!-- 職業選択 6.5 : 計算式 3.5 --><div style="display:flex;gap:0;margin-bottom:4px;border:1px solid var(--border);border-radius:3px;overflow:hidden">  <select id="job_ref_sel" onchange="onJobRefChange()" style="flex:65;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);min-width:0"></select>  <select id="job_formula_sel" onchange="calcJobPts()" style="flex:35;border:none;font-size:11px;padding:2px 3px;background:var(--surface);min-width:0">    <option value="EDU*20">EDU×20</option>    <option value="EDU*10+STR*10">EDU×10＋STR×10</option>    <option value="EDU*10+CON*10">EDU×10＋CON×10</option>    <option value="EDU*10+POW*10">EDU×10＋POW×10</option>    <option value="EDU*10+DEX*10">EDU×10＋DEX×10</option>    <option value="EDU*10+APP*10">EDU×10＋APP×10</option>  </select></div><div id="job_tokki" style="font-size:11px;color:#333;min-height:28px;padding:3px 4px;line-height:1.7;background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:4px">職業参照を選択してください</div><div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px">  <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">  <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">  <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">  <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff"></div><div style="font-size:11px;color:#555;margin-bottom:1px">その他特記</div><textarea class="auto-h" id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;font-size:11px;border:1px solid var(--border);padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
+  <div id="row2_job" style="width:448px;min-width:448px;border-right:1px solid var(--border);padding:3px"><div class="hdr" style="margin-bottom:4px">職業特記</div><!-- 職業選択 6.5 : 計算式 3.5 --><div style="display:flex;gap:0;margin-bottom:4px;border:1px solid var(--border);border-radius:3px;overflow:hidden">  <select id="job_ref_sel" onchange="onJobRefChange()" style="flex:65;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);min-width:0"></select>  <select id="job_formula_sel" onchange="calcJobPts()" style="flex:35;border:none;font-size:11px;padding:2px 3px;background:var(--surface);min-width:0">    <option value="EDU*20">EDU×20</option>    <option value="EDU*10+STR*10">EDU×10＋STR×10</option>    <option value="EDU*10+CON*10">EDU×10＋CON×10</option>    <option value="EDU*10+POW*10">EDU×10＋POW×10</option>    <option value="EDU*10+DEX*10">EDU×10＋DEX×10</option>    <option value="EDU*10+APP*10">EDU×10＋APP×10</option>  </select></div><div id="job_tokki" style="font-size:11px;color:#333;min-height:28px;padding:3px 4px;line-height:1.7;background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:4px">職業参照を選択してください</div><div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px">  <input type="text" id="sel_skill1" placeholder="技能①" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">  <input type="text" id="sel_skill2" placeholder="技能②" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">  <input type="text" id="sel_skill3" placeholder="技能③" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff">  <input type="text" id="sel_skill4" placeholder="技能④" style="flex:1;min-width:55px;border:1px solid var(--border);text-align:left;padding:1px 3px;background:#fff"></div><div style="font-size:11px;color:#555;margin-bottom:1px">その他特記</div><textarea class="auto-h" id="job_other_note" placeholder="職業ボーナス・特殊ルールなど自由に入力..." style="width:100%;font-size:11px;border:1px solid var(--border);padding:2px;background:#fff" oninput="autoResizeTA(this)"></textarea>
 
   </div>
   <!-- 特徴表①② -->
