@@ -1614,7 +1614,7 @@ async function initViewMode() {
   if (!id) { document.body.innerHTML = '<div style="padding:40px;text-align:center">IDが指定されていません</div>'; return; }
 
   const { data, error } = await db.from('character_sheets').select('*').eq('id', id).single();
-  if (error || !data) { document.body.innerHTML = '<div style="padding:40px;text-align:center">データが見つかりません</div>'; return; }
+  if (error || !data) { document.body.innerHTML = '<div style="padding:40px;text-align:center">データが見つかりません: ' + (error?.message||'') + '</div>'; return; }
 
   const sheet = JSON.parse(data.data);
 
@@ -1827,7 +1827,6 @@ function buildChatPalette(c) {
   if (isMa && total > base) {    lines.push(`1D3{DB} 【武道(MA)】ダメージ`);  }
   if (maTotal > maBase && MA_COMBO_KEYS.includes(key) && total > base) {    const comboKey = `ma_${key}`;    if (!comboAlreadyAdded.has(comboKey)) {      comboAlreadyAdded.add(comboKey);      lines.push(`CBRB(${maTotal},${total}) 【武道(MA)】+【${label}】`);      lines.push(`2D6{DB} 【武道(MA)】+【${label}】ダメージ`);    }  }
   if (isGun && total > base) {    const jamNo = getGunJamNo(total);    if (jamNo) {      lines[lines.length - 1] = `CCB(${jamNo})<=${total} 【${label}】`;    }  }});
-  });
 
   lines.push(`CCB<={STR}*5 【STR】`);
   lines.push(`CCB<={CON}*5 【CON】`);
