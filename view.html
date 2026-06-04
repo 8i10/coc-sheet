@@ -1686,8 +1686,8 @@ async function initViewMode() {
   document.querySelectorAll('input, textarea, select').forEach(el => {if (el.closest('#secret_items_wrap')) return;if (el.type === 'checkbox') { el.style.pointerEvents = 'none'; return; }if (el.tagName === 'SELECT') {  el.style.pointerEvents = 'none';  return;}el.setAttribute('readonly', true);el.style.pointerEvents = 'none';el.style.userSelect = 'text';
   });
 
-  // 全てのボタンを非表示（secret_items_wrap内とtoggle系とcoco_btnは残す）
-  document.querySelectorAll('button').forEach(el => {if (el.closest('#secret_items_wrap')) return;if (el.id === 'coco_btn') return;const oc = el.getAttribute('onclick') || '';if (oc.includes('toggle')) return;el.style.display = 'none';
+  // 全てのボタンを非表示（secret_items_wrap内とtoggle系とcoco_btnと一覧ボタンは残す）
+  document.querySelectorAll('button').forEach(el => {if (el.closest('#secret_items_wrap')) return;if (el.id === 'coco_btn') return;if (el.title === '一覧に戻る') return;const oc = el.getAttribute('onclick') || '';if (oc.includes('toggle')) return;el.style.display = 'none';
   });
 
 
