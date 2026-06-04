@@ -1577,15 +1577,15 @@ function addFuteRow(){
   tr.dataset.futeGroup=g;
   tr.innerHTML=`
     <td class="fute-label" style="background:#555 !important;color:#fff !important;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px;white-space:nowrap">内容</td>
-    <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface)"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;padding:0 2px"></td>
+    <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface)"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;padding:0 2px;text-align:left"></td>
     <td class="fute-label" style="background:#555 !important;color:#fff !important;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px;white-space:nowrap">期間</td>
-    <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface)"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;padding:0 2px"></td>
+    <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface)"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;padding:0 2px;text-align:left"></td>
     <td style="width:16px;border:none;text-align:center;vertical-align:middle"><button class="del-btn">✕</button></td>`;
   const tr2=document.createElement('tr');
   tr2.dataset.futeGroup=g;
   tr2.innerHTML=`
     <td class="fute-label" style="background:#555 !important;color:#fff !important;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
-    <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface)"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;padding:0 2px"></td>
+    <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface)"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;padding:0 2px;text-align:left"></td>
     <td style="width:16px;border:none"></td>`;
   tbody.appendChild(tr);
   tbody.appendChild(tr2);
@@ -1596,7 +1596,7 @@ function addFuteRow(){
 
 function addAERow(tbodyId){
   const tbody=document.getElementById(tbodyId);const tr=document.createElement('tr');
-  tr.innerHTML=`<td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:var(--surface);font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:var(--surface);font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="width:16px;border:none;text-align:center;vertical-align:middle"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  tr.innerHTML=`<td style="padding:0 1px"><textarea rows="1" style="width:100%;border:none;background:var(--surface);font-family:inherit;font-size:11px;padding:1px 2px;text-align:left;resize:none;overflow:hidden" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td><td style="padding:0 1px"><textarea rows="1" style="width:100%;border:none;background:var(--surface);font-family:inherit;font-size:11px;padding:1px 2px;text-align:left;resize:none;overflow:hidden" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td><td style="width:16px;border:none;text-align:center;vertical-align:middle"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
   tbody.appendChild(tr);
 }
 
@@ -1789,7 +1789,7 @@ async function initViewMode() {
   }
 
   // 後遺症・AF・呪文
-  if (sheet.ae) {[['kouisho','tbody_kouisho'],['af','tbody_af'],['spell','tbody_spell']].forEach(([key,tbodyId])=>{  const tbody=document.getElementById(tbodyId); if(!tbody||!sheet.ae[key])return;  sheet.ae[key].forEach((vals,i)=>{    const rows=[...tbody.querySelectorAll('tr')];    let tr=rows[i];    if(!tr){addAERow(tbodyId);tr=[...tbody.querySelectorAll('tr')].pop();}    if(!tr)return;    [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});  });});
+  if (sheet.ae) {[['kouisho','tbody_kouisho'],['af','tbody_af'],['spell','tbody_spell']].forEach(([key,tbodyId])=>{  const tbody=document.getElementById(tbodyId); if(!tbody||!sheet.ae[key])return;  sheet.ae[key].forEach((vals,i)=>{    const rows=[...tbody.querySelectorAll('tr')];    let tr=rows[i];    if(!tr){addAERow(tbodyId);tr=[...tbody.querySelectorAll('tr')].pop();}    if(!tr)return;    [...tr.querySelectorAll('textarea')].forEach((ta,j)=>{if(j<vals.length)ta.value=vals[j];});  });});
     // 不定の復元
     if(sheet.ae.fute&&sheet.ae.fute.length){
       const futeBody=document.getElementById('tbody_fute');
