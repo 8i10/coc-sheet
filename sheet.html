@@ -100,11 +100,12 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
   body{padding-top:56px;overflow-x:hidden;padding-bottom:80px}
   .sheet{width:100% !important;padding:4px;box-sizing:border-box;overflow-x:hidden}
 
-  /* ヘッダー全体: 縦2段に */
-  #sticky-header{flex-wrap:wrap !important;padding:4px 8px !important;gap:0 !important;flex-direction:column !important;align-items:stretch !important}
-
-  /* 1段目: sp-row1をflex横並びにしてPC名とアイコンを同行に */
-  #sp-row1{display:flex !important;flex-direction:row;align-items:center;width:100%}
+  /* ヘッダー全体: row+wrapで一覧ボタン+sp-row1が1行目、sp-pts-rowが2行目 */
+  #sticky-header{flex-wrap:wrap !important;padding:4px 8px !important;gap:0 !important;flex-direction:row !important;align-items:center !important}
+  /* 一覧ボタンはそのまま左端 */
+  #sticky-header > button{flex-shrink:0}
+  /* sp-row1はflexで残り幅を占有 */
+  #sp-row1{display:flex !important;flex-direction:row;align-items:center;flex:1;min-width:0}
   #header_left{flex-direction:row !important;align-items:center;flex:1;min-width:0;gap:0;overflow:hidden}
   #sticky-pcname{font-size:14px;max-width:none;flex:1;padding-right:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   /* PC版の区切り線を非表示 */
