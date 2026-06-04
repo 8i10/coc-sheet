@@ -2578,7 +2578,8 @@ function applyData(json){
 let currentCharId = null;
 
 async function saveToStorage() {
-  const data = collectData();
+  let data;
+  try { data = collectData(); } catch(e) { alert('データ収集エラー: ' + e.message + '\n' + e.stack); return; }
   const name = document.getElementById('pcname').value || '名無し';
   try {
     const { data: { user } } = await db.auth.getUser();
