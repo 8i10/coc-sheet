@@ -131,8 +131,9 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
   /* 不定エリアを分離して全幅に */
   #fute_area{width:100% !important;box-sizing:border-box;margin-top:4px}
   #fute_area .fute-table{table-layout:fixed;width:100%}
-  #char_image_ctrl{display:flex !important;width:100% !important}
-  #char_icon_wrap{width:100% !important;min-width:0 !important;height:130px !important;border-right:none !important;border-bottom:1px solid var(--border) !important;align-self:auto !important}
+  #char_image_ctrl{display:none !important}
+  #char_image_ctrl_sp{display:flex !important;flex-direction:column !important;width:100% !important;border-bottom:1px solid var(--border) !important}
+  #char_icon_wrap{width:100% !important;min-width:0 !important;height:130px !important;border-right:none !important;align-self:auto !important;border-bottom:1px solid var(--border) !important}
   /* PC版の追加Pを非表示にして、スマホ用を表示 */
   #add_p_pc{display:none !important}
   #sp_add_p{display:flex !important}
@@ -1069,14 +1070,13 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 </div>
 
-<!-- アイコン画像URL/ズームバー -->
+<!-- アイコン画像URL/ズームバー（PC版） -->
 <div id="char_image_ctrl" style="display:flex;flex-direction:column;gap:3px;padding:3px 10px;border-bottom:1px solid var(--border);background:var(--surface2)">
   <div style="display:flex;align-items:center;gap:6px">
     <span style="font-size:9px;color:var(--text-muted);white-space:nowrap">アイコン画像URL</span>
     <input type="text" id="char_image_url" placeholder="https://www.dropbox.com/..." style="flex:1;font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text)" oninput="previewCharImage(this.value)">
   </div>
   <div style="display:flex;align-items:center;gap:6px">
-    <span style="font-size:9px;color:var(--text-muted);white-space:nowrap">ズーム</span>
     <input type="range" id="char_image_zoom" min="50" max="300" value="130" style="flex:1" oninput="charImageZoomFromSlider(this.value)">
   </div>
 </div>
@@ -1087,8 +1087,12 @@ if (('standalone' in navigator) && navigator.standalone) {
   <div id="char_icon_wrap" style="position:relative;width:70px;min-width:70px;background:var(--surface);border-right:1px solid var(--border);overflow:hidden;flex-shrink:0;cursor:grab;user-select:none;touch-action:none;align-self:stretch" title="ドラッグで位置調整">
     <div id="char_icon_placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted)">画像なし</div>
   </div>
+  <!-- スマホ版URL/ズーム（クロップの直後） -->
+  <div id="char_image_ctrl_sp" style="display:none;flex-direction:column;gap:3px;padding:3px 6px;background:var(--surface2)">
+    <input type="text" id="char_image_url_sp" placeholder="https://www.dropbox.com/..." style="font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text);width:100%" oninput="document.getElementById('char_image_url').value=this.value;previewCharImage(this.value)">
+    <input type="range" id="char_image_zoom_sp" min="50" max="300" value="130" style="width:100%" oninput="document.getElementById('char_image_zoom').value=this.value;charImageZoomFromSlider(this.value)">
+  </div>
   <!-- パーソナルデータ -->
-  <!-- パーソナルデータ本体 -->
   <div style="flex:0 0 calc(40% - 70px);min-width:200px;border-right:1px solid var(--border)" class="personal-data">
     <div class="hdr">パーソナルデータ</div>
     <table>
