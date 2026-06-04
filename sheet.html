@@ -2367,6 +2367,7 @@ function collectData(){
       const body=row.querySelector('textarea')?.value||'';
       rows.push({title,body});
     });
+    console.log('[REL] name=',name,'rows=',rows.length, rows);
     rels.push({name,rows});
   });
 
@@ -2580,8 +2581,6 @@ let currentCharId = null;
 async function saveToStorage() {
   let data;
   try { data = collectData(); } catch(e) { alert('データ収集エラー: ' + e.message + '\n' + e.stack); return; }
-  const parsed = JSON.parse(data);
-  alert('[DEBUG] rels=' + parsed.rels?.length + ' ae.kouisho=' + parsed.ae?.kouisho?.length + ' ae.fute=' + parsed.ae?.fute?.length);
   const name = document.getElementById('pcname').value || '名無し';
   try {
     const { data: { user } } = await db.auth.getUser();
@@ -2600,11 +2599,6 @@ async function saveToStorage() {
         .eq('id', existing.id);
       if(upErr){alert('更新エラー: '+upErr.message);return;}
       currentCharId = existing.id;
-      const parsed = JSON.parse(data);
-      console.log('[SAVE] 更新成功 id=',existing.id);
-      console.log('[SAVE] rels:', parsed.rels?.length, parsed.rels);
-      console.log('[SAVE] ae:', parsed.ae);
-      console.log('[SAVE] skills custom:', parsed.skills?.filter(s=>s.key.startsWith('custom_')));
     } else {
       const { data: inserted, error: insErr } = await db.from('character_sheets')
         .insert({ user_id: user.id, char_name: name, data: data })
