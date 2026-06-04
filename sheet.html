@@ -1234,7 +1234,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <!-- 特徴表① -->
     <div style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--surface)">
       <div style="display:flex;gap:0;border-bottom:1px solid var(--border)">
-        <select id="t1_sel" onchange="showTokucho(1)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0"><option value="">-- 特徴表①を選択 --</option></select>
+        <select id="t1_sel" onchange="showTokucho(1)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0"><option value="">-- 特徴表①を選択 --</option><option value="ng">採用不可</option></select>
         <select id="t1_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0">
           <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
           <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
@@ -1247,7 +1247,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <!-- 特徴表② -->
     <div style="border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--surface)">
       <div style="display:flex;gap:0;border-bottom:1px solid var(--border)">
-        <select id="t2_sel" onchange="showTokucho(2)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0"><option value="">-- 特徴表②を選択 --</option></select>
+        <select id="t2_sel" onchange="showTokucho(2)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0"><option value="">-- 特徴表②を選択 --</option><option value="ng">採用不可</option></select>
         <select id="t2_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0">
           <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
           <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
@@ -1917,6 +1917,7 @@ function populateTokucho(){
 }
 function showTokucho(n){
   const idx=document.getElementById('t'+n+'_sel').value;
+  if(idx==='ng'){document.getElementById('t'+n+'_desc').textContent='（採用不可）';return;}
   const t=idx!==''?tokuchoList[parseInt(idx)]:null;
   document.getElementById('t'+n+'_desc').textContent=t?(t.desc||''):'';
   // Dボーナス自動設定
@@ -2355,13 +2356,26 @@ function collectData(){
     secrets.push({id,title,pass,summary,contents,contentTitles,cats});
   });
 
+  // 人間関係
+  const rels=[];
+  document.querySelectorAll('#rel_groups_wrap .secret-item').forEach(item=>{
+    const name=item.querySelector('.secret-item-header input[type=text]')?.value||'';
+    const rows=[];
+    item.querySelectorAll('.secret-item-body > div[style*="position"]').forEach(row=>{
+      const title=row.querySelector('.memo-title')?.value||'';
+      const body=row.querySelector('textarea')?.value||'';
+      rows.push({title,body});
+    });
+    rels.push({name,rows});
+  });
+
   // アコーディオン状態を保存
   const accState={};
   ['memo_acc','combat_acc','items_acc','scenario_outer','rel_acc','secret_outer','aftereffect_outer'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)accState[id]=el.classList.contains('open');
   });
-  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,hideDefault,accState,ts:Date.now()});
+  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,rels,hideDefault,accState,ts:Date.now()});
 }
 
 function applyData(json){
@@ -2500,6 +2514,27 @@ function applyData(json){
   calcJobPts();
   // アイコン画像復元
   applyCharIconData(data.inputs);
+
+  // 人間関係を復元
+  if(data.rels&&data.rels.length){
+    const wrap=document.getElementById('rel_groups_wrap');
+    wrap.innerHTML='';
+    data.rels.forEach(rel=>{
+      addRelGroup();
+      const item=wrap.lastElementChild;if(!item)return;
+      const hdr=item.querySelector('.secret-item-header input[type=text]');
+      if(hdr)hdr.value=rel.name||'';
+      const body=item.querySelector('.secret-item-body');if(!body)return;
+      const rows=[...body.querySelectorAll('div[style*="position"]')];
+      (rel.rows||[]).forEach((r,i)=>{
+        let row=rows[i];
+        if(!row){addRelSubRow(body.id);row=[...body.querySelectorAll('div[style*="position"]')].pop();}
+        if(!row)return;
+        const ti=row.querySelector('.memo-title');if(ti)ti.value=r.title||'';
+        const ta=row.querySelector('textarea');if(ta){ta.value=r.body||'';autoResizeTA(ta);}
+      });
+    });
+  }
   // 職業特記・特徴表の表示を再描画
   const _jSel=document.getElementById('job_ref_sel');
   if(_jSel&&_jSel.value){
