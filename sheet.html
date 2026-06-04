@@ -2593,16 +2593,20 @@ async function saveToStorage() {
       .single();
 
     if (existing) {
-      await db.from('character_sheets')
+      const {error: upErr} = await db.from('character_sheets')
         .update({ data: data, updated_at: new Date() })
         .eq('id', existing.id);
+      if(upErr){alert('更新エラー: '+upErr.message);return;}
       currentCharId = existing.id;
+      console.log('[SAVE] 更新成功 id=',existing.id);
     } else {
-      const { data: inserted } = await db.from('character_sheets')
+      const { data: inserted, error: insErr } = await db.from('character_sheets')
         .insert({ user_id: user.id, char_name: name, data: data })
         .select('id')
         .single();
+      if(insErr){alert('挿入エラー: '+insErr.message);return;}
       if (inserted) currentCharId = inserted.id;
+      console.log('[SAVE] 新規挿入成功 id=',inserted?.id);
     }
     showSaveMsg();
   } catch(e) {
