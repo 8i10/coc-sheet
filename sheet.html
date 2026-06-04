@@ -1090,40 +1090,25 @@ if (('standalone' in navigator) && navigator.standalone) {
   <div style="width:378px;min-width:378px;border-right:1px solid var(--border)" class="personal-data">
     <div class="hdr">パーソナルデータ</div>
     <table>
-      <colgroup><col style="width:52px"><col style="width:140px"><col style="width:52px"><col style="width:140px"></colgroup>
-      <tr><td class="hdr" style="font-size:9px">ふりがな</td><td colspan="3"><input type="text" id="furigana" style="text-align:center !important"></td></tr>
+      <colgroup><col style="width:44px"><col style="width:82px"><col style="width:44px"><col style="width:82px"><col style="width:44px"><col style="width:82px"></colgroup>
+      <tr><td class="hdr" style="font-size:8px;white-space:nowrap">ふりがな</td><td colspan="5"><input type="text" id="furigana" style="text-align:center !important"></td></tr>
       <tr>
         <td class="hdr" style="vertical-align:middle">PC名</td>
-        <td colspan="3"><input type="text" id="pcname" oninput="updateStickyHeader()" style="font-size:15px;font-weight:bold;height:52px;text-align:center;padding:2px 4px;display:block;width:100%"></td>
+        <td colspan="5"><input type="text" id="pcname" oninput="updateStickyHeader()" style="font-size:15px;font-weight:bold;height:52px;text-align:center;padding:2px 4px;display:block;width:100%"></td>
       </tr>
       <tr>
-        <td class="hdr">文字色</td>
-        <td colspan="3">
+        <td class="hdr" style="font-size:9px">文字色</td>
+        <td colspan="5">
           <div style="display:flex;align-items:center;gap:6px">
             <input type="color" id="txtcolor" value="#000000" oninput="updateColorCode()" style="width:36px;height:16px;border:none;cursor:pointer">
             <span id="color_code" style="font-size:10px;color:var(--text);font-family:Georgia,serif">#000000 / RGB(0,0,0)</span>
           </div>
         </td>
       </tr>
-      <tr><td class="hdr">職業</td><td colspan="3"><input type="text" id="job" style="text-align:left"></td></tr>
-      <tr><td class="hdr">年齢</td><td><input type="text" id="age"></td><td class="hdr">性別</td><td><input type="text" id="gender"></td></tr>
-      <tr><td class="hdr">身長</td><td><input type="text" id="height"></td><td class="hdr">体重</td><td><input type="text" id="weight"></td></tr>
-      <tr><td class="hdr">誕生日</td><td><input type="text" id="birthday"></td><td class="hdr">出身</td><td><input type="text" id="origin"></td></tr>
-      <tr><td class="hdr">髪の色</td><td><input type="text" id="hair"></td><td class="hdr">瞳の色</td><td><input type="text" id="eye"></td></tr>
-      <tr style="height:18px">
-        <td class="hdr">時代</td><td><input type="text" id="era" placeholder=""></td>
-        <td class="hdr">状態</td>
-        <td>
-          <select id="pc_status" style="width:100%">
-            <option value="alive">生存</option>
-            <option value="lost">ロスト</option>
-            <option value="retired">引退</option>
-            <option value="missing">行方不明</option>
-            <option value="dead">継続不可</option>
-            <option value="insane">永久狂気</option>
-          </select>
-        </td>
-      </tr>
+      <tr><td class="hdr" style="font-size:9px">職業</td><td colspan="3"><input type="text" id="job" style="text-align:left"></td><td class="hdr" style="font-size:9px">状態</td><td><select id="pc_status" style="width:100%"><option value="alive">生存</option><option value="lost">ロスト</option><option value="retired">引退</option><option value="missing">行方不明</option><option value="dead">継続不可</option><option value="insane">永久狂気</option></select></td></tr>
+      <tr><td class="hdr" style="font-size:9px">年齢</td><td><input type="text" id="age"></td><td class="hdr" style="font-size:9px">性別</td><td><input type="text" id="gender"></td><td class="hdr" style="font-size:9px">出身</td><td><input type="text" id="origin"></td></tr>
+      <tr><td class="hdr" style="font-size:9px">身長</td><td><input type="text" id="height"></td><td class="hdr" style="font-size:9px">体重</td><td><input type="text" id="weight"></td><td class="hdr" style="font-size:9px">誕生日</td><td><input type="text" id="birthday"></td></tr>
+      <tr><td class="hdr" style="font-size:9px">髪の色</td><td><input type="text" id="hair"></td><td class="hdr" style="font-size:9px">瞳の色</td><td><input type="text" id="eye"></td><td class="hdr" style="font-size:9px">時代</td><td><input type="text" id="era"></td></tr>
     </table>
   </div>
   <div id="row1_stats" style="flex:1;min-width:0">
@@ -1203,35 +1188,6 @@ if (('standalone' in navigator) && navigator.standalone) {
       <span style="font-size:9px;color:var(--text-muted)">追加興味P</span>
       <input type="number" id="int_add_sp" placeholder="0" style="width:40px;font-size:10px;border:1px solid var(--border);padding:0 2px;height:16px;background:var(--surface);color:var(--text);text-align:center" oninput="document.getElementById('int_add').value=this.value;calcJobPts()">
     </div>
-  <div id="fute_area" style="border:1px solid var(--border);margin-top:4px;background:var(--surface2)">
-      <div style="background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
-      <div style="padding:2px 4px">
-      <table class="fute-table" style="width:100%;border-collapse:collapse;margin-bottom:2px">
-        <tr>
-          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">内容</td>
-          <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-          <td class="fute-kikan-hdr" style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;min-width:28px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">期間</td>
-          <td class="fute-kikan-val" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-        </tr>
-        <tr>
-          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
-          <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-        </tr>
-      </table>
-      <table class="fute-table" style="width:100%;border-collapse:collapse">
-        <tr>
-          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">内容</td>
-          <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-          <td class="fute-kikan-hdr" style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;min-width:28px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">期間</td>
-          <td class="fute-kikan-val" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-        </tr>
-        <tr>
-          <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
-          <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-        </tr>
-      </table>
-      </div>
-    </div><!-- /fute_area -->
   </div><!-- /row1_stats -->
 </div><!-- /row1_flex -->
 
@@ -1406,7 +1362,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       </div>
     </div>
     <div class="section">
-      <div class="acc-header" onclick="toggleAcc('aftereffect_outer')"><span>▮ 後遺症・AF・呪文</span><span id="arr_aftereffect_outer">▶</span></div>
+      <div class="acc-header" onclick="toggleAcc('aftereffect_outer')"><span>▮ 後遺症・AF・呪文・不定</span><span id="arr_aftereffect_outer">▶</span></div>
       <div class="acc-body" id="aftereffect_outer">
         <div style="padding:4px">
           <div style="border:1px solid var(--border);border-radius:2px;margin-bottom:4px">
@@ -1439,6 +1395,38 @@ if (('standalone' in navigator) && navigator.standalone) {
               <button class="add-row-btn" onclick="addAERow('tbody_spell')">＋追加</button>
             </div>
           </div>
+          <!-- 不定（後遺症アコーディオン内） -->
+          <div id="fute_area" style="border:1px solid var(--border);border-radius:2px;margin-bottom:4px">
+            <div class="sub2-acc-header" onclick="toggleSub2Acc('fute_inner')"><span>不定</span><span id="arr_fute_inner">▶</span></div>
+            <div class="sub2-acc-body" id="fute_inner">
+              <div style="padding:4px">
+              <table class="fute-table" style="width:100%;border-collapse:collapse;margin-bottom:2px">
+                <tr>
+                  <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">内容</td>
+                  <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+                  <td class="fute-kikan-hdr" style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;min-width:28px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">期間</td>
+                  <td class="fute-kikan-val" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+                </tr>
+                <tr>
+                  <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
+                  <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+                </tr>
+              </table>
+              <table class="fute-table" style="width:100%;border-collapse:collapse">
+                <tr>
+                  <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">内容</td>
+                  <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+                  <td class="fute-kikan-hdr" style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;min-width:28px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">期間</td>
+                  <td class="fute-kikan-val" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+                </tr>
+                <tr>
+                  <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
+                  <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
+                </tr>
+              </table>
+              </div>
+            </div>
+          </div><!-- /fute_area -->
         </div>
       </div>
     </div>
@@ -1832,9 +1820,11 @@ function onJobRefChange(){
   // 職業名を自動入力
   const jobEl=document.getElementById('job');
   if(jobEl&&!jobEl.value)jobEl.value=name;
-  // 技能P計算式を自動選択
+  // 技能P計算式を自動選択（まだ初期値EDU*20のままの場合のみ）
   const fs=document.getElementById('job_formula_sel');
-  for(let i=0;i<fs.options.length;i++){if(fs.options[i].value===j.formula){fs.selectedIndex=i;break;}}
+  if(fs&&fs.value==='EDU*20'){
+    for(let i=0;i<fs.options.length;i++){if(fs.options[i].value===j.formula){fs.selectedIndex=i;break;}}
+  }
   // 選択技能を自動入力
   if(j.skills){
     j.skills.forEach((sk,i)=>{
