@@ -1858,6 +1858,8 @@ async function initViewMode() {
     const relWrap = document.getElementById('rel_groups_wrap');
     relWrap.innerHTML = '';
     sheet.rels.forEach(rel => {
+      const hasContent = rel.name || (rel.rows||[]).some(r=>r.title||r.body);
+      if(!hasContent) return;
       addRelGroup();
       const item = relWrap.lastElementChild; if (!item) return;
       const hdr = item.querySelector('.secret-item-header input[type=text]');

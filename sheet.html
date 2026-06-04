@@ -2367,8 +2367,9 @@ function collectData(){
       const body=row.querySelector('textarea')?.value||'';
       rows.push({title,body});
     });
-    console.log('[REL] name=',name,'rows=',rows.length, rows);
-    rels.push({name,rows});
+    // 名前も行の内容も全て空のグループは保存しない
+    const hasContent = name || rows.some(r=>r.title||r.body);
+    if(hasContent) rels.push({name,rows});
   });
 
   // アコーディオン状態を保存
@@ -2524,6 +2525,9 @@ function applyData(json){
     const wrap=document.getElementById('rel_groups_wrap');
     wrap.innerHTML='';
     data.rels.forEach(rel=>{
+      // 内容のあるグループのみ復元
+      const hasContent = rel.name || (rel.rows||[]).some(r=>r.title||r.body);
+      if(!hasContent) return;
       addRelGroup();
       const item=wrap.lastElementChild;if(!item)return;
       const hdr=item.querySelector('.secret-item-header input[type=text]');
@@ -2538,6 +2542,8 @@ function applyData(json){
         const ta=row.querySelector('textarea');if(ta){ta.value=r.body||'';autoResizeTA(ta);}
       });
     });
+    // 復元後にグループが0の場合は初期グループを1つ追加
+    if(wrap.children.length===0) addRelGroup();
   }
   // 職業特記・特徴表の表示を再描画
   const _jSel=document.getElementById('job_ref_sel');
