@@ -1119,7 +1119,7 @@ if (('standalone' in navigator) && navigator.standalone) {
           <th style="width:62px;vertical-align:bottom"><div style="font-size:9px;color:#ccc;font-weight:normal" id="stat_total_disp">0</div></th>
           <th style="font-size:10px">STR</th><th style="font-size:10px">CON</th><th style="font-size:10px">POW</th><th style="font-size:10px">DEX</th><th style="font-size:10px">APP</th><th style="font-size:10px">SIZ</th><th style="font-size:10px">INT</th><th style="font-size:10px">EDU</th>
           <th style="width:36px;font-size:10px">HP</th><th style="width:36px;font-size:10px">MP</th>
-          <th style="width:36px;font-size:8px;white-space:nowrap">初期SAN</th><th style="width:36px;font-size:8px;white-space:nowrap">アイデア</th>
+          <th style="width:36px;font-size:7px;white-space:nowrap;line-height:1.1">初期SAN</th><th style="width:36px;font-size:7px;white-space:nowrap;line-height:1.1">アイデア</th>
           <th style="width:36px;font-size:8px;white-space:nowrap">幸運</th><th style="width:36px;font-size:8px;white-space:nowrap">知識</th>
         </tr>
       </thead>
@@ -1400,30 +1400,11 @@ if (('standalone' in navigator) && navigator.standalone) {
             <div class="sub2-acc-header" onclick="toggleSub2Acc('fute_inner')"><span>不定</span><span id="arr_fute_inner">▶</span></div>
             <div class="sub2-acc-body" id="fute_inner">
               <div style="padding:4px">
-              <table class="fute-table" style="width:100%;border-collapse:collapse;margin-bottom:2px">
-                <tr>
-                  <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">内容</td>
-                  <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-                  <td class="fute-kikan-hdr" style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;min-width:28px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">期間</td>
-                  <td class="fute-kikan-val" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-                </tr>
-                <tr>
-                  <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
-                  <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-                </tr>
-              </table>
-              <table class="fute-table" style="width:100%;border-collapse:collapse">
-                <tr>
-                  <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">内容</td>
-                  <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-                  <td class="fute-kikan-hdr" style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;width:36px;min-width:28px;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">期間</td>
-                  <td class="fute-kikan-val" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-                </tr>
-                <tr>
-                  <td style="background:var(--hdr-bg);color:var(--hdr-text);white-space:nowrap;text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
-                  <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface);"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;text-align:left;padding:0 2px"></td>
-                </tr>
-              </table>
+                <table style="width:100%;border-collapse:collapse;table-layout:fixed">
+                  <colgroup><col style="width:36px"><col><col style="width:36px"><col style="width:80px"><col style="width:16px"></colgroup>
+                  <tbody id="tbody_fute"></tbody>
+                </table>
+                <button class="add-row-btn" onclick="addFuteRow()">＋追加</button>
               </div>
             </div>
           </div><!-- /fute_area -->
@@ -2046,6 +2027,30 @@ function addRelSubRow(bodyId){
   body.insertBefore(w,addBtn);
 }
 
+function addFuteRow(){
+  const tbody=document.getElementById('tbody_fute');
+  const g=String(Date.now());
+  const tr=document.createElement('tr');
+  tr.dataset.futeGroup=g;
+  tr.innerHTML=`
+    <td style="background:var(--surface2);color:var(--text);text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px;white-space:nowrap">内容</td>
+    <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface)"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;padding:0 2px"></td>
+    <td style="background:var(--surface2);color:var(--text);text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px;white-space:nowrap">期間</td>
+    <td style="border:1px solid var(--border);padding:1px 2px;background:var(--surface)"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;padding:0 2px"></td>
+    <td style="width:16px;border:none;text-align:center;vertical-align:middle"><button class="del-btn">✕</button></td>`;
+  const tr2=document.createElement('tr');
+  tr2.dataset.futeGroup=g;
+  tr2.innerHTML=`
+    <td style="background:var(--surface2);color:var(--text);text-align:center;font-size:10px;border:1px solid var(--border);padding:1px 2px">詳細</td>
+    <td colspan="3" style="border:1px solid var(--border);padding:1px 2px;background:var(--surface)"><input type="text" style="background:var(--surface);border:none;outline:none;width:100%;font-size:11px;padding:0 2px"></td>
+    <td style="width:16px;border:none"></td>`;
+  tbody.appendChild(tr);
+  tbody.appendChild(tr2);
+  tr.querySelector('.del-btn').onclick=function(){
+    document.querySelectorAll(`#tbody_fute tr[data-fute-group="${g}"]`).forEach(r=>r.remove());
+  };
+}
+
 function addAERow(tbodyId){
   const tbody=document.getElementById(tbodyId);const tr=document.createElement('tr');
   tr.innerHTML=`<td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:var(--surface);font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="padding:0 1px"><textarea class="auto-h" style="width:100%;border:none;background:var(--surface);font-family:inherit;font-size:11px;padding:1px 2px;text-align:left" oninput="autoResizeTA(this)"></textarea></td><td style="width:16px;border:none;text-align:center;vertical-align:middle"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
@@ -2304,10 +2309,21 @@ function collectData(){
   document.querySelectorAll('#scenario_rows textarea').forEach(ta=>scenarios.push(ta.value));
 
   // 後遺症・AF・呪文
-  const ae={kouisho:[],af:[],spell:[]};
+  const ae={kouisho:[],af:[],spell:[],fute:[]};
   document.querySelectorAll('#tbody_kouisho tr').forEach(tr=>{const inps=[...tr.querySelectorAll('input')].map(i=>i.value);if(inps.some(v=>v))ae.kouisho.push(inps);});
   document.querySelectorAll('#tbody_af tr').forEach(tr=>{const inps=[...tr.querySelectorAll('input')].map(i=>i.value);if(inps.some(v=>v))ae.af.push(inps);});
   document.querySelectorAll('#tbody_spell tr').forEach(tr=>{const inps=[...tr.querySelectorAll('input')].map(i=>i.value);if(inps.some(v=>v))ae.spell.push(inps);});
+  // 不定：2行1グループでまとめる
+  const futeGroups={};
+  document.querySelectorAll('#tbody_fute tr').forEach(tr=>{
+    const g=tr.dataset.futeGroup||'';
+    if(!futeGroups[g])futeGroups[g]=[];
+    futeGroups[g].push([...tr.querySelectorAll('input')].map(i=>i.value));
+  });
+  Object.values(futeGroups).forEach(rows=>{
+    const vals=[...(rows[0]||['']), ...(rows[1]||[''])];
+    if(vals.some(v=>v))ae.fute.push(vals);
+  });
 
   // ネタバレ管理
   const secrets=[];
@@ -2414,6 +2430,18 @@ function applyData(json){
         [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
       });
     });
+    // 不定の復元
+    if(data.ae.fute&&data.ae.fute.length){
+      data.ae.fute.forEach(vals=>{
+        addFuteRow();
+        const tbody=document.getElementById('tbody_fute');
+        const allRows=[...tbody.querySelectorAll('tr')];
+        const tr1=allRows[allRows.length-2];
+        const tr2=allRows[allRows.length-1];
+        if(tr1)[...tr1.querySelectorAll('input')].forEach((inp,j)=>{if(vals[j]!==undefined)inp.value=vals[j];});
+        if(tr2)[...tr2.querySelectorAll('input')].forEach((inp,j)=>{if(vals[j+2]!==undefined)inp.value=vals[j+2];});
+      });
+    }
   }
 
   // ネタバレ管理
@@ -3692,7 +3720,7 @@ function parseSpreadsheetHTML(html){
 // 初期化
 populateJobs();populateTokucho();buildSkillTables();initWeaponRows();initItemRows();
   setTimeout(autoResizeAll,200);
-addSecretItem('','1234');addRelGroup();addAERow('tbody_kouisho');addAERow('tbody_af');addAERow('tbody_spell');
+addSecretItem('','1234');addRelGroup();addAERow('tbody_kouisho');addAERow('tbody_af');addAERow('tbody_spell');addFuteRow();
 
 // ページリロード時・一覧からの遷移時にデータを保持
 const SHEET_KEY = 'coc_sheet_draft';
