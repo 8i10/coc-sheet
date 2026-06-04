@@ -1809,6 +1809,7 @@ async function initViewMode() {
   }
 
   // 所持品復元
+  console.log('[VIEW] items:', sheet.items?.length, 'memos:', sheet.memos?.length);
   if (sheet.items && sheet.items.length) {
     const tbody = document.getElementById('item_rows');
     tbody.innerHTML = '';

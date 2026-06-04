@@ -2443,7 +2443,7 @@ function applyData(json){
     data.items.forEach((vals,i)=>{
       let tr=rows[i];
       if(!tr){tr=makeItemTr();tbody.appendChild(tr);}
-      [...tr.querySelectorAll('textarea')].forEach((ta,j)=>{if(j<vals.length)ta.value=vals[j];});
+      [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
     });
   }
 
