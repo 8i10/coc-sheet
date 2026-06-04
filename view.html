@@ -1773,6 +1773,8 @@ async function initViewMode() {
       else el.value = val;
     });
     if (typeof updateColorCode === 'function') updateColorCode();
+    // 特徴表の説明文を更新
+    if (typeof showTokucho === 'function') { showTokucho(1); showTokucho(2); }
   }
 
   // 技能復元（カスタム含む）
