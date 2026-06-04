@@ -1736,6 +1736,7 @@ function showSaveMsg(){const el=document.getElementById('save_msg');el.style.dis
 
 // 閲覧モード初期化
 async function initViewMode() {
+  try {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
   if (!id) { document.body.innerHTML = '<div style="padding:40px;text-align:center">IDが指定されていません</div>'; return; }
@@ -1803,9 +1804,11 @@ async function initViewMode() {
 
   // メモ復元
   if (sheet.memos && sheet.memos.length) {
-    const wrap = document.getElementById('memo_rows'); wrap.innerHTML = '';
+    const wrap = document.getElementById('memo_rows');
+    // 初期の1ブロックをクリア
+    wrap.innerHTML = '';
     sheet.memos.forEach(m => {
-      addMemoBlock();
+      addMemoRow();
       const blk = wrap.lastElementChild; if (!blk) return;
       const ti = blk.querySelector('.memo-title'); if (ti) ti.value = m.t||'';
       const ta = blk.querySelector('.memo-body'); if (ta) { ta.value = m.b||''; autoResizeTA(ta); }
@@ -1967,6 +1970,10 @@ async function initViewMode() {
 
   // ?coco=1 自動起動
   if (new URLSearchParams(window.location.search).get('coco') === '1') setTimeout(openCocofoliaCopyDialog, 500);
+  } catch(e) {
+    alert('表示エラー: ' + e.message + '\n行: ' + e.stack?.split('\n')[1]);
+    console.error(e);
+  }
 }
 
 function unlockViewSecret(btn) {
