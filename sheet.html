@@ -131,8 +131,8 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
   /* 不定エリアを分離して全幅に */
   #fute_area{width:100% !important;box-sizing:border-box;margin-top:4px}
   #fute_area .fute-table{table-layout:fixed;width:100%}
-  #char_image_ctrl{display:none !important}
-  #char_icon_wrap{width:50px !important;min-width:50px !important}
+  #char_image_ctrl{display:flex !important;width:100% !important}
+  #char_icon_wrap{width:100% !important;min-width:0 !important;height:130px !important;border-right:none !important;border-bottom:1px solid var(--border) !important;align-self:auto !important}
   /* PC版の追加Pを非表示にして、スマホ用を表示 */
   #add_p_pc{display:none !important}
   #sp_add_p{display:flex !important}
@@ -1069,7 +1069,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 </div>
 
-<!-- アイコン画像設定バー -->
+<!-- アイコン画像URL/ズームバー -->
 <div id="char_image_ctrl" style="display:flex;flex-direction:column;gap:3px;padding:3px 10px;border-bottom:1px solid var(--border);background:var(--surface2)">
   <div style="display:flex;align-items:center;gap:6px">
     <span style="font-size:9px;color:var(--text-muted);white-space:nowrap">アイコン画像URL</span>
@@ -1088,7 +1088,8 @@ if (('standalone' in navigator) && navigator.standalone) {
     <div id="char_icon_placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted)">画像なし</div>
   </div>
   <!-- パーソナルデータ -->
-  <div style="width:378px;min-width:378px;border-right:1px solid var(--border)" class="personal-data">
+  <!-- パーソナルデータ本体 -->
+  <div style="flex:0 0 calc(40% - 70px);min-width:200px;border-right:1px solid var(--border)" class="personal-data">
     <div class="hdr">パーソナルデータ</div>
     <table>
       <colgroup><col style="width:44px"><col style="width:82px"><col style="width:44px"><col style="width:82px"><col style="width:44px"><col style="width:82px"></colgroup>
@@ -1112,7 +1113,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       <tr><td class="hdr" style="font-size:9px">髪の色</td><td><input type="text" id="hair"></td><td class="hdr" style="font-size:9px">瞳の色</td><td><input type="text" id="eye"></td><td class="hdr" style="font-size:9px">時代</td><td><input type="text" id="era"></td></tr>
     </table>
   </div>
-  <div id="row1_stats" style="flex:1;min-width:0;display:flex;flex-direction:column">
+  <div id="row1_stats" style="flex:0 0 60%;min-width:0;display:flex;flex-direction:column">
   <div id="stats_scroll" style="overflow-x:auto">
     <table>
       <thead>
@@ -1201,7 +1202,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 <div class="section" id="sec_row2">
 <div id="row2_flex" style="display:flex">
   <!-- 職業特記 378px固定 -->
-  <div id="row2_job" style="width:448px;min-width:448px;border-right:1px solid var(--border);padding:3px">
+  <div id="row2_job" style="flex:0 0 40%;min-width:0;border-right:1px solid var(--border);padding:3px">
     <div class="hdr" style="margin-bottom:4px">職業特記</div>
     <!-- 職業選択 6.5 : 計算式 3.5 -->
     <div style="display:flex;gap:0;margin-bottom:4px;border:1px solid var(--border);border-radius:3px;overflow:hidden">
@@ -1227,7 +1228,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 
   </div>
   <!-- 特徴表①② -->
-  <div id="row2_tokucho" style="flex:1;padding:3px">
+  <div id="row2_tokucho" style="flex:0 0 60%;min-width:0;padding:3px">
     <div class="hdr" style="margin-bottom:4px;background:var(--hdr-bg);color:var(--hdr-text)">特徴表</div>
 
     <!-- 特徴表① -->
@@ -1262,7 +1263,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 <!-- ===== メイン ===== -->
 <div id="main_flex" style="display:flex;gap:5px;align-items:flex-start">
   <!-- 技能列 -->
-  <div id="skill_col" style="flex:0 0 370px;width:370px">
+  <div id="skill_col" style="flex:0 0 40%;min-width:0">
     <div style="display:flex;align-items:center;gap:6px;padding:2px 6px;background:var(--hdr-bg);color:var(--hdr-text);margin-bottom:2px;border-radius:2px">
       <span style="font-size:11px;font-weight:bold;flex:1">技能表</span>
       <button onclick="toggleAllDefault()" id="tog_all" style="font-size:10px;padding:1px 8px;background:#ccc;border:1px solid var(--border);border-radius:2px;cursor:pointer">初期値を隠す</button>
@@ -2091,7 +2092,7 @@ function addSecretItem(title,pass){
       </div>
       <div class="secret-pass-row">
         <span style="font-size:10px;color:#666">PASS:</span>
-        <input type="password" id="pass_${id}" placeholder="パスワード" style="border:1px solid var(--border);width:100px;font-size:11px;padding:1px 4px;text-align:left">
+        <input type="password" id="pass_${id}" placeholder="パスワード" style="border:1px solid var(--border);width:100px;font-size:11px;padding:1px 4px;text-align:left" onkeydown="if(event.key==='Enter')unlockSecretItem('${id}')">
         <button onclick="unlockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid var(--border);background:#eee">解除</button>
         <button onclick="lockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:none;background:#e05555;color:#fff;margin-left:4px">🔒</button>
         <span style="font-size:10px;color:#888;margin-left:4px">変更後PASS:</span>
@@ -2340,10 +2341,14 @@ function collectData(){
     const pass=wrap.dataset.pass||'1234';
     const summary=wrap.querySelector('#body_'+id+' input[type=text]')?.value||'';
     const contents=[];
-    wrap.querySelectorAll('#content_'+id+' textarea').forEach(ta=>contents.push(ta.value));
+    const contentTitles=[];
+    wrap.querySelectorAll('#content_'+id+' > div, #content_'+id+' textarea').forEach(el=>{
+      if(el.tagName==='TEXTAREA'){contents.push(el.value);}
+    });
+    wrap.querySelectorAll('#content_'+id+' .memo-title').forEach(inp=>contentTitles.push(inp.value));
     const cats=[];
     wrap.querySelectorAll('#content_'+id+' select').forEach(sel=>cats.push(sel.value));
-    secrets.push({id,title,pass,summary,contents,cats});
+    secrets.push({id,title,pass,summary,contents,contentTitles,cats});
   });
 
   // アコーディオン状態を保存
