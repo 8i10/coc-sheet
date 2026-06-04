@@ -1422,7 +1422,7 @@ function onJobRefChange(){
   if(!j){tx('job_tokki','職業参照を選択してください');calcJobPts();return;}
   tx('job_tokki',j.tokki);
   const fs=document.getElementById('job_formula_sel');
-  for(let i=0;i<fs.options.length;i++){if(fs.options[i].value===j.formula){fs.selectedIndex=i;break;}}
+  if(fs&&fs.value==='EDU*20'){for(let i=0;i<fs.options.length;i++){if(fs.options[i].value===j.formula){fs.selectedIndex=i;break;}}}
   calcJobPts();
 }
 function calcJobPts(){
