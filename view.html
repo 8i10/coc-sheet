@@ -81,6 +81,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid var(--border);width
 /* FIX1: 技能初期値トグル対象は skill-default-row のみ */
 .skill-table tbody tr.skill-default-row.hidden{display:none}
 .item-input{height:22px;line-height:22px;border:none;outline:none;background:var(--surface);width:100%;font-size:11px;font-family:inherit;padding:0 2px;text-align:left !important}
+.item-input[type=number]{text-align:center !important}
 /* FIX2: うちよそグループ header */
 .relg-header{background:#666;color:#fff;padding:2px 5px;font-size:11px;display:flex;align-items:center;gap:4px;user-select:none;margin-bottom:1px}
 .relg-header:hover{background:#555}
@@ -1821,15 +1822,15 @@ async function initViewMode() {
   }
 
   // メモ復元
+  console.log('[VIEW] items:', sheet.items?.length, 'memos:', sheet.memos?.length);
   if (sheet.memos && sheet.memos.length) {
     const wrap = document.getElementById('memo_rows');
-    // 初期の1ブロックをクリア
     wrap.innerHTML = '';
     sheet.memos.forEach(m => {
       addMemoRow();
       const blk = wrap.lastElementChild; if (!blk) return;
-      const ti = blk.querySelector('.memo-title'); if (ti) ti.value = m.t||'';
-      const ta = blk.querySelector('.memo-body'); if (ta) { ta.value = m.b||''; autoResizeTA(ta); }
+      const ti = blk.querySelector('.memo-title'); if (ti) ti.value = m.title||m.t||'';
+      const ta = blk.querySelector('.memo-body'); if (ta) { ta.value = m.body||m.b||''; autoResizeTA(ta); }
     });
   }
 
