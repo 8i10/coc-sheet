@@ -2116,7 +2116,8 @@ function toggleSecretItem(id){
 }
 function unlockSecretItem(id){
   const inp=document.getElementById('pass_'+id).value;const wrap=document.getElementById(id);
-  if(inp===wrap.dataset.pass){document.getElementById('content_'+id).style.display='block';document.getElementById('pass_'+id).value='';}
+  const pass=wrap.dataset.pass||'';
+  if(pass===''||inp===pass){document.getElementById('content_'+id).style.display='block';document.getElementById('pass_'+id).value='';}
   else alert('パスワードが違います');
 }
 function lockSecretItem(id){document.getElementById('content_'+id).style.display='none';document.getElementById('pass_'+id).value='';}
@@ -2468,17 +2469,19 @@ function applyData(json){
   if(data.ae){
     [['kouisho','tbody_kouisho'],['af','tbody_af'],['spell','tbody_spell']].forEach(([key,tbodyId])=>{
       const tbody=document.getElementById(tbodyId);
-      if(!tbody||!data.ae[key])return;
-      const rows=[...tbody.querySelectorAll('tr')];
-      data.ae[key].forEach((vals,i)=>{
-        let tr=rows[i];
-        if(!tr&&typeof addAERow==='function'){addAERow(tbodyId);tr=[...tbody.querySelectorAll('tr')].pop();}
+      if(!tbody||!data.ae[key]||!data.ae[key].length)return;
+      tbody.innerHTML='';
+      data.ae[key].forEach(vals=>{
+        addAERow(tbodyId);
+        const tr=[...tbody.querySelectorAll('tr')].pop();
         if(!tr)return;
         [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
       });
     });
     // 不定の復元
     if(data.ae.fute&&data.ae.fute.length){
+      const futeBody=document.getElementById('tbody_fute');
+      if(futeBody)futeBody.innerHTML='';
       data.ae.fute.forEach(vals=>{
         addFuteRow();
         const tbody=document.getElementById('tbody_fute');
@@ -3788,7 +3791,7 @@ function parseSpreadsheetHTML(html){
 // 初期化
 populateJobs();populateTokucho();buildSkillTables();initWeaponRows();initItemRows();
   setTimeout(autoResizeAll,200);
-addSecretItem('','1234');addRelGroup();addAERow('tbody_kouisho');addAERow('tbody_af');addAERow('tbody_spell');addFuteRow();
+addSecretItem('','');addRelGroup();addAERow('tbody_kouisho');addAERow('tbody_af');addAERow('tbody_spell');addFuteRow();
 
 // ページリロード時・一覧からの遷移時にデータを保持
 const SHEET_KEY = 'coc_sheet_draft';

@@ -1627,7 +1627,8 @@ function toggleSecretItem(id){
 }
 function unlockSecretItem(id){
   const inp=document.getElementById('pass_'+id).value;const wrap=document.getElementById(id);
-  if(inp===wrap.dataset.pass){document.getElementById('content_'+id).style.display='block';document.getElementById('pass_'+id).value='';}
+  const pass=wrap.dataset.pass||'';
+  if(pass===''||inp===pass){document.getElementById('content_'+id).style.display='block';document.getElementById('pass_'+id).value='';}
   else alert('パスワードが違います');
 }
 function lockSecretItem(id){document.getElementById('content_'+id).style.display='none';document.getElementById('pass_'+id).value='';}
@@ -1789,6 +1790,21 @@ async function initViewMode() {
 
   // 後遺症・AF・呪文
   if (sheet.ae) {[['kouisho','tbody_kouisho'],['af','tbody_af'],['spell','tbody_spell']].forEach(([key,tbodyId])=>{  const tbody=document.getElementById(tbodyId); if(!tbody||!sheet.ae[key])return;  sheet.ae[key].forEach((vals,i)=>{    const rows=[...tbody.querySelectorAll('tr')];    let tr=rows[i];    if(!tr){addAERow(tbodyId);tr=[...tbody.querySelectorAll('tr')].pop();}    if(!tr)return;    [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});  });});
+    // 不定の復元
+    if(sheet.ae.fute&&sheet.ae.fute.length){
+      const futeBody=document.getElementById('tbody_fute');
+      if(futeBody){futeBody.innerHTML='';}
+      sheet.ae.fute.forEach(vals=>{
+        addFuteRow();
+        const tbody=document.getElementById('tbody_fute');
+        const allRows=[...tbody.querySelectorAll('tr')];
+        const tr1=allRows[allRows.length-2];
+        const tr2=allRows[allRows.length-1];
+        if(tr1)[...tr1.querySelectorAll('input')].forEach((inp,j)=>{if(vals[j]!==undefined)inp.value=vals[j];});
+        if(tr2)[...tr2.querySelectorAll('input')].forEach((inp,j)=>{if(vals[j+2]!==undefined)inp.value=vals[j+2];});
+      });
+    }
+  }
   }
 
   // 特徴表・職業特記の表示
@@ -1915,8 +1931,14 @@ function unlockViewSecret(btn) {
   }
 
   // 解除ボタンを押した場合
-  if (passInp && passInp.value) {if (passInp.value === item.dataset.pass) {  content.style.display = 'block';  passInp.value = '';} else {  alert('パスワードが違います');}return;
+  const storedPass = item.dataset.pass || '';
+  if (storedPass === '' || (passInp && passInp.value === storedPass)) {
+    content.style.display = 'block';
+    if (passInp) passInp.value = '';
+    return;
   }
+  if (passInp && passInp.value !== storedPass) { alert('パスワードが違います'); return; }
+  if (!passInp || !passInp.value) { alert('パスワードを入力してください'); return; }
 
   // 閉じる
   body.style.display = 'none';
@@ -1926,7 +1948,7 @@ function unlockViewSecret(btn) {
 // 通常の初期化を上書き
 populateJobs(); populateTokucho(); buildSkillTables(); initWeaponRows(); initItemRows();
 setTimeout(autoResizeAll,200);
-addSecretItem('', '1234'); addRelGroup(); addAERow('tbody_kouisho'); addAERow('tbody_af'); addAERow('tbody_spell'); addFuteRow();
+addSecretItem('', ''); addRelGroup(); addAERow('tbody_kouisho'); addAERow('tbody_af'); addAERow('tbody_spell'); addFuteRow();
 initViewMode();
 
 
