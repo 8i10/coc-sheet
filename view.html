@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CoC6 閲覧">
 <meta name="mobile-web-app-capable" content="yes">
@@ -992,6 +993,13 @@ if (('standalone' in navigator) && navigator.standalone) {
 <div class="sheet">
 <div style="display:none"><div id="save_msg"></div></div>
 
+<!-- アイコン画像表示バー -->
+<div id="back-bar" style="padding:4px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--surface2)">
+  <div id="char_icon_wrap" style="position:relative;width:60px;height:60px;background:var(--surface);border:1px solid var(--border);overflow:hidden;flex-shrink:0">
+    <div id="char_icon_placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted)">画像なし</div>
+  </div>
+</div>
+
 <!-- ===== 行1 ===== -->
 <div class="section" id="sec_row1">
 <div id="row1_flex" style="display:flex">
@@ -1468,7 +1476,7 @@ function addRelGroup(){
   const wrap=document.createElement('div');
   wrap.className='secret-item';
 
-  wrap.innerHTML=`<div class="secret-item-header">  <input type="text" placeholder="うちよそ・関係名"    style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;flex:1;text-align:left">  <button onclick="toggleRelGroup('${id}')"    style="font-size:10px;padding:0 5px;background:#666;border:none;color:#fff;cursor:pointer;border-radius:2px">▶ 開く</button>  <button onclick="this.closest('.secret-item').remove()"    class="del-btn" style="margin-left:4px">✕</button></div><div class="secret-item-body" id="${id}">  <div style="position:relative;margin:4px">    <textarea style="width:100%;height:60px"></textarea>    <button class="del-btn" onclick="delRow(this)"      style="position:absolute;top:2px;right:2px">✕</button>  </div>  <button class="add-row-btn" style="margin:0 4px 4px"    onclick="addRelSubRow('${id}')">＋追加</button></div>`;
+  wrap.innerHTML=`<div class="secret-item-header">  <input type="text" placeholder="うちよそ・関係名"    style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;flex:1;text-align:left">  <button onclick="toggleRelGroup('${id}')"    style="font-size:10px;padding:0 5px;background:#666;border:none;color:#fff;cursor:pointer;border-radius:2px">▶ 開く</button>  <button onclick="this.closest('.secret-item').remove()"    class="del-btn" style="margin-left:4px">✕</button></div><div class="secret-item-body" id="${id}">  <div style="position:relative;margin:4px">    <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">    <textarea class="auto-h" style="width:100%" oninput="autoResizeTA(this)"></textarea>    <button class="del-btn" onclick="delRow(this)"      style="position:absolute;top:2px;right:2px">✕</button>  </div>  <button class="add-row-btn" style="margin:0 4px 4px"    onclick="addRelSubRow('${id}')">＋追加</button></div>`;
 
   document.getElementById('rel_groups_wrap').appendChild(wrap);
 }
@@ -1482,7 +1490,7 @@ function toggleRelGroup(id) {
 function addRelSubRow(bodyId){
   const body=document.getElementById(bodyId);const addBtn=body.querySelector('.add-row-btn');
   const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:3px';
-  w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="関係・経緯など" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h" style="width:100%" placeholder="関係・経緯など" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   body.insertBefore(w,addBtn);
 }
 
@@ -1508,7 +1516,7 @@ let secretCounter=0;
 function addSecretItem(title,pass){
   const id='si_'+secretCounter++;
   const wrap=document.createElement('div');wrap.className='secret-item';wrap.id=id;
-  wrap.innerHTML=`<div class="secret-item-header">  <input type="text" value="${title||''}" placeholder="ネタバレタイトル" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;flex:1;text-align:left">  <button onclick="toggleSecretItem('${id}')" style="font-size:10px;padding:0 5px;background:#666;border:none;color:#fff;cursor:pointer;border-radius:2px" id="arr_${id}">▶ 開く</button>  <button onclick="document.getElementById('${id}').remove()" class="del-btn" style="margin-left:4px">✕</button></div><div class="secret-item-body" id="body_${id}">  <div style="padding:3px 6px;background:var(--surface2);border-bottom:1px solid var(--border)">    <input type="text" placeholder="何のネタバレか（概要）" style="border:1px solid var(--border);width:100%;font-size:11px;padding:2px 4px;text-align:left;background:#fff">  </div>  <div class="secret-pass-row">    <span style="font-size:10px;color:#666">PASS:</span>    <input type="password" id="pass_${id}" placeholder="パスワード" style="border:1px solid var(--border);width:100px;font-size:11px;padding:1px 4px;text-align:left">    <button onclick="unlockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid var(--border);background:#eee">解除</button>    <button onclick="lockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:none;background:#e05555;color:#fff;margin-left:4px">🔒</button>    <span style="font-size:10px;color:#888;margin-left:4px">変更後PASS:</span>    <input type="password" id="newpass_${id}" placeholder="新PASS" style="border:1px solid var(--border);width:80px;font-size:11px;padding:1px 4px;text-align:left">    <button onclick="changeSecretPass('${id}')" style="font-size:11px;padding:1px 6px;cursor:pointer;border:1px solid var(--border);background:#eee">変更</button>  </div>  <div id="content_${id}" style="display:none;padding:4px">    <select style="width:120px;margin-bottom:4px"><option>閲覧注意</option><option>秘匿</option><option>エンド</option><option>AF・後遺症等</option><option>他</option></select>    <textarea style="width:100%;height:70px" placeholder="KP秘匿情報・後遺症など"></textarea>    <button class="add-row-btn" onclick="addSecretContentRow('content_${id}')">＋欄追加</button>  </div></div>`;
+  wrap.innerHTML=`<div class="secret-item-header">  <input type="text" value="${title||''}" placeholder="ネタバレタイトル" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;flex:1;text-align:left">  <button onclick="toggleSecretItem('${id}')" style="font-size:10px;padding:0 5px;background:#666;border:none;color:#fff;cursor:pointer;border-radius:2px" id="arr_${id}">▶ 開く</button>  <button onclick="document.getElementById('${id}').remove()" class="del-btn" style="margin-left:4px">✕</button></div><div class="secret-item-body" id="body_${id}">  <div style="padding:3px 6px;background:var(--surface2);border-bottom:1px solid var(--border)">    <input type="text" placeholder="何のネタバレか（概要）" style="border:1px solid var(--border);width:100%;font-size:11px;padding:2px 4px;text-align:left;background:#fff">  </div>  <div class="secret-pass-row">    <span style="font-size:10px;color:#666">PASS:</span>    <input type="password" id="pass_${id}" placeholder="パスワード" style="border:1px solid var(--border);width:100px;font-size:11px;padding:1px 4px;text-align:left">    <button onclick="unlockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid var(--border);background:#eee">解除</button>    <button onclick="lockSecretItem('${id}')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:none;background:#e05555;color:#fff;margin-left:4px">🔒</button>    <span style="font-size:10px;color:#888;margin-left:4px">変更後PASS:</span>    <input type="password" id="newpass_${id}" placeholder="新PASS" style="border:1px solid var(--border);width:80px;font-size:11px;padding:1px 4px;text-align:left">    <button onclick="changeSecretPass('${id}')" style="font-size:11px;padding:1px 6px;cursor:pointer;border:1px solid var(--border);background:#eee">変更</button>  </div>  <div id="content_${id}" style="display:none;padding:4px">    <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">    <textarea class="auto-h" style="width:100%" placeholder="KP秘匿情報・後遺症など" oninput="autoResizeTA(this)"></textarea>    <button class="add-row-btn" onclick="addSecretContentRow('content_${id}')">＋追加</button>  </div></div>`;
   wrap.dataset.pass=pass||'1234';
   document.getElementById('secret_items_wrap').appendChild(wrap);
 }
@@ -1671,6 +1679,23 @@ async function initViewMode() {
   }
   // カラーコード更新
   if(typeof updateColorCode==='function') updateColorCode();
+
+  // アイコン画像を表示（view専用：クロップなし・object-positionで表示）
+  const charImage = sheet.inputs?.charImage || '';
+  const charImagePos = sheet.inputs?.charImagePos || '50% 30%';
+  const charImageScale = sheet.inputs?.charImageScale || 1.3;
+  const iconWrap = document.getElementById('char_icon_wrap');
+  if (iconWrap) {
+    if (charImage) {
+      const fixedUrl = charImage.includes('dropbox.com')
+        ? charImage.replace('www.dropbox.com','dl.dropboxusercontent.com').replace('?dl=0','').replace('?dl=1','')
+        : charImage;
+      iconWrap.innerHTML = `<img src="${fixedUrl}" style="position:absolute;width:${Math.round(charImageScale*100)}%;height:${Math.round(charImageScale*100)}%;object-fit:cover;object-position:${charImagePos};left:0;top:0" alt="">`;
+    } else {
+      const pcname = sheet.inputs?.pcname || '?';
+      iconWrap.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted)">${pcname.charAt(0)||'?'}</div>`;
+    }
+  }
 
   // 初期値非表示状態を復元
   if(sheet.hideDefault && !allDefaultHidden) toggleAllDefault();

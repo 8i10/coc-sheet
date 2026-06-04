@@ -1067,9 +1067,21 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 </div>
 
-<!-- 一覧に戻るバー（余白のみ）-->
-<div id="back-bar" style="padding:3px 10px;min-height:28px;display:flex;align-items:center;justify-content:flex-end">
-  <span style="font-size:10px;color:#999">メニューから一覧に戻れます</span>
+<!-- アイコン画像設定バー -->
+<div id="back-bar" style="padding:4px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--surface2)">
+  <!-- アイコンプレビュー（正方形クロップ） -->
+  <div id="char_icon_wrap" style="position:relative;width:60px;height:60px;background:var(--surface);border:1px solid var(--border);overflow:hidden;flex-shrink:0;cursor:grab;user-select:none;touch-action:none" title="ドラッグで位置調整">
+    <div id="char_icon_placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted)">画像なし</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:180px">
+    <div style="font-size:10px;color:var(--text-muted)">アイコン画像（DropboxリンクまたはURL）</div>
+    <input type="text" id="char_image_url" placeholder="https://www.dropbox.com/..." style="font-size:11px;border:1px solid var(--border);padding:2px 6px;background:var(--surface);color:var(--text);width:100%" oninput="previewCharImage(this.value)">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:10px;color:var(--text-muted)">ズーム</span>
+      <input type="range" id="char_image_zoom" min="50" max="300" value="130" style="flex:1" oninput="charImageZoomFromSlider(this.value)">
+    </div>
+  </div>
+  
 </div>
 
 <!-- ===== 行1 ===== -->
@@ -2117,7 +2129,136 @@ function addSecretContentRow(contentId){
   div.insertBefore(w,div.querySelector('.add-row-btn'));
 }
 
-const SAVE_KEY='coc6_sheet_data';
+// ===== アイコン画像クロップ =====
+function fixDropboxUrl(url) {
+  if (!url) return '';
+  if (url.includes('dropbox.com')) {
+    return url
+      .replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+      .replace('?dl=0','').replace('?dl=1','');
+  }
+  return url;
+}
+
+const _iconCrop = { dragging:false, imgX:0, imgY:0, imgW:0, imgH:0, baseW:0, baseH:0, scale:1.3, wrapW:60, wrapH:60, startX:0, startY:0, pinchDist:0 };
+
+function previewCharImage(url) {
+  const wrap = document.getElementById('char_icon_wrap');
+  if (!wrap) return;
+  const fixed = fixDropboxUrl(url.trim());
+  if (!fixed) {
+    wrap.innerHTML = '<div id="char_icon_placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted)">画像なし</div>';
+    return;
+  }
+  wrap.innerHTML = `<img id="char_icon_img" src="${fixed}" alt="" draggable="false" style="position:absolute;pointer-events:none;user-select:none"><div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.3) 0%,transparent 50%);pointer-events:none;opacity:0;transition:opacity .2s" class="crop-hint-overlay"></div>`;
+  wrap.onmouseenter = () => { const h=wrap.querySelector('.crop-hint-overlay'); if(h)h.style.opacity='1'; };
+  wrap.onmouseleave = () => { const h=wrap.querySelector('.crop-hint-overlay'); if(h)h.style.opacity='0'; };
+  setTimeout(() => _initIconCrop(), 50);
+}
+
+function _initIconCrop() {
+  const wrap = document.getElementById('char_icon_wrap');
+  const img = document.getElementById('char_icon_img');
+  if (!wrap || !img) return;
+  _iconCrop.wrapW = wrap.offsetWidth || 60;
+  _iconCrop.wrapH = wrap.offsetHeight || 60;
+
+  function setup() {
+    const natW = img.naturalWidth || 100;
+    const natH = img.naturalHeight || 100;
+    const aspect = natW / natH;
+    let bh = _iconCrop.wrapH, bw = bh * aspect;
+    if (bw < _iconCrop.wrapW) { bw = _iconCrop.wrapW; bh = bw / aspect; }
+    _iconCrop.baseW = bw; _iconCrop.baseH = bh;
+    const sl = document.getElementById('char_image_zoom');
+    const savedScale = sl ? parseFloat(sl.value)/100 : 1.3;
+    _iconCrop.scale = savedScale;
+    _iconCrop.imgW = bw * savedScale; _iconCrop.imgH = bh * savedScale;
+    // 保存済み位置を復元
+    const ox = parseFloat(document.getElementById('char_image_url')?.dataset.ox||'50');
+    const oy = parseFloat(document.getElementById('char_image_url')?.dataset.oy||'30');
+    _iconCrop.imgX = -((ox/100) * Math.max(0, _iconCrop.imgW - _iconCrop.wrapW));
+    _iconCrop.imgY = -((oy/100) * Math.max(0, _iconCrop.imgH - _iconCrop.wrapH));
+    _iconCropClamp(); _iconCropApply();
+  }
+  if (img.complete && img.naturalWidth) setup(); else img.onload = setup;
+
+  wrap.onwheel = e => { e.preventDefault(); _iconCropSetScale(_iconCrop.scale + (e.deltaY<0?0.05:-0.05)); };
+  wrap.onmousedown = e => { e.preventDefault(); _iconCrop.dragging=true; _iconCrop.startX=e.clientX; _iconCrop.startY=e.clientY; wrap.style.cursor='grabbing'; };
+  wrap.ontouchstart = e => {
+    e.stopPropagation();
+    if (e.touches.length===2) { _iconCrop.pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); }
+    else { _iconCrop.dragging=true; _iconCrop.startX=e.touches[0].clientX; _iconCrop.startY=e.touches[0].clientY; }
+  };
+}
+
+document.addEventListener('mousemove', e => { if(!_iconCrop.dragging)return; _iconCropDragMove(e.clientX,e.clientY); }, {passive:true});
+document.addEventListener('mouseup', () => { if(!_iconCrop.dragging)return; _iconCrop.dragging=false; const w=document.getElementById('char_icon_wrap'); if(w)w.style.cursor='grab'; _iconCropSavePos(); }, {passive:true});
+document.addEventListener('touchmove', e => {
+  if(!_iconCrop.dragging && _iconCrop.pinchDist===0) return;
+  if(e.touches.length===2) { e.preventDefault(); const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); if(_iconCrop.pinchDist>0)_iconCropSetScale(_iconCrop.scale*(d/_iconCrop.pinchDist)); _iconCrop.pinchDist=d; }
+  else if(e.touches.length===1&&_iconCrop.dragging) { e.preventDefault(); _iconCropDragMove(e.touches[0].clientX,e.touches[0].clientY); }
+},{passive:false});
+document.addEventListener('touchend', e => { _iconCrop.pinchDist=0; if(e.touches.length===0){_iconCrop.dragging=false;_iconCropSavePos();} },{passive:true});
+
+function _iconCropClamp() {
+  _iconCrop.imgX = Math.max(Math.min(0,_iconCrop.wrapW-_iconCrop.imgW), Math.min(0,_iconCrop.imgX));
+  _iconCrop.imgY = Math.max(Math.min(0,_iconCrop.wrapH-_iconCrop.imgH), Math.min(0,_iconCrop.imgY));
+}
+function _iconCropApply() {
+  const img = document.getElementById('char_icon_img'); if(!img)return;
+  img.style.width=_iconCrop.imgW+'px'; img.style.height=_iconCrop.imgH+'px';
+  img.style.left=_iconCrop.imgX+'px'; img.style.top=_iconCrop.imgY+'px';
+}
+function _iconCropDragMove(ex,ey) {
+  const dx=ex-_iconCrop.startX; const dy=ey-_iconCrop.startY;
+  _iconCrop.startX=ex; _iconCrop.startY=ey;
+  _iconCrop.imgX+=dx; _iconCrop.imgY+=dy;
+  _iconCropClamp(); _iconCropApply(); _iconCropSavePos();
+}
+function _iconCropSetScale(s) {
+  s=Math.max(0.5,Math.min(3.0,s));
+  const cx=_iconCrop.wrapW/2, cy=_iconCrop.wrapH/2, ratio=s/_iconCrop.scale;
+  _iconCrop.imgX=cx+(_iconCrop.imgX-cx)*ratio; _iconCrop.imgY=cy+(_iconCrop.imgY-cy)*ratio;
+  _iconCrop.scale=s; _iconCrop.imgW=_iconCrop.baseW*s; _iconCrop.imgH=_iconCrop.baseH*s;
+  _iconCropClamp(); _iconCropApply();
+  const sl=document.getElementById('char_image_zoom'); if(sl)sl.value=Math.round(s*100);
+  _iconCropSavePos();
+}
+function charImageZoomFromSlider(val) { _iconCropSetScale(parseFloat(val)/100); }
+function _iconCropSavePos() {
+  const ox=_iconCrop.imgW>_iconCrop.wrapW?((-_iconCrop.imgX)/(_iconCrop.imgW-_iconCrop.wrapW))*100:50;
+  const oy=_iconCrop.imgH>_iconCrop.wrapH?((-_iconCrop.imgY)/(_iconCrop.imgH-_iconCrop.wrapH))*100:50;
+  const inp = document.getElementById('char_image_url');
+  if(inp){ inp.dataset.ox=Math.round(ox); inp.dataset.oy=Math.round(oy); }
+  saveDraft();
+}
+// collectData内でアイコン情報を収集するためのヘルパー
+function getCharIconData() {
+  const url = document.getElementById('char_image_url')?.value||'';
+  const inp = document.getElementById('char_image_url');
+  const ox = inp?.dataset.ox||'50';
+  const oy = inp?.dataset.oy||'30';
+  const scale = _iconCrop.scale||1.3;
+  return { charImage: url, charImagePos: ox+'% '+oy+'%', charImageScale: scale };
+}
+// applyDataでアイコン情報を復元するヘルパー
+function applyCharIconData(inputs) {
+  if (!inputs) return;
+  const url = inputs.charImage||'';
+  const inp = document.getElementById('char_image_url');
+  if (inp) {
+    inp.value = url;
+    const pos = (inputs.charImagePos||'50% 30%').split(' ');
+    inp.dataset.ox = parseFloat(pos[0])||50;
+    inp.dataset.oy = parseFloat(pos[1]||pos[0])||30;
+  }
+  const sl = document.getElementById('char_image_zoom');
+  if (sl) sl.value = Math.round((inputs.charImageScale||1.3)*100);
+  if (url) previewCharImage(url);
+}
+// ===== /アイコン画像クロップ =====
+
 function collectData(){
   // 初期値非表示状態を保存
   const hideDefault = allDefaultHidden;
@@ -2131,6 +2272,9 @@ function collectData(){
   const tokkiEl=document.getElementById('job_tokki');
   if(tokkiEl&&tokkiEl.tagName==='TEXTAREA') inputs['job_tokki']=tokkiEl.value;
   else if(tokkiEl&&tokkiEl.tagName==='DIV') inputs['job_tokki']=tokkiEl.textContent||'';
+  // アイコン画像情報を追加
+  const iconData = getCharIconData();
+  Object.assign(inputs, iconData);
 
   // 技能テーブル（freeValも含む）
   const skills=[];
@@ -2303,6 +2447,8 @@ function applyData(json){
 
   calc();
   calcJobPts();
+  // アイコン画像復元
+  applyCharIconData(data.inputs);
   // 職業特記・特徴表の表示を再描画
   const _jSel=document.getElementById('job_ref_sel');
   if(_jSel&&_jSel.value){
