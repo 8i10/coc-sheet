@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CoC6 一覧">
 <meta name="mobile-web-app-capable" content="yes">
@@ -737,218 +738,6 @@ async function deleteChar(id,btn){
 
 
 
-/* ===== 一覧からのコマ出力 ===== */
-// コマ出力用の一時データ保持
-let _cocoSheetData = null;
-
-// view.htmlのJS関数群が依存するグローバル変数を模倣
-function getCur() {
-  if (!_cocoSheetData) return {};
-  const inp = _cocoSheetData.inputs || {};
-  const n = k => parseInt(inp[k])||0;
-  const str=n('str'), con=n('con'), pow=n('pow'), dex=n('dex'),
-        app=n('app'), siz=n('siz'), int_v=n('int_v'), edu=n('edu');
-  return {
-    str, con, pow, dex, app, siz, int_v, edu,
-    str_c: str+(n('str_m')||0)+(n('str_t')||0),
-    con_c: con+(n('con_m')||0)+(n('con_t')||0),
-    pow_c: pow+(n('pow_m')||0)+(n('pow_t')||0),
-    dex_c: dex+(n('dex_m')||0)+(n('dex_t')||0),
-    app_c: app+(n('app_m')||0)+(n('app_t')||0),
-    siz_c: siz+(n('siz_m')||0)+(n('siz_t')||0),
-    int_c: int_v+(n('int_m')||0)+(n('int_t')||0),
-    edu_c: edu+(n('edu_m')||0)+(n('edu_t')||0),
-  };
-}
-
-function getSkillTotal(key) {
-  if (!_cocoSheetData || !_cocoSheetData.skills) return 0;
-  const s = _cocoSheetData.skills.find(x=>x.key===key);
-  if (!s) return 0;
-  const c = getCur();
-  // 基本値マップ（sheet.htmlと同じ）
-  const BASE = {
-    kaihi: c.dex_c*2, kick: 25, kumi: 25, punch: 50, atama: 10, tousha: 25,
-    ma: 1, gun: 20, smg: 15, sg: 30, mg: 15, rifle: 25,
-    firstaid: 30, lib: 25, meboshi: 25, hide: 10, sneak: 10, kikiimi: 20,
-    climb: 40, jump: 25, swim: 25, track: 10, drive: 20, horse: 5,
-    ii: 15, shin: 15, settoku: 15, negiri: 5, psych: 5,
-    kokugo: c.edu_c*5, occult: 5, chem: 1, mythos: 0, art: 5,
-    keiri: 10, kouko: 1, pc: 1, shinri: 5, jinrui: 20, bio: 1,
-    chishitsu: 1, denshi: 1, tenmon: 1, hakubutsu: 20, butsuri: 1,
-    law: 5, yakugaku: 1, rekishi: 20,
-  };
-  const base = BASE[key]||0;
-  return base + (parseInt(s.job)||0) + (parseInt(s.int)||0) + (parseInt(s.grw)||0) + (parseInt(s.oth)||0);
-}
-
-async function openCocoFromIndex(id) {
-  const { data, error } = await db.from('character_sheets').select('data').eq('id', id).single();
-  if (error || !data) { alert('データが見つかりません'); return; }
-  _cocoSheetData = JSON.parse(data.data);
-  openCocofoliaCopyDialog();
-}
-
-/* ===== ここからコマコピー（閲覧モード） ===== */
-
-const MELEE_DAMAGE = {
-  kick:   '1D6{DB}',
-  kumi:   '特殊',
-  punch:  '1D3{DB}',
-  atama:  '1D4',
-  tousha: '{DB}',
-  ma:     '1D3{DB}',
-};
-const GUN_KEYS = ['gun','smg','sg','mg','rifle'];
-const MA_COMBO_KEYS = ['kick','punch','atama','kumi'];
-
-const SKILL_LABEL = {
-  kaihi:'回避', kick:'キック', kumi:'組みつき', punch:'こぶし(パンチ)', atama:'頭突き',
-  tousha:'投擲', ma:'武道(MA)', gun:'拳銃', smg:'サブマシンガン', sg:'ショットガン',
-  mg:'マシンガン', rifle:'ライフル',
-  firstaid:'応急手当', keylock:'鍵開け', kakusu:'隠す', hide:'隠れる',
-  kikiimi:'聞き耳', sneak:'忍び歩き', photo:'写真術', psych:'精神分析',
-  track:'追跡', climb:'登攀', lib:'図書館', meboshi:'目星',
-  drive:'運転', mech:'機械修理', heavymach:'重機械操作', horse:'乗馬',
-  swim:'水泳', make:'製作', operate:'操縦', jump:'跳躍',
-  elec:'電気修理', navi:'ナビゲート', hensou:'変装',
-  ii:'言いくるめ', shin:'信用', settoku:'説得', negiri:'値切り',
-  kokugo:'母国語', gaikokugo:'外国語',
-  ika:'医学', occult:'オカルト', chem:'化学', mythos:'クトゥルフ神話',
-  art:'芸術', keiri:'経理', kouko:'考古学', pc:'コンピューター',
-  shinri:'心理学', jinrui:'人類学', bio:'生物学', chishitsu:'地質学',
-  denshi:'電子工学', tenmon:'天文学', hakubutsu:'博物学', butsuri:'物理学',
-  law:'法律', yakugaku:'薬学', rekishi:'歴史',
-};
-
-function getSkillDisplayName(tr, key) {
-  const nameCell = tr.querySelector('.sk-name');
-  if (!nameCell) return SKILL_LABEL[key] || key;
-  // カスタム技能（custom_xxx）の場合はinput[type=text]の値を返す
-  if (key.startsWith('custom_')) {const inp = nameCell.querySelector('input[type=text]');return (inp && inp.value.trim()) ? inp.value.trim() : '(カスタム技能)';
-  }
-  const freeInp = nameCell.querySelector('input[type=text]');
-  const baseLabel = SKILL_LABEL[key] || key;
-  if (freeInp && freeInp.value) {return baseLabel.replace(/\(.*?\)/, '') + '(' + freeInp.value + ')';
-  }
-  return baseLabel;
-}
-
-function getSkillBase_coco(tr, key) {
-  const c = getCur();
-  if (key === 'kaihi') return c.dex * 2;
-  if (key === 'kokugo') return c.edu * 5;
-  return parseInt(tr.querySelector('[data-base]')?.textContent) || 0;
-}
-
-function getSkillTotal_coco(tr) {
-  return parseInt(tr.querySelector('.sk-total')?.textContent) || 0;
-}
-
-function getGunJamNo(skillTotal) {
-  let found = null;
-  document.querySelectorAll('#weapon_rows tr').forEach(tr => {const cells = tr.querySelectorAll('td');if (cells.length < 8) return;const skillPct = parseInt(cells[1]?.querySelector('input')?.value);const jamNo    = cells[7]?.querySelector('input')?.value?.trim();if (!jamNo) return;if (skillPct === skillTotal) found = jamNo;
-  });
-  return found;
-}
-
-function buildChatPalette(c) {
-  const lines = [];
-  lines.push('〇');
-  lines.push(':SAN');
-  lines.push(':HP');
-  lines.push(':MP');
-  lines.push(`CCB<={SAN} 【SANチェック】`);
-  lines.push(`CCB<=${c.int*5} 【アイデア】`);
-  lines.push(`CCB<=${c.pow*5} 【幸運】`);
-  lines.push(`CCB<=${c.edu*5} 【知識】`);
-
-  let maTotal = 0;
-  const maTr = document.querySelector('[data-skill="ma"]')?.closest('tr');
-  if (maTr) maTotal = getSkillTotal_coco(maTr);
-  const maBase = maTr ? getSkillBase_coco(maTr, 'ma') : 1;
-
-  const alwaysKeys = new Set(['kaihi', 'firstaid']);
-  const comboAlreadyAdded = new Set();
-  const allSections = ['tbody_combat',null,'tbody_search','tbody_action','tbody_talk','tbody_know'];
-
-  allSections.forEach(secId => {// null = 武器テーブル挿入ポイントif (secId === null) {  document.querySelectorAll('#weapon_rows tr').forEach(wtr => {    const wInps = [...wtr.querySelectorAll('input:not([type=checkbox])')].map(i=>i.value.trim());    const wName = wInps[0]; const wSkillPct = parseInt(wInps[1])||0;    const wDmg  = wInps[2]; const dbChk = wtr.querySelector('.weapon-db-chk')?.checked||false;    if (!wName || !wSkillPct) return;    lines.push(`CCB<=${wSkillPct} 【${wName}】`);    if (wDmg) {      const dmgLine = dbChk ? `${wDmg}{DB}` : wDmg;      lines.push(`${dmgLine} 【${wName}】ダメージ`);    }  });  return;}document.querySelectorAll(`#${secId} tr`).forEach(tr => {  const sc = tr.querySelector('[data-skill]');  if (!sc) return;  const key = sc.dataset.skill;  const base = getSkillBase_coco(tr, key);  const total = getSkillTotal_coco(tr);  const label = getSkillDisplayName(tr, key);  const isGun = GUN_KEYS.includes(key);  const isMelee = key in MELEE_DAMAGE;  const isMa = key === 'ma';  const shouldOutput = total > base || alwaysKeys.has(key);  if (!shouldOutput) return;
-  lines.push(`CCB<=${total} 【${label}】`);
-  if (key === 'firstaid') {    lines.push(`1D3 【応急手当】回復`);  }
-  if (secId === 'tbody_combat' && isMelee && total > base) {    const dmg = MELEE_DAMAGE[key];    if (dmg && dmg !== '特殊') {      lines.push(`${dmg} 【${label}】ダメージ`);    }  }
-  if (isMa && total > base) {    lines.push(`1D3{DB} 【武道(MA)】ダメージ`);  }
-  if (maTotal > maBase && MA_COMBO_KEYS.includes(key) && total > base) {    const comboKey = `ma_${key}`;    if (!comboAlreadyAdded.has(comboKey)) {      comboAlreadyAdded.add(comboKey);      lines.push(`CBRB(${maTotal},${total}) 【武道(MA)】+【${label}】`);      lines.push(`2D6{DB} 【武道(MA)】+【${label}】ダメージ`);    }  }
-  if (isGun && total > base) {    const jamNo = getGunJamNo(total);    if (jamNo) {      lines[lines.length - 1] = `CCB(${jamNo})<=${total} 【${label}】`;    }  }});
-
-  lines.push(`CCB<={STR}*5 【STR】`);
-  lines.push(`CCB<={CON}*5 【CON】`);
-  lines.push(`CCB<={POW}*5 【POW】`);
-  lines.push(`CCB<={DEX}*5 【DEX】`);
-  lines.push(`CCB<={APP}*5 【APP】`);
-  lines.push(`CCB<={SIZ}*5 【SIZ】`);
-  lines.push(`CCB<={INT}*5 【INT】`);
-  lines.push(`CCB<={EDU}*5 【EDU】`);
-
-  return lines.join('\n');
-}
-
-function openCocofoliaCopyDialog() {
-  const old = document.getElementById('cocofolia_modal');
-  if (old) old.remove();
-
-  const c = getCur();
-  const pcname = document.getElementById('pcname')?.value || 'キャラクター';
-  const color  = document.getElementById('txtcolor')?.value || '#000000';
-  const hpMax  = parseInt(document.getElementById('hp_c')?.textContent) || 0;
-  const mpMax  = parseInt(document.getElementById('mp_c')?.textContent) || 0;
-  const sanNow = parseInt(document.getElementById('san_now')?.value) || (c.pow*5);
-  const sanMax = parseInt(document.getElementById('max_san')?.textContent) || 99;
-  const dbVal  = document.getElementById('db')?.textContent || '0';
-
-  const palette = buildChatPalette(c);
-
-  const modal = document.createElement('div');
-  modal.id = 'cocofolia_modal';
-  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center';
-
-  modal.innerHTML = `<div style="background:var(--surface);border-radius:6px;padding:16px;width:92%;max-width:680px;max-height:90vh;overflow-y:auto;font-family:inherit">  <div style="font-weight:bold;font-size:13px;margin-bottom:8px;color:var(--text)">🐔 ココフォリア駒出力</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;font-size:11px">    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px">      <div style="font-weight:bold;color:var(--text);margin-bottom:4px">📊 ステータス（確認）</div>      <div>PC名: <b>${pcname}</b></div>      <div>イニシアチブ: <b>${c.dex}</b>（DEX）</div>      <div>HP: ${hpMax} / ${hpMax} &nbsp; MP: ${mpMax} / ${mpMax}</div>      <div>SAN: ${sanNow} / ${sanMax}</div>      <div>DB: ${dbVal}</div>      <div>カラー: <span style="background:${color};color:#fff;padding:0 6px;border-radius:2px">${color}</span></div>    </div>    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px">      <div style="font-weight:bold;color:var(--text);margin-bottom:4px">📋 パラメータ（STR〜DB）</div>      ${['str','con','pow','dex','app','siz','int_v','edu'].map(k=>`<span style="background:var(--surface2);color:var(--text);border-radius:2px;padding:0 4px;margin:1px;display:inline-block">${k.replace('_v','').toUpperCase()}: ${c[k]||0}</span>`).join('')}      <span style="background:var(--surface2);color:var(--text);border-radius:2px;padding:0 4px;margin:1px;display:inline-block">DB: ${dbVal}</span>    </div>  </div>
-  <div style="font-weight:bold;font-size:11px;color:var(--text);margin-bottom:3px">📝 チャットパレット（プレビュー・編集可）</div>  <textarea id="coco_palette_preview" style="width:100%;height:220px;font-size:11px;font-family:monospace;border:1px solid var(--border);padding:4px;resize:vertical;background:var(--surface2)">${palette}</textarea>
-  <div id="coco_copy_msg" style="font-size:11px;color:#2a7;display:none;margin:6px 0">✓ クリップボードにコピーしました！</div>
-  <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px">    <button onclick="document.getElementById('cocofolia_modal').remove()"      style="font-size:11px;padding:3px 12px;cursor:pointer;background:#aaa;color:#fff;border:none;border-radius:2px">閉じる</button>    <button onclick="doCocofolicaCopy()"      style="font-size:11px;padding:3px 16px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px;font-weight:bold">📋 コマJSONをコピー</button>  </div></div>`;
-
-  document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-}
-
-function doCocofolicaCopy() {
-  const c = getCur();
-  const pcname = document.getElementById('pcname')?.value || 'キャラクター';
-  const color  = document.getElementById('txtcolor')?.value || '#000000';
-  const hpMax  = parseInt(document.getElementById('hp_c')?.textContent) || 0;
-  const mpMax  = parseInt(document.getElementById('mp_c')?.textContent) || 0;
-  const sanNow = parseInt(document.getElementById('san_now')?.value) || (c.pow*5);
-  const sanMax = parseInt(document.getElementById('max_san')?.textContent) || 99;
-  const dbVal  = document.getElementById('db')?.textContent || '0';
-
-  const palette = document.getElementById('coco_palette_preview')?.value || buildChatPalette(c);
-
-  const paramOrder = ['str','con','pow','dex','app','siz','int_v','edu'];
-  const paramLabels = ['STR','CON','POW','DEX','APP','SIZ','INT','EDU'];
-  const params = paramOrder.map((k,i) => ({ label: paramLabels[i], value: String(c[k]||0) }));
-  params.push({ label:'DB', value: dbVal });
-
-  const cocoJSON = {kind: 'character',data: {  name: pcname,  initiative: c.dex,  externalUrl: '',  status: [    { label:'HP',  value: hpMax,  max: hpMax  },    { label:'MP',  value: mpMax,  max: mpMax  },    { label:'SAN', value: sanNow, max: sanMax },  ],  params: params,  commands: palette,  secret: false,  invisible: false,  hideStatus: false,  color: color,}
-  };
-
-  const jsonStr = JSON.stringify(cocoJSON);
-
-  navigator.clipboard.writeText(jsonStr).then(() => {const msg = document.getElementById('coco_copy_msg');if (msg) { msg.style.display='block'; setTimeout(()=>msg.style.display='none',3000); }
-  }).catch(() => {const ta = document.createElement('textarea');ta.value = jsonStr;ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand('copy'); ta.remove();const msg = document.getElementById('coco_copy_msg');if (msg) { msg.style.display='block'; setTimeout(()=>msg.style.display='none',3000); }
-  });
-}
-/* ===== コマコピーここまで ===== */
-
 
 // テーマ切り替え
 const THEME_KEY = 'coc_theme';
@@ -966,6 +755,243 @@ function applyTheme(mode){
   const saved = (ver === THEME_VER) ? (localStorage.getItem(THEME_KEY) || 'light') : 'light';
   applyTheme(saved);
 })();
+
+
+/* ===== 一覧からのコマ出力 ===== */
+let _cocoSheet = null;
+
+const _SKILLS_DEF = {
+  combat:[
+    {n:'回避',k:'kaihi',dyn:'dex2'},{n:'キック',b:25,k:'kick'},{n:'組みつき',b:25,k:'kumi'},
+    {n:'こぶし(パンチ)',b:50,k:'punch'},{n:'頭突き',b:10,k:'atama'},{n:'投擲',b:25,k:'tousha'},
+    {n:'武道(MA)',b:1,k:'ma'},{n:'拳銃',b:20,k:'gun'},{n:'サブマシンガン',b:15,k:'smg'},
+    {n:'ショットガン',b:30,k:'sg'},{n:'マシンガン',b:15,k:'mg'},{n:'ライフル',b:25,k:'rifle'},
+  ],
+  search:[
+    {n:'応急手当',b:30,k:'firstaid'},{n:'鍵開け',b:1,k:'keylock'},{n:'隠す',b:15,k:'kakusu'},
+    {n:'隠れる',b:10,k:'hide'},{n:'聞き耳',b:25,k:'kikiimi'},{n:'忍び歩き',b:10,k:'sneak'},
+    {n:'写真術',b:10,k:'photo'},{n:'精神分析',b:1,k:'psych'},{n:'追跡',b:10,k:'track'},
+    {n:'登攀',b:40,k:'climb'},{n:'図書館',b:25,k:'lib'},{n:'目星',b:25,k:'meboshi'},
+  ],
+  action:[
+    {n:'運転',b:20,k:'drive'},{n:'機械修理',b:20,k:'mech'},{n:'重機械操作',b:1,k:'heavymach'},
+    {n:'乗馬',b:5,k:'horse'},{n:'水泳',b:25,k:'swim'},{n:'製作',b:5,k:'make'},
+    {n:'操縦',b:1,k:'operate'},{n:'跳躍',b:25,k:'jump'},{n:'電気修理',b:10,k:'elec'},
+    {n:'ナビゲート',b:10,k:'navi'},{n:'変装',b:1,k:'hensou'},
+  ],
+  talk:[
+    {n:'言いくるめ',b:5,k:'ii'},{n:'信用',b:15,k:'shin'},{n:'説得',b:15,k:'settoku'},
+    {n:'値切り',b:5,k:'negiri'},{n:'母国語',b:0,k:'kokugo',dyn:'edu5'},{n:'外国語',b:1,k:'gaikokugo'},
+  ],
+  know:[
+    {n:'医学',b:5,k:'ika'},{n:'オカルト',b:5,k:'occult'},{n:'化学',b:1,k:'chem'},
+    {n:'クトゥルフ神話',b:0,k:'mythos'},{n:'芸術',b:5,k:'art'},{n:'経理',b:10,k:'keiri'},
+    {n:'考古学',b:1,k:'kouko'},{n:'コンピューター',b:1,k:'pc'},{n:'心理学',b:5,k:'shinri'},
+    {n:'人類学',b:1,k:'jinrui'},{n:'生物学',b:1,k:'bio'},{n:'地質学',b:1,k:'chishitsu'},
+    {n:'電子工学',b:1,k:'denshi'},{n:'天文学',b:1,k:'tenmon'},{n:'博物学',b:10,k:'hakubutsu'},
+    {n:'物理学',b:1,k:'butsuri'},{n:'法律',b:5,k:'law'},{n:'薬学',b:1,k:'yakugaku'},
+    {n:'歴史',b:20,k:'rekishi'},
+  ],
+};
+
+const _MELEE = {kick:'1D6{DB}',kumi:'特殊',punch:'1D3{DB}',atama:'1D4{DB}',ma:'1D3{DB}'};
+const _GUN_KEYS = ['gun','smg','sg','mg','rifle'];
+const _MA_COMBO = ['kick','punch','atama','kumi'];
+
+function _getCocoStats(inp) {
+  const n = k => parseInt(inp[k]||0)||0;
+  const str=n('str')+n('str_m')+n('str_t');
+  const con=n('con')+n('con_m')+n('con_t');
+  const pow=n('pow')+n('pow_m')+n('pow_t');
+  const dex=n('dex')+n('dex_m')+n('dex_t');
+  const app=n('app')+n('app_m')+n('app_t');
+  const siz=n('siz')+n('siz_m')+n('siz_t');
+  const int_c=n('int_v')+n('int_m')+n('int_t');
+  const edu=n('edu')+n('edu_m')+n('edu_t');
+  return {str,con,pow,dex,app,siz,int_c,edu};
+}
+
+function _getSkillBase(def, stats) {
+  if (def.dyn === 'dex2') return stats.dex * 2;
+  if (def.dyn === 'edu5') return stats.edu * 5;
+  return def.b || 0;
+}
+
+function _getSkillTotal(key, skills, stats) {
+  const s = skills.find(x => x.key === key);
+  if (!s) return 0;
+  const base = (() => {
+    for (const cat of Object.values(_SKILLS_DEF)) {
+      const d = cat.find(x => x.k === key);
+      if (d) return _getSkillBase(d, stats);
+    }
+    return 0;
+  })();
+  return base + (parseInt(s.job)||0) + (parseInt(s.int)||0) + (parseInt(s.grw)||0) + (parseInt(s.oth)||0);
+}
+
+function _getGunJamNo(total) {
+  if (total >= 86) return 100;
+  if (total >= 76) return 99;
+  if (total >= 51) return 98;
+  return 97;
+}
+
+function _buildChatPalette(sheet) {
+  const inp = sheet.inputs || {};
+  const skills = sheet.skills || [];
+  const stats = _getCocoStats(inp);
+  const weapons = sheet.weapons || [];
+  const lines = [];
+
+  lines.push('〇');
+  lines.push(':SAN');
+  lines.push(':HP');
+  lines.push(':MP');
+  lines.push(`CCB<={SAN} 【SANチェック】`);
+  lines.push(`CCB<=${stats.int_c*5} 【アイデア】`);
+  lines.push(`CCB<=${stats.pow*5} 【幸運】`);
+  lines.push(`CCB<=${stats.edu*5} 【知識】`);
+
+  const maTotal = _getSkillTotal('ma', skills, stats);
+  const maBase = stats.edu; // dummy, ma base=1
+  const alwaysKeys = new Set(['kaihi','firstaid']);
+  const comboAdded = new Set();
+
+  const sectionOrder = ['combat', null, 'search', 'action', 'talk', 'know'];
+
+  sectionOrder.forEach(sec => {
+    if (sec === null) {
+      // 武器テーブル
+      weapons.forEach(w => {
+        const vals = Array.isArray(w) ? w : (w.vals || []);
+        const db = typeof w === 'object' && !Array.isArray(w) ? (w.db || false) : false;
+        const wName = vals[0]; const wPct = parseInt(vals[1])||0;
+        const wDmg = vals[2];
+        if (!wName || !wPct) return;
+        lines.push(`CCB<=${wPct} 【${wName}】`);
+        if (wDmg) lines.push(`${db ? wDmg+'{DB}' : wDmg} 【${wName}】ダメージ`);
+      });
+      return;
+    }
+
+    const defs = _SKILLS_DEF[sec] || [];
+    defs.forEach(def => {
+      const key = def.k;
+      const base = _getSkillBase(def, stats);
+      const total = _getSkillTotal(key, skills, stats);
+      if (total <= base && !alwaysKeys.has(key)) return;
+
+      const sk = skills.find(x => x.key === key);
+      const label = (sk && sk.freeVal) ? def.n + '(' + sk.freeVal + ')' : def.n;
+      const isGun = _GUN_KEYS.includes(key);
+      const isMelee = key in _MELEE;
+      const isMa = key === 'ma';
+
+      if (isGun && total > base) {
+        const jamNo = _getGunJamNo(total);
+        lines.push(`CCB(${jamNo})<=${total} 【${label}】`);
+      } else {
+        lines.push(`CCB<=${total} 【${label}】`);
+      }
+
+      if (key === 'firstaid') lines.push(`1D3 【応急手当】回復`);
+      if (sec === 'combat' && isMelee && total > base) {
+        const dmg = _MELEE[key];
+        if (dmg && dmg !== '特殊') lines.push(`${dmg} 【${label}】ダメージ`);
+      }
+      if (isMa && total > base) lines.push(`1D3{DB} 【武道(MA)】ダメージ`);
+      if (maTotal > 1 && _MA_COMBO.includes(key) && total > base) {
+        const ck = `ma_${key}`;
+        if (!comboAdded.has(ck)) {
+          comboAdded.add(ck);
+          lines.push(`CBRB(${maTotal},${total}) 【武道(MA)】+【${label}】`);
+          lines.push(`2D6{DB} 【武道(MA)】+【${label}】ダメージ`);
+        }
+      }
+    });
+  });
+
+  lines.push(`CCB<={STR}*5 【STR】`);
+  lines.push(`CCB<={CON}*5 【CON】`);
+  lines.push(`CCB<={POW}*5 【POW】`);
+  lines.push(`CCB<={DEX}*5 【DEX】`);
+  lines.push(`CCB<={APP}*5 【APP】`);
+  lines.push(`CCB<={SIZ}*5 【SIZ】`);
+  lines.push(`CCB<={INT}*5 【INT】`);
+  lines.push(`CCB<={EDU}*5 【EDU】`);
+
+  return lines.join('\n');
+}
+
+function _buildCocoJSON(sheet) {
+  const inp = sheet.inputs || {};
+  const stats = _getCocoStats(inp);
+  const pcname = inp.pcname || 'キャラクター';
+  const txtcolor = inp.txtcolor || '#000000';
+  const san_now = parseInt(inp.san_now)||0;
+  const max_san = stats.pow * 5;
+  const hp = Math.ceil((stats.con + stats.siz) / 2);
+  const mp = stats.pow;
+
+  return {
+    kind: 'character',
+    formatVersion: 1,
+    data: {
+      name: pcname,
+      initiative: stats.dex,
+      externalUrl: '',
+      status: [
+        {label:'HP', value: hp, max: hp},
+        {label:'MP', value: mp, max: mp},
+        {label:'SAN', value: san_now, max: max_san},
+      ],
+      params: [
+        {label:'STR',value:String(stats.str)},{label:'CON',value:String(stats.con)},
+        {label:'POW',value:String(stats.pow)},{label:'DEX',value:String(stats.dex)},
+        {label:'APP',value:String(stats.app)},{label:'SIZ',value:String(stats.siz)},
+        {label:'INT',value:String(stats.int_c)},{label:'EDU',value:String(stats.edu)},
+      ],
+      commands: _buildChatPalette(sheet),
+      memo: '',
+    }
+  };
+}
+
+async function openCocoFromIndex(id) {
+  const { data, error } = await db.from('character_sheets').select('data').eq('id', id).single();
+  if (error || !data) { alert('データが見つかりません'); return; }
+  _cocoSheet = JSON.parse(data.data);
+
+  const palette = _buildChatPalette(_cocoSheet);
+  const old = document.getElementById('cocofolia_modal');
+  if (old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'cocofolia_modal';
+  modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:12px;z-index:99999;width:min(480px,92vw);box-shadow:0 4px 20px rgba(0,0,0,.5)';
+  modal.innerHTML = `
+    <div style="font-weight:bold;font-size:12px;color:var(--text);margin-bottom:6px">🐔 駒出力 - ${(_cocoSheet.inputs?.pcname||'')}</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">📝 チャットパレット（プレビュー・編集可）</div>
+    <textarea id="coco_palette_preview" style="width:100%;height:220px;font-size:11px;font-family:monospace;border:1px solid var(--border);padding:4px;resize:vertical;background:var(--surface2);color:var(--text)">${palette}</textarea>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px">
+      <button onclick="document.getElementById('cocofolia_modal').remove()" style="font-size:11px;padding:3px 12px;cursor:pointer;background:#aaa;color:#fff;border:none;border-radius:2px">閉じる</button>
+      <button onclick="_doCocoCopy()" style="font-size:11px;padding:3px 16px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px;font-weight:bold">📋 コマJSONをコピー</button>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function _doCocoCopy() {
+  if (!_cocoSheet) return;
+  const palette = document.getElementById('coco_palette_preview')?.value || _buildChatPalette(_cocoSheet);
+  const json = _buildCocoJSON(_cocoSheet);
+  json.data.commands = palette;
+  navigator.clipboard.writeText(JSON.stringify(json, null, 2)).then(() => {
+    alert('コマJSONをコピーしました！');
+    document.getElementById('cocofolia_modal')?.remove();
+  }).catch(() => alert('コピーに失敗しました'));
+}
+
 
 </script>
 </body>

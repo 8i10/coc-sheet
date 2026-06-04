@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CoC6 CS">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2018,6 +2019,7 @@ function addRelGroup(){
     </div>
     <div class="secret-item-body" id="${id}">
       <div style="position:relative;margin:4px">
+        <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
         <textarea class="auto-h" style="width:100%" oninput="autoResizeTA(this)"></textarea>
         <button class="del-btn" onclick="delRow(this)"
           style="position:absolute;top:2px;right:2px">✕</button>
@@ -2038,7 +2040,7 @@ function toggleRelGroup(id) {
 function addRelSubRow(bodyId){
   const body=document.getElementById(bodyId);const addBtn=body.querySelector('.add-row-btn');
   const w=document.createElement('div');w.style.cssText='position:relative;margin-bottom:3px';
-  w.innerHTML='<textarea class="auto-h" style="width:100%" placeholder="関係・経緯など" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h" style="width:100%" placeholder="関係・経緯など" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   body.insertBefore(w,addBtn);
 }
 
@@ -2084,6 +2086,7 @@ function addSecretItem(title,pass){
         <button onclick="changeSecretPass('${id}')" style="font-size:11px;padding:1px 6px;cursor:pointer;border:1px solid var(--border);background:#eee">変更</button>
       </div>
       <div id="content_${id}" style="display:none;padding:4px">
+        <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
         <textarea class="auto-h" style="width:100%" placeholder="KP秘匿情報・後遺症など" oninput="autoResizeTA(this)"></textarea>
         <button class="add-row-btn" onclick="addSecretContentRow('content_${id}')">＋追加</button>
       </div>
@@ -2110,7 +2113,7 @@ function changeSecretPass(id){
 }
 function addSecretContentRow(contentId){
   const div=document.getElementById(contentId);const w=document.createElement('div');w.style.marginTop='4px';
-  w.innerHTML='<div style="display:flex;gap:4px"><textarea class="auto-h" style="flex:1" placeholder="追加情報..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="this.closest(\'div[style]\').remove()">✕</button></div>';
+  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><div style="display:flex;gap:4px"><textarea class="auto-h" style="flex:1" placeholder="追加情報..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="this.closest(\'div[style]\').remove()">✕</button></div>';
   div.insertBefore(w,div.querySelector('.add-row-btn'));
 }
 
@@ -2299,6 +2302,7 @@ function applyData(json){
   }
 
   calc();
+  calcJobPts();
   // 職業特記・特徴表の表示を再描画
   const _jSel=document.getElementById('job_ref_sel');
   if(_jSel&&_jSel.value){

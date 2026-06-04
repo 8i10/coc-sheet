@@ -1,0 +1,16 @@
+{
+  "name": "CoC6 キャラクターシート",
+  "short_name": "CoC6 CS",
+  "start_url": "/coc-sheet/",
+  "scope": "/coc-sheet/",
+  "display": "standalone",
+  "background_color": "#0d0d12",
+  "theme_color": "#333333",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
