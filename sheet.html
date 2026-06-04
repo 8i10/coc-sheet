@@ -135,8 +135,9 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
   /* 行1: パーソナル＋能力値 → 縦並び */
   #row1_flex{flex-direction:column !important}
   .personal-data{width:100% !important;min-width:0 !important;border-right:none !important;border-bottom:1px solid var(--border)}
-  #row1_stats{width:100% !important;overflow-x:auto}
-  #row1_stats table{min-width:560px}
+  #row1_stats{width:100% !important}
+  #stats_scroll{overflow-x:auto}
+  #stats_scroll table{min-width:560px}
   /* 不定エリアのテーブルが見切れないようにする */
   .personal-data > div > div{overflow-x:hidden}
   /* 不定テーブル: スマホで画面幅に収める */
@@ -1097,7 +1098,8 @@ body.light td.hdr{
       </tr>
     </table>
   </div>
-  <div id="row1_stats" style="flex:1;overflow-x:auto">
+  <div id="row1_stats" style="flex:1;min-width:0">
+  <div id="stats_scroll" style="overflow-x:auto">
     <table>
       <thead>
         <tr>
@@ -1153,10 +1155,8 @@ body.light td.hdr{
         </tr>
       </tbody>
     </table>
-  </div>
-</div>
-
-<!-- SAN行・追加P（row1_statsの外・画面幅固定） -->
+  </div><!-- /stats_scroll -->
+  <!-- SAN行・追加P（PC版：row1_stats内） -->
 <div id="san_row" style="display:flex;flex-wrap:wrap;gap:4px;padding:3px 4px;border-top:1px solid var(--border);font-size:11px;align-items:center;background:var(--surface2)">
       <span style="background:var(--hdr-bg);color:var(--hdr-text);padding:1px 4px">SAN</span>
       現在<input type="number" id="san_now" style="width:36px;border:1px solid var(--border)" oninput="updateSanLine()">
@@ -1175,7 +1175,7 @@ body.light td.hdr{
       <span style="font-size:9px;color:var(--text-muted)">追加興味P</span>
       <input type="number" id="int_add_sp" placeholder="0" style="width:40px;font-size:10px;border:1px solid var(--border);padding:0 2px;height:16px;background:var(--surface);color:var(--text);text-align:center" oninput="document.getElementById('int_add').value=this.value;calcJobPts()">
     </div>
-<div id="fute_area" style="border:1px solid var(--border);margin-top:4px;background:var(--surface2)">
+  <div id="fute_area" style="border:1px solid var(--border);margin-top:4px;background:var(--surface2)">
       <div style="background:var(--hdr-bg);color:var(--hdr-text);font-size:11px;font-weight:bold;padding:2px 5px;margin-bottom:2px">不定</div>
       <div style="padding:2px 4px">
       <table class="fute-table" style="width:100%;border-collapse:collapse;margin-bottom:2px">
@@ -1204,6 +1204,8 @@ body.light td.hdr{
       </table>
       </div>
     </div><!-- /fute_area -->
+  </div><!-- /row1_stats -->
+</div><!-- /row1_flex -->
 
 <!-- ===== 行2 ===== -->
 <div class="section" id="sec_row2">
