@@ -1967,15 +1967,7 @@ async function initViewMode() {
 
   // ?coco=1 自動起動
   if (new URLSearchParams(window.location.search).get('coco') === '1') setTimeout(openCocofoliaCopyDialog, 500);
-});
-
-  // ococofolia駒出力ボタンを表示（閲覧モード完了後）
-  const cocoBtn = document.getElementById('coco_btn');
-  if (cocoBtn) cocoBtn.style.display = 'inline-block';
-
-  // ?coco=1 が付いている場合は自動でコマ出力ダイアログを開く
-  const cocoParam = new URLSearchParams(window.location.search).get('coco');
-  if (cocoParam === '1') setTimeout(openCocofoliaCopyDialog, 500);
+}
 }
 
 function unlockViewSecret(btn) {
