@@ -1745,8 +1745,29 @@ async function initViewMode() {
   if (sheet.inputs) {Object.entries(sheet.inputs).forEach(([key, val]) => {  if (ACC_SKIP.has(key)) return;  const el = document.getElementById(key);  if (!el) return;  if (el.type === 'checkbox') el.checked = val;  else el.value = val;});// カラーコード更新if(typeof updateColorCode==='function') updateColorCode();
   }
 
-  // 技能を流し込む
-  if (sheet.skills) {sheet.skills.forEach(s => {  const tr = document.querySelector(`[data-skill="${s.key}"]`)?.closest('tr');  if (!tr) return;  const chk = tr.querySelector('input[type=checkbox]'); if (chk) chk.checked = s.chk;  const ji = tr.querySelector('.job-inp'); if (ji) ji.value = s.job;  const ii = tr.querySelector('.int-inp'); if (ii) ii.value = s.int;  const gi = tr.querySelector('.grw-inp'); if (gi) gi.value = s.grw;  const oi = tr.querySelector('.oth-inp'); if (oi) oi.value = s.oth;  if(s.freeVal){const fi=tr.querySelector('.sk-name .free-inp-auto')||tr.querySelector('.sk-name input[type=text]');if(fi)fi.value=s.freeVal;}});
+  // 技能を流し込む（カスタム技能含む・合計値再計算）
+  if (sheet.skills) {
+    sheet.skills.forEach(s => {
+      let tr = document.querySelector(`[data-skill="${s.key}"]`)?.closest('tr');
+      if (!tr && s.key.startsWith('custom_')) {
+        const tbodyId = s.tbodyId || 'tbody_know';
+        addCustomSkill(tbodyId);
+        const tbody = document.getElementById(tbodyId);
+        const newTr = tbody?.lastElementChild;
+        if (newTr) { const nameTd = newTr.querySelector('[data-skill]'); if (nameTd) nameTd.dataset.skill = s.key; tr = newTr; }
+      }
+      if (!tr) return;
+      const chk = tr.querySelector('input[type=checkbox]'); if (chk) chk.checked = s.chk;
+      const ji = tr.querySelector('.job-inp'); if (ji) { ji.value = s.job||''; }
+      const ii = tr.querySelector('.int-inp'); if (ii) { ii.value = s.int||''; }
+      const gi = tr.querySelector('.grw-inp'); if (gi) { gi.value = s.grw||''; }
+      const oi = tr.querySelector('.oth-inp'); if (oi) { oi.value = s.oth||''; }
+      if (s.freeVal) { const fi = tr.querySelector('.sk-name .free-inp-auto') || tr.querySelector('.sk-name input[type=text]'); if (fi) fi.value = s.freeVal; }
+      if (s.key.startsWith('custom_') && s.base !== undefined) { const bt = tr.querySelector('[data-base]'); if (bt) bt.textContent = s.base; }
+      // 合計値を再計算
+      const anyInp = tr.querySelector('.job-inp');
+      if (anyInp && typeof skillChanged === 'function') skillChanged(anyInp);
+    });
   }
 
   // 武器（アコーディオンは開かない）
@@ -1815,30 +1836,6 @@ async function initViewMode() {
   if (fsSel && sheet.inputs?.job_formula_sel) fsSel.value = sheet.inputs.job_formula_sel;
   calcJobPts();
 
-  // 技能を復元（カスタム技能含む）
-  if (sheet.skills) sheet.skills.forEach(s => {
-    let tr = document.querySelector(`[data-skill="${s.key}"]`)?.closest('tr');
-    if (!tr && s.key.startsWith('custom_')) {
-      const tbodyId = s.tbodyId || 'tbody_know';
-      addCustomSkill(tbodyId);
-      const tbody = document.getElementById(tbodyId);
-      const newTr = tbody?.lastElementChild;
-      if (newTr) {
-        const nameTd = newTr.querySelector('[data-skill]');
-        if (nameTd) nameTd.dataset.skill = s.key;
-        tr = newTr;
-      }
-    }
-    if (!tr) return;
-    const chk = tr.querySelector('input[type=checkbox]'); if (chk) chk.checked = s.chk;
-    const ji = tr.querySelector('.job-inp'); if (ji) ji.value = s.job;
-    const ii = tr.querySelector('.int-inp'); if (ii) ii.value = s.int;
-    const gi = tr.querySelector('.grw-inp'); if (gi) gi.value = s.grw;
-    const oi = tr.querySelector('.oth-inp'); if (oi) oi.value = s.oth;
-    if (s.freeVal) { const fi = tr.querySelector('.sk-name .free-inp-auto') || tr.querySelector('.sk-name input[type=text]'); if (fi) fi.value = s.freeVal; }
-    if (s.key.startsWith('custom_') && s.base !== undefined) { const bt = tr.querySelector('[data-base]'); if (bt) bt.textContent = s.base; }
-  });
-
   // 人間関係を復元
   if (sheet.rels && sheet.rels.length) {
     const relWrap = document.getElementById('rel_groups_wrap');
@@ -1866,7 +1863,10 @@ async function initViewMode() {
   }
 
   // memo-titleの枠線を非表示に（閲覧モード）、空なら行ごと非表示
-  document.querySelectorAll('.memo-title').forEach(el=>{el.style.border='none';el.style.background='transparent';if(!el.value.trim())el.style.display='none';
+  document.querySelectorAll('.memo-title').forEach(el => {
+    el.style.border = 'none';
+    el.style.background = 'transparent';
+    el.style.display = el.value.trim() ? 'block' : 'none';
   });
 
   // 全inputをreadonly表示にする（secret_items_wrap内は除く）
