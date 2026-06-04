@@ -966,6 +966,19 @@ body.light .sk-base{ background:#f0f0f0 !important; }
 
 
 </style>
+
+<!-- PWA: Safari スタンドアロンモード維持 -->
+<script>
+if (('standalone' in navigator) && navigator.standalone) {
+  document.addEventListener('click', function(e) {
+    var a = e.target.closest('a');
+    if (a && a.href && a.href.startsWith(location.origin) && !a.target) {
+      e.preventDefault();
+      location.href = a.href;
+    }
+  });
+}
+</script>
 </head>
 <body class="light">
 <div id="sticky-header">
@@ -1708,6 +1721,10 @@ document.querySelectorAll('th:last-child:empty, th:last-child').forEach(el => {
   // ococofolia駒出力ボタンを表示（閲覧モード完了後）
   const cocoBtn = document.getElementById('coco_btn');
   if (cocoBtn) cocoBtn.style.display = 'inline-block';
+
+  // ?coco=1 が付いている場合は自動でコマ出力ダイアログを開く
+  const cocoParam = new URLSearchParams(window.location.search).get('coco');
+  if (cocoParam === '1') setTimeout(openCocofoliaCopyDialog, 500);
 }
 
 function unlockViewSecret(btn) {

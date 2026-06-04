@@ -988,6 +988,19 @@ body.light td.hdr{
 
 
 </style>
+
+<!-- PWA: Safari スタンドアロンモード維持 -->
+<script>
+if (('standalone' in navigator) && navigator.standalone) {
+  document.addEventListener('click', function(e) {
+    var a = e.target.closest('a');
+    if (a && a.href && a.href.startsWith(location.origin) && !a.target) {
+      e.preventDefault();
+      location.href = a.href;
+    }
+  });
+}
+</script>
 </head>
 <body class="light">
 
