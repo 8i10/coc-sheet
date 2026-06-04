@@ -2282,11 +2282,15 @@ function collectData(){
   // 技能テーブル（freeValも含む）
   const skills=[];
   document.querySelectorAll('.skill-table tbody tr').forEach(tr=>{
-    const key=tr.querySelector('[data-skill]')?.dataset?.skill||'';if(!key)return;
+    const nameTd=tr.querySelector('[data-skill]');
+    const key=nameTd?.dataset?.skill||'';if(!key)return;
     const fv=tr.querySelector('.sk-name .free-inp-auto')?.value||tr.querySelector('.sk-name input[type=text]')?.value||'';
+    const base=tr.querySelector('[data-base]')?.textContent||'';
+    const tbodyId=tr.closest('tbody')?.id||'';
     skills.push({key,chk:tr.querySelector('input[type=checkbox]')?.checked||false,
       job:tr.querySelector('.job-inp')?.value||'',int:tr.querySelector('.int-inp')?.value||'',
-      grw:tr.querySelector('.grw-inp')?.value||'',oth:tr.querySelector('.oth-inp')?.value||'',freeVal:fv});
+      grw:tr.querySelector('.grw-inp')?.value||'',oth:tr.querySelector('.oth-inp')?.value||'',
+      freeVal:fv,base,tbodyId});
   });
 
   // 武器テーブル
@@ -2371,13 +2375,30 @@ function applyData(json){
 
   // 技能（freeValも復元）
   if(data.skills)data.skills.forEach(s=>{
-    const tr=document.querySelector(`[data-skill="${s.key}"]`)?.closest('tr');if(!tr)return;
+    let tr=document.querySelector(`[data-skill="${s.key}"]`)?.closest('tr');
+    // カスタム技能の場合は行を追加してdata-skillを設定
+    if(!tr && s.key.startsWith('custom_')){
+      // どのtbodyに追加するか判断（保存時にtbodyIdも保存していないのでkeyから推定できないためcombatに追加）
+      const tbodyId = s.tbodyId || 'tbody_know';
+      addCustomSkill(tbodyId);
+      const tbody = document.getElementById(tbodyId);
+      const newTr = tbody.lastElementChild;
+      if(newTr){
+        // data-skillを保存されたキーに更新
+        const nameTd = newTr.querySelector('[data-skill]');
+        if(nameTd) nameTd.dataset.skill = s.key;
+        tr = newTr;
+      }
+    }
+    if(!tr)return;
     const chk=tr.querySelector('input[type=checkbox]');if(chk)chk.checked=s.chk;
     const ji=tr.querySelector('.job-inp');if(ji)ji.value=s.job;
     const ii=tr.querySelector('.int-inp');if(ii)ii.value=s.int;
     const gi=tr.querySelector('.grw-inp');if(gi)gi.value=s.grw;
     const oi=tr.querySelector('.oth-inp');if(oi)oi.value=s.oth;
     if(s.freeVal){const fi=tr.querySelector('.sk-name .free-inp-auto')||tr.querySelector('.sk-name input[type=text]');if(fi)fi.value=s.freeVal;}
+    // カスタム技能のbaseTdも復元
+    if(s.key.startsWith('custom_')&&s.base!==undefined){const bt=tr.querySelector('[data-base]');if(bt)bt.textContent=s.base;}
   });
 
   // 武器テーブル

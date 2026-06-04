@@ -1810,11 +1810,34 @@ async function initViewMode() {
   }
 
   calc();
-  calcJobPts();
-
-  // job_formula_selを復元
+  // job_formula_selを先に復元してからcalcJobPts
   const fsSel = document.getElementById('job_formula_sel');
   if (fsSel && sheet.inputs?.job_formula_sel) fsSel.value = sheet.inputs.job_formula_sel;
+  calcJobPts();
+
+  // 技能を復元（カスタム技能含む）
+  if (sheet.skills) sheet.skills.forEach(s => {
+    let tr = document.querySelector(`[data-skill="${s.key}"]`)?.closest('tr');
+    if (!tr && s.key.startsWith('custom_')) {
+      const tbodyId = s.tbodyId || 'tbody_know';
+      addCustomSkill(tbodyId);
+      const tbody = document.getElementById(tbodyId);
+      const newTr = tbody?.lastElementChild;
+      if (newTr) {
+        const nameTd = newTr.querySelector('[data-skill]');
+        if (nameTd) nameTd.dataset.skill = s.key;
+        tr = newTr;
+      }
+    }
+    if (!tr) return;
+    const chk = tr.querySelector('input[type=checkbox]'); if (chk) chk.checked = s.chk;
+    const ji = tr.querySelector('.job-inp'); if (ji) ji.value = s.job;
+    const ii = tr.querySelector('.int-inp'); if (ii) ii.value = s.int;
+    const gi = tr.querySelector('.grw-inp'); if (gi) gi.value = s.grw;
+    const oi = tr.querySelector('.oth-inp'); if (oi) oi.value = s.oth;
+    if (s.freeVal) { const fi = tr.querySelector('.sk-name .free-inp-auto') || tr.querySelector('.sk-name input[type=text]'); if (fi) fi.value = s.freeVal; }
+    if (s.key.startsWith('custom_') && s.base !== undefined) { const bt = tr.querySelector('[data-base]'); if (bt) bt.textContent = s.base; }
+  });
 
   // 人間関係を復元
   if (sheet.rels && sheet.rels.length) {
