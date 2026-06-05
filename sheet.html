@@ -2516,6 +2516,8 @@ function applyData(json){
       s.contents.forEach((c,i)=>{if(i<tas.length)tas[i].value=c;});
       const sels=[...item.querySelectorAll('#content_'+item.id+' select')];
       s.cats.forEach((c,i)=>{if(i<sels.length)sels[i].value=c;});
+      const titInps=[...item.querySelectorAll('#content_'+item.id+' .memo-title')];
+      (s.contentTitles||[]).forEach((t,i)=>{if(i<titInps.length)titInps[i].value=t;});
     });
   }
 
