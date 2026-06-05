@@ -1523,7 +1523,7 @@ function showTokucho(n){
   document.getElementById('t'+n+'_desc').textContent=idx!==''?(tokuchoList[parseInt(idx)]?.desc||''):'';
 }
 
-function _resizeInEl(el){el.querySelectorAll('textarea.auto-h').forEach(ta=>autoResizeTA(ta));}
+function _resizeInEl(el){el.querySelectorAll('textarea').forEach(ta=>{if(ta.classList.contains('auto-h'))autoResizeTA(ta);else{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}});}
 function toggleAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';if(open)setTimeout(()=>_resizeInEl(body),50);}
 function toggleSubAcc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';if(open)setTimeout(()=>_resizeInEl(body),50);}
 function toggleSub2Acc(id){const body=document.getElementById(id);const arr=document.getElementById('arr_'+id);if(!body||!arr)return;const open=body.classList.toggle('open');arr.textContent=open?'▼':'▶';if(open)setTimeout(()=>_resizeInEl(body),50);}
