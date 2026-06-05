@@ -1586,6 +1586,7 @@ function toggleRelGroup(id) {
   if (!body) return;
   const isOpen = body.classList.toggle('open');
   if (btn) btn.textContent = isOpen ? '▼ 閉じる' : '▶ 開く';
+  if (isOpen) setTimeout(autoResizeAll, 50);
 }
 function addRelSubRow(bodyId){
   const body=document.getElementById(bodyId);const addBtn=body.querySelector('.add-row-btn');
@@ -1926,8 +1927,7 @@ async function initViewMode() {
       const hdr = item.querySelector('.secret-item-header input[type=text]');
       if (hdr) hdr.value = rel.name||'';
       const body = item.querySelector('.secret-item-body'); if (!body) return;
-      // bodyを一時的に表示状態にしてからtextarea高さを正しく計算する
-      const wasOpen = body.classList.contains('open');
+      // textareaの高さ計算のため一時的にopenにする（計算後に閉じる）
       body.classList.add('open');
       const rows = [...body.querySelectorAll('div[style*="position"]')];
       (rel.rows||[]).forEach((r,i) => {
@@ -1937,9 +1937,8 @@ async function initViewMode() {
         const ti = row.querySelector('.memo-title'); if (ti) ti.value = r.title||'';
         const ta = row.querySelector('textarea'); if (ta) { ta.value = r.body||''; autoResizeTA(ta); }
       });
-      // 開閉ボタンのテキストも更新
-      const btn = item.querySelector('button[onclick*="toggleRelGroup"]');
-      if (btn) btn.textContent = '▼ 閉じる';
+      // 閉じた状態に戻す（保存データには個別グループの開閉状態がないためデフォルト閉じ）
+      body.classList.remove('open');
     });
     if (relWrap.children.length === 0) addRelGroup();
     setTimeout(autoResizeAll, 50);
