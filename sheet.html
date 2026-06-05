@@ -2121,7 +2121,7 @@ function toggleSecretItem(id){
 function unlockSecretItem(id){
   const inp=document.getElementById('pass_'+id).value;const wrap=document.getElementById(id);
   const pass=wrap.dataset.pass||'';
-  if(pass===''||inp===pass){document.getElementById('content_'+id).style.display='block';document.getElementById('pass_'+id).value='';}
+  if(pass===''||inp===pass){const content=document.getElementById('content_'+id);content.style.display='block';document.getElementById('pass_'+id).value='';setTimeout(()=>_resizeInEl(content),50);}
   else alert('パスワードが違います');
 }
 function lockSecretItem(id){document.getElementById('content_'+id).style.display='none';document.getElementById('pass_'+id).value='';}
