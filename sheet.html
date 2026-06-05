@@ -2108,7 +2108,7 @@ function addSecretItem(title,pass){
         <button class="add-row-btn" onclick="addSecretContentRow('content_${id}')">＋追加</button>
       </div>
     </div>`;
-  wrap.dataset.pass=pass||'1234';
+  wrap.dataset.pass=pass||'';
   document.getElementById('secret_items_wrap').appendChild(wrap);
 }
 function toggleSecretItem(id){
@@ -2346,7 +2346,7 @@ function collectData(){
   document.querySelectorAll('#secret_items_wrap .secret-item').forEach(wrap=>{
     const id=wrap.id;
     const title=wrap.querySelector('.secret-item-header input[type=text]')?.value||'';
-    const pass=wrap.dataset.pass||'1234';
+    const pass=wrap.dataset.pass||'';
     const summary=wrap.querySelector('#body_'+id+' input[type=text]')?.value||'';
     const contents=[];
     const contentTitles=[];
@@ -3764,7 +3764,7 @@ function parseSpreadsheetHTML(html){
     if(existing){
       const titleInp=existing.querySelector('.secret-item-header input[type=text]');
       if(titleInp)titleInp.value='秘匿情報（SS取込）';
-      existing.dataset.pass='1234';
+      existing.dataset.pass='';
       const contentDiv=existing.querySelector('[id^="content_"]');
       if(contentDiv){
         contentDiv.style.display='block';
