@@ -1586,6 +1586,7 @@ function toggleRelGroup(id) {
   if (!body) return;
   const isOpen = body.classList.toggle('open');
   if (btn) btn.textContent = isOpen ? '▼ 閉じる' : '▶ 開く';
+  if (isOpen) body.querySelectorAll('textarea.auto-h').forEach(ta => autoResizeTA(ta));
 }
 function addRelSubRow(bodyId){
   const body=document.getElementById(bodyId);const addBtn=body.querySelector('.add-row-btn');
