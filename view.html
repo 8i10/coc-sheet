@@ -1965,7 +1965,26 @@ async function initViewMode() {
   if (iconWrap) {
     if (charImage) {
       const fixedUrl = charImage.includes('dropbox.com') ? charImage.replace('www.dropbox.com','dl.dropboxusercontent.com').replace('?dl=0','').replace('?dl=1','') : charImage;
-      iconWrap.innerHTML = `<img src="${fixedUrl}" style="position:absolute;width:${Math.round(charImageScale*100)}%;height:${Math.round(charImageScale*100)}%;object-fit:cover;object-position:${charImagePos};left:0;top:0" alt="">`;
+      const pos = (charImagePos||'50% 30%').split(' ');
+      const ox = parseFloat(pos[0])||50;
+      const oy = parseFloat(pos[1]||pos[0])||30;
+      iconWrap.innerHTML = `<img src="${fixedUrl}" alt="" draggable="false" style="position:absolute;pointer-events:none;user-select:none">`;
+      const img = iconWrap.querySelector('img');
+      img.onload = () => {
+        const wrapW = iconWrap.offsetWidth||70;
+        const wrapH = iconWrap.offsetHeight||70;
+        const aspect = img.naturalWidth / img.naturalHeight;
+        let bh = wrapH, bw = bh * aspect;
+        if (bw < wrapW) { bw = wrapW; bh = bw / aspect; }
+        const imgW = bw * charImageScale;
+        const imgH = bh * charImageScale;
+        const imgX = -((ox/100) * Math.max(0, imgW - wrapW));
+        const imgY = -((oy/100) * Math.max(0, imgH - wrapH));
+        img.style.width = imgW + 'px';
+        img.style.height = imgH + 'px';
+        img.style.left = imgX + 'px';
+        img.style.top = imgY + 'px';
+      };
     } else {
       const pcname = sheet.inputs?.pcname||'?';
       iconWrap.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted)">${pcname.charAt(0)||'?'}</div>`;
