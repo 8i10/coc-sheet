@@ -1926,6 +1926,9 @@ async function initViewMode() {
       const hdr = item.querySelector('.secret-item-header input[type=text]');
       if (hdr) hdr.value = rel.name||'';
       const body = item.querySelector('.secret-item-body'); if (!body) return;
+      // bodyを一時的に表示状態にしてからtextarea高さを正しく計算する
+      const wasOpen = body.classList.contains('open');
+      body.classList.add('open');
       const rows = [...body.querySelectorAll('div[style*="position"]')];
       (rel.rows||[]).forEach((r,i) => {
         let row = rows[i];
@@ -1934,8 +1937,12 @@ async function initViewMode() {
         const ti = row.querySelector('.memo-title'); if (ti) ti.value = r.title||'';
         const ta = row.querySelector('textarea'); if (ta) { ta.value = r.body||''; autoResizeTA(ta); }
       });
+      // 開閉ボタンのテキストも更新
+      const btn = item.querySelector('button[onclick*="toggleRelGroup"]');
+      if (btn) btn.textContent = '▼ 閉じる';
     });
     if (relWrap.children.length === 0) addRelGroup();
+    setTimeout(autoResizeAll, 50);
   }
 
   // ネタバレ復元
