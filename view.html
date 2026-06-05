@@ -103,6 +103,7 @@ textarea{font-size:11px;font-family:inherit;border:1px solid var(--border);width
   /* ヘッダー: 2段構成 */
   #sticky-header{flex-wrap:wrap !important;padding:4px 8px !important;gap:0 !important;flex-direction:column !important;align-items:stretch !important}
   #sp-row1{display:flex !important;flex-direction:row;align-items:center;width:100%}
+  #sp-row1{display:flex !important;flex-direction:row;align-items:center;width:100%}
   #header_left{flex-direction:row !important;align-items:center;flex:1;min-width:0;gap:0;overflow:hidden}
   #sticky-pcname{font-size:14px;max-width:none;flex:1;padding-right:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #header_left > div:nth-child(2){display:none}
@@ -997,7 +998,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 
 <!-- アイコン画像表示バー -->
 <!-- アイコン画像URL/ズームバー -->
-<div id="char_image_ctrl" style="display:none;flex-direction:column;gap:3px;padding:3px 10px;border-bottom:1px solid var(--border);background:var(--surface2)">
+<div id="char_image_ctrl" style="display:none">
   <div style="display:flex;align-items:center;gap:6px">
     <span style="font-size:9px;color:var(--text-muted);white-space:nowrap">アイコン画像URL</span>
     <input type="text" id="char_image_url" placeholder="https://www.dropbox.com/..." style="flex:1;font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text)">
@@ -1015,7 +1016,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <div id="char_icon_placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted)">画像なし</div>
   </div>
   <!-- スマホ版URL/ズーム（クロップの直後） -->
-  <div id="char_image_ctrl_sp" style="display:none;flex-direction:column;gap:3px;padding:3px 6px;background:var(--surface2)">
+  <div id="char_image_ctrl_sp" style="display:none">
     <input type="text" id="char_image_url_sp" placeholder="https://www.dropbox.com/..." style="font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text);width:100%" oninput="document.getElementById('char_image_url').value=this.value;previewCharImage(this.value)">
     <input type="range" id="char_image_zoom_sp" min="50" max="300" value="130" style="width:100%" oninput="document.getElementById('char_image_zoom').value=this.value;charImageZoomFromSlider(this.value)">
   </div>
@@ -1774,6 +1775,9 @@ async function initViewMode() {
       else el.value = val;
     });
     if (typeof updateColorCode === 'function') updateColorCode();
+    // stickyヘッダーのPC名を更新
+    const stickyPcname = document.getElementById('sticky-pcname');
+    if (stickyPcname && sheet.inputs.pcname) stickyPcname.textContent = sheet.inputs.pcname;
     // 特徴表の説明文を更新
     if (typeof showTokucho === 'function') { showTokucho(1); showTokucho(2); }
   }
