@@ -969,6 +969,7 @@ function _buildCocoJSON(sheet) {
       ],
       commands: _buildChatPalette(sheet),
       memo: '',
+      secret: false,
     }
   };
 }
@@ -989,6 +990,13 @@ async function openCocoFromIndex(id) {
     <div style="font-weight:bold;font-size:12px;color:var(--text);margin-bottom:6px">🐔 駒出力 - ${(_cocoSheet.inputs?.pcname||'')}</div>
     <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">📝 チャットパレット（プレビュー・編集可）</div>
     <textarea id="coco_palette_preview" style="width:100%;height:220px;font-size:11px;font-family:monospace;border:1px solid var(--border);padding:4px;resize:vertical;background:var(--surface2);color:var(--text)">${palette}</textarea>
+    <div id="coco_copy_msg" style="font-size:11px;color:#2a7;display:none;margin:6px 0">✓ クリップボードにコピーしました！</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--text)">
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+        <input type="checkbox" id="coco_secret_check" style="width:14px;height:14px;cursor:pointer">
+        非公開（secret）にする
+      </label>
+    </div>
     <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px">
       <button onclick="document.getElementById('cocofolia_modal').remove()" style="font-size:11px;padding:3px 12px;cursor:pointer;background:#aaa;color:#fff;border:none;border-radius:2px">閉じる</button>
       <button onclick="_doCocoCopy()" style="font-size:11px;padding:3px 16px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px;font-weight:bold">📋 コマJSONをコピー</button>
@@ -1001,9 +1009,10 @@ function _doCocoCopy() {
   const palette = document.getElementById('coco_palette_preview')?.value || _buildChatPalette(_cocoSheet);
   const json = _buildCocoJSON(_cocoSheet);
   json.data.commands = palette;
+  json.data.secret = document.getElementById('coco_secret_check')?.checked || false;
   navigator.clipboard.writeText(JSON.stringify(json, null, 2)).then(() => {
-    alert('コマJSONをコピーしました！');
-    document.getElementById('cocofolia_modal')?.remove();
+    const msg=document.getElementById('coco_copy_msg');
+    if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);}
   }).catch(() => alert('コピーに失敗しました'));
 }
 
