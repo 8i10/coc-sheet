@@ -1474,7 +1474,7 @@ function calc(){
   AB.forEach(a=>tx(a+'_c',c[a]||0));
   const baseHP=Math.floor((c.con+c.siz)/2);
   const baseMP=c.pow,baseSAN=c.pow*5,baseIDEA=c.int*5,baseLUCK=c.pow*5,baseKNOW=c.edu*5;
-  tx('hp',baseHP);tx('mp',baseMP);tx('san0',baseSAN);tx('idea',baseIDEA);tx('luck',baseLUCK);tx('know',baseKNOW);
+  tx('hp',baseHP||'');tx('mp',baseMP||'');tx('san0',baseSAN||'');tx('idea',baseIDEA||'');tx('luck',baseLUCK||'');tx('know',baseKNOW||'');
   tx('hp_c',baseHP+vn('hp_m')+vn('hp_t'));
   tx('mp_c',baseMP+vn('mp_m')+vn('mp_t'));
   tx('san_c',baseSAN+vn('san_m')+vn('san_t'));
@@ -1569,7 +1569,7 @@ function makeSkillRow(name,base,key,hasFree,freeVal,isDefault){
   if(isDefault)tr.classList.add('skill-default-row');
   let nameHtml=name;
   if(hasFree)nameHtml=`${name}(<input type="text" value="${freeVal||''}" class="free-inp-auto" style="border:none;border-bottom:1px solid var(--border);min-width:44px;width:44px;font-size:11px;outline:none;background:transparent;text-align:left" oninput="autoResize(this)">)`;
-  if(key==='operate')nameHtml=`操縦(<input type="text" style="border:none;border-bottom:1px solid var(--border);width:50px;font-size:11px;outline:none;background:transparent;text-align:left" placeholder="種類">)`;
+  if(key==='operate')nameHtml=`操縦(<input type="text" style="border:none;border-bottom:1px solid var(--border);width:50px;font-size:11px;outline:none;background:transparent;text-align:left" placeholder="">)`;
   const isDyn=key==='kaihi'||key==='kokugo';
   const bAttr=isDyn?`data-basekey="${key}"`:`data-base`;
   const bVal=isDyn?(key==='kaihi'?getCur().dex*2:getCur().edu*5):base;
