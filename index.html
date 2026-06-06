@@ -528,7 +528,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   <div id="toolbar" style="display:none">
     <button id="new_btn" onclick="goNew()">＋ 新規作成</button>
     <div id="toolbar-right">
-      <input id="search_box" type="text" placeholder="PC名・ふりがな・職業・特徴表で検索..." oninput="filterCards()">
+      <input id="search_box" type="text" placeholder="PC名・ふりがな・職業・特徴表・通過シナリオで検索..." oninput="filterCards()">
       <span id="search_hint"></span>
     </div>
   </div>
@@ -671,7 +671,9 @@ function filterCards(){
     // 特徴表: t1_sel・t2_selの選択値
     const t1=(inputs.t1_sel||'').toLowerCase();
     const t2=(inputs.t2_sel||'').toLowerCase();
-    return pcname.includes(q)||furigana.includes(q)||job.includes(q)||t1.includes(q)||t2.includes(q);
+    // 通過シナリオ
+    const scenarios=(sheet.scenarios||[]).join(' ').toLowerCase();
+    return pcname.includes(q)||furigana.includes(q)||job.includes(q)||t1.includes(q)||t2.includes(q)||scenarios.includes(q);
   });
   renderCards(filtered);
 }
