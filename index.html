@@ -53,12 +53,15 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 .card:hover{box-shadow:0 3px 10px rgba(0,0,0,.15)}
 .card-top{display:flex;align-items:stretch;gap:0}
 .card-bar{width:5px;flex-shrink:0}
+.card-icon{flex-shrink:0;width:56px;align-self:stretch;overflow:hidden;border-right:1px solid var(--border)}
 .card-info{flex:1;padding:8px 10px;min-width:0}
 .card-tag-row{display:flex;align-items:center;gap:5px;margin-bottom:2px}
-.card-furigana{font-size:10px;color:#888;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-furigana{font-size:10px;color:#555 !important;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card-pcname{font-size:15px;font-weight:bold;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
-.card-job{font-size:11px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
-.card-meta{display:flex;gap:8px;font-size:11px;color:#666;flex-wrap:wrap}
+.card-job{font-size:11px;color:#222 !important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
+.card-meta{display:flex;gap:4px;font-size:11px;flex-wrap:wrap;align-items:center}
+.meta-label{color:#aaa}
+.meta-value{color:#222;margin-right:6px}
 .badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:bold;white-space:nowrap}
 .s-alive{background:#d4f5e4;color:#1a7a45}
 .s-lost{background:#fde8e8;color:#b03030}
@@ -460,10 +463,15 @@ body.light{
 
 /* ダークモード一覧: 文字色を見やすく */
 body:not(.light) .card-furigana{ color:#aaa !important; }
-body:not(.light) .card-meta{ color:#bbb !important; }
-body:not(.light) .card-job{ color:#ccc !important; }
+body:not(.light) .card-job{ color:#ddd !important; }
+body:not(.light) .meta-label{ color:#777 !important; }
+body:not(.light) .meta-value{ color:#ccc !important; }
 body:not(.light) .card-date{ color:#888 !important; }
 body:not(.light) .card-pcname{ color:var(--text) !important; }
+
+/* ライトモード一覧: 文字色 */
+body.light .card-furigana{ color:#555 !important; }
+body.light .card-job{ color:#111 !important; }
 
 
 /* 一覧カードの白い線・ゴミ箱 */
@@ -635,6 +643,15 @@ function renderCards(chars){
   }
   chars.forEach(char=>grid.appendChild(makeCard(char)));
 
+  // カードの高さに合わせて画像を正方形にする
+  requestAnimationFrame(()=>{
+    grid.querySelectorAll('.card-icon').forEach(icon=>{
+      const h=icon.offsetHeight||56;
+      icon.style.width=h+'px';
+      icon.style.flexShrink='0';
+    });
+  });
+
   // 件数表示
   const hint=document.getElementById('search_hint');
   const q=document.getElementById('search_box').value.trim();
@@ -683,15 +700,20 @@ function makeCard(char){
 
   // メタ行
   const metaParts=[];
-  if(age)metaParts.push('年齢：'+age);
-  if(gender)metaParts.push('性別：'+gender);
-  metaParts.push('SAN：'+sanNow);
+  if(age)metaParts.push({label:'年齢：',value:age});
+  if(gender)metaParts.push({label:'性別：',value:gender});
+  metaParts.push({label:'SAN：',value:String(sanNow)});
 
   // アイコン画像HTML
   const fixedImg = charImage ? fixDropboxUrlIndex(charImage) : '';
+  const pos = (charImagePos||'50% 30%').split(' ');
+  const ox = parseFloat(pos[0])||50;
+  const oy = parseFloat(pos[1]||pos[0])||30;
+  const bgSize = Math.round(charImageScale * 100) + '%';
+  const bgPos = ox + '% ' + oy + '%';
   const iconHtml = fixedImg
-    ? `<div style="width:56px;aspect-ratio:1/1;flex-shrink:0;overflow:hidden;border-right:1px solid var(--border);position:relative;align-self:stretch"><img src="${esc(fixedImg)}" style="position:absolute;width:auto;height:auto;object-fit:none;object-position:${esc(charImagePos)};width:${Math.round(charImageScale*100)}%;height:${Math.round(charImageScale*100)}%;object-fit:cover" alt=""></div>`
-    : `<div style="width:56px;aspect-ratio:1/1;flex-shrink:0;background:var(--surface2);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted);align-self:stretch">${esc(pcname.charAt(0)||'?')}</div>`;
+    ? `<div class="card-icon" style="background-image:url('${esc(fixedImg)}');background-size:${bgSize};background-position:${bgPos};background-repeat:no-repeat"></div>`
+    : `<div class="card-icon" style="background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted)">${esc(pcname.charAt(0)||'?')}</div>`;
 
   const card=document.createElement('div');
   card.className='card';
@@ -707,7 +729,7 @@ function makeCard(char){
         </div>
         <div class="card-pcname">${esc(pcname)}</div>
         ${job?`<div class="card-job">${esc(job)}</div>`:'<div class="card-job" style="color:#ccc">（職業未設定）</div>'}
-        <div class="card-meta">${metaParts.map(p=>`<span>${esc(p)}</span>`).join('')}</div>
+        <div class="card-meta">${metaParts.map(p=>`<span class="meta-label">${esc(p.label)}</span><span class="meta-value">${esc(p.value)}</span>`).join('')}</div>
       </div>
     </div>
     <div class="card-foot">
