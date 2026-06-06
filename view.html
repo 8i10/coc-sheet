@@ -2182,6 +2182,12 @@ function openCocofoliaCopyDialog() {
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;font-size:11px">    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px">      <div style="font-weight:bold;color:var(--text);margin-bottom:4px">📊 ステータス（確認）</div>      <div>PC名: <b>${pcname}</b></div>      <div>イニシアチブ: <b>${c.dex}</b>（DEX）</div>      <div>HP: ${hpMax} / ${hpMax} &nbsp; MP: ${mpMax} / ${mpMax}</div>      <div>SAN: ${sanNow} / ${sanMax}</div>      <div>DB: ${dbVal}</div>      <div>カラー: <span style="background:${color};color:#fff;padding:0 6px;border-radius:2px">${color}</span></div>    </div>    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px">      <div style="font-weight:bold;color:var(--text);margin-bottom:4px">📋 パラメータ（STR〜DB）</div>      ${['str','con','pow','dex','app','siz','int_v','edu'].map(k=>`<span style="background:var(--surface2);color:var(--text);border-radius:2px;padding:0 4px;margin:1px;display:inline-block">${k.replace('_v','').toUpperCase()}: ${c[k]||0}</span>`).join('')}      <span style="background:var(--surface2);color:var(--text);border-radius:2px;padding:0 4px;margin:1px;display:inline-block">DB: ${dbVal}</span>    </div>  </div>
   <div style="font-weight:bold;font-size:11px;color:var(--text);margin-bottom:3px">📝 チャットパレット（プレビュー・編集可）</div>  <textarea id="coco_palette_preview" style="width:100%;height:220px;font-size:11px;font-family:monospace;border:1px solid var(--border);padding:4px;resize:vertical;background:var(--surface2)">${palette}</textarea>
   <div id="coco_copy_msg" style="font-size:11px;color:#2a7;display:none;margin:6px 0">✓ クリップボードにコピーしました！</div>
+  <div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--text)">
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+      <input type="checkbox" id="coco_secret_check" style="width:14px;height:14px;cursor:pointer">
+      非公開（secret）にする
+    </label>
+  </div>
   <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px">    <button onclick="document.getElementById('cocofolia_modal').remove()"      style="font-size:11px;padding:3px 12px;cursor:pointer;background:#aaa;color:#fff;border:none;border-radius:2px">閉じる</button>    <button onclick="doCocofolicaCopy()"      style="font-size:11px;padding:3px 16px;cursor:pointer;background:#7755aa;color:#fff;border:none;border-radius:2px;font-weight:bold">📋 コマJSONをコピー</button>  </div></div>`;
 
   document.body.appendChild(modal);
@@ -2205,7 +2211,7 @@ function doCocofolicaCopy() {
   const params = paramOrder.map((k,i) => ({ label: paramLabels[i], value: String(c[k]||0) }));
   params.push({ label:'DB', value: dbVal });
 
-  const cocoJSON = {kind: 'character',data: {  name: pcname,  initiative: c.dex,  externalUrl: '',  status: [    { label:'HP',  value: hpMax,  max: hpMax  },    { label:'MP',  value: mpMax,  max: mpMax  },    { label:'SAN', value: sanNow, max: sanMax },  ],  params: params,  commands: palette,  secret: false,  invisible: false,  hideStatus: false,  color: color,}
+  const cocoJSON = {kind: 'character',data: {  name: pcname,  initiative: c.dex,  externalUrl: '',  status: [    { label:'HP',  value: hpMax,  max: hpMax  },    { label:'MP',  value: mpMax,  max: mpMax  },    { label:'SAN', value: sanNow, max: sanMax },  ],  params: params,  commands: palette,  secret: document.getElementById('coco_secret_check')?.checked || false,  invisible: false,  hideStatus: false,  color: color,}
   };
 
   const jsonStr = JSON.stringify(cocoJSON);

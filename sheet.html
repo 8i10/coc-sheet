@@ -2974,6 +2974,13 @@ function openCocofoliaCopyDialog(){
 
       <div id="coco_copy_msg" style="font-size:11px;color:#2a7;display:none;margin:6px 0">✓ クリップボードにコピーしました！</div>
 
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--text)">
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+          <input type="checkbox" id="coco_secret_check" style="width:14px;height:14px;cursor:pointer">
+          非公開（secret）にする
+        </label>
+      </div>
+
       <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px">
         <button onclick="document.getElementById('cocofolia_modal').remove()"
           style="font-size:11px;padding:3px 12px;cursor:pointer;background:#aaa;color:#fff;border:none;border-radius:2px">閉じる</button>
@@ -3021,7 +3028,7 @@ function doCocofolicaCopy(){
       ],
       params: params,
       commands: palette,
-      secret: false,
+      secret: document.getElementById('coco_secret_check')?.checked || false,
       invisible: false,
       hideStatus: false,
       color: color,
