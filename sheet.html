@@ -91,6 +91,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 /* FIX1: 技能初期値トグル対象は skill-default-row のみ */
 .skill-table tbody tr.skill-default-row.hidden{display:none}
 .item-input{height:22px;line-height:22px;border:none;outline:none;background:var(--surface);width:100%;font-size:11px;font-family:inherit;padding:0 2px;text-align:left}
+textarea.item-note{height:auto;min-height:22px;line-height:1.4;padding:3px 2px;box-sizing:border-box}
 /* FIX2: うちよそグループ header */
 .relg-header{background:#666;color:#fff;padding:2px 5px;font-size:11px;display:flex;align-items:center;gap:4px;user-select:none;margin-bottom:1px}
 .relg-header:hover{background:#555}
@@ -976,10 +977,6 @@ body.light td.hdr{
   /* スマホのみ追加技能削除ボタンを表示 */
   .del-row-btn-sp{ display:inline-block; }
 
-  /* 所持品テーブルを横スクロール可能に（備考全文表示） */
-  .item-scroll-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .item-scroll-wrap table{ min-width:480px; }
-  .item-scroll-wrap col:nth-child(3){ width:240px !important; }
 
   /* 後遺症・AF・呪文テーブルを全幅に */
   .sub2-acc-body table{ width:100% !important; table-layout:fixed; }
@@ -1341,13 +1338,11 @@ if (('standalone' in navigator) && navigator.standalone) {
       <div class="acc-header" onclick="toggleAcc('items_acc')"><span>▮ 所持品</span><span id="arr_items_acc">▶</span></div>
       <div class="acc-body" id="items_acc">
         <div style="padding:4px">
-          <div class="item-scroll-wrap">
           <table style="table-layout:fixed">
             <colgroup><col style="width:130px"><col style="width:36px"><col><col style="width:16px"></colgroup>
             <thead><tr><th>品名</th><th>個数</th><th>備考</th><th></th></tr></thead>
             <tbody id="item_rows"></tbody>
           </table>
-          </div>
           <button class="add-row-btn" onclick="addItemRow()">＋追加</button>
         </div>
       </div>
@@ -2000,7 +1995,7 @@ function addWeaponRow(){document.getElementById('weapon_rows').appendChild(makeW
 
 function makeItemTr(){
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td style="padding:0 1px"><input class="item-input" type="text" style="text-align:left"></td><td style="padding:0 1px"><input class="item-input" type="number" style="text-align:center"></td><td style="padding:0 1px"><input class="item-input" type="text" style="text-align:left"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  tr.innerHTML=`<td style="padding:0 1px"><input class="item-input" type="text" style="text-align:left"></td><td style="padding:0 1px"><input class="item-input" type="number" style="text-align:center"></td><td style="padding:0 1px"><textarea class="item-input item-note auto-h" rows="1" style="text-align:left;resize:none;display:block;overflow:hidden" oninput="autoResizeTA(this)"></textarea></td><td style="width:16px;border:none;text-align:center;vertical-align:top"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
   return tr;
 }
 function initItemRows(){const tbody=document.getElementById('item_rows');for(let i=0;i<6;i++)tbody.appendChild(makeItemTr());}
@@ -2329,7 +2324,7 @@ function collectData(){
   // 所持品テーブル
   const items=[];
   document.querySelectorAll('#item_rows tr').forEach(tr=>{
-    const inps=[...tr.querySelectorAll('input')].map(i=>i.value);
+    const inps=[...tr.querySelectorAll('input,textarea')].map(i=>i.value);
     if(inps.some(v=>v))items.push(inps);
   });
 
@@ -2462,7 +2457,7 @@ function applyData(json){
     data.items.forEach((vals,i)=>{
       let tr=rows[i];
       if(!tr){tr=makeItemTr();tbody.appendChild(tr);}
-      [...tr.querySelectorAll('input')].forEach((inp,j)=>{if(j<vals.length)inp.value=vals[j];});
+      [...tr.querySelectorAll('input,textarea')].forEach((inp,j)=>{if(j<vals.length){inp.value=vals[j];if(inp.tagName==='TEXTAREA'){inp.style.height='auto';inp.style.height=inp.scrollHeight+'px';}}});
     });
   }
 
@@ -3807,9 +3802,10 @@ function parseSpreadsheetHTML(html){
     items.forEach(it=>{
       const tr=makeItemTr();
       const inputs=tr.querySelectorAll('input');
+      const noteTA=tr.querySelector('textarea');
       if(inputs[0])inputs[0].value=it.name;
       if(inputs[1])inputs[1].value=it.qty;
-      if(inputs[2])inputs[2].value=it.note;
+      if(noteTA){noteTA.value=it.note||'';noteTA.style.height='auto';noteTA.style.height=noteTA.scrollHeight+'px';}
       itemTbody.appendChild(tr);
     });
     const itemsAcc=document.getElementById('items_acc');
