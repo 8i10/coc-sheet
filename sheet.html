@@ -91,7 +91,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 /* FIX1: 技能初期値トグル対象は skill-default-row のみ */
 .skill-table tbody tr.skill-default-row.hidden{display:none}
 .item-input{height:22px;line-height:22px;border:none;outline:none;background:var(--surface);width:100%;font-size:11px;font-family:inherit;padding:0 2px;text-align:left}
-textarea.item-note{height:auto;min-height:22px;line-height:1.4;padding:3px 2px;box-sizing:border-box}
+textarea.item-note{height:22px;min-height:22px;line-height:18px;padding:2px;box-sizing:border-box;overflow:hidden}
 /* FIX2: うちよそグループ header */
 .relg-header{background:#666;color:#fff;padding:2px 5px;font-size:11px;display:flex;align-items:center;gap:4px;user-select:none;margin-bottom:1px}
 .relg-header:hover{background:#555}
@@ -1542,7 +1542,8 @@ function autoResize(inp){
 }
 function autoResizeTA(ta){
   if(!ta||ta.offsetParent===null&&!ta.closest('.acc-body.open')&&!ta.closest('.sub-acc-body.open')&&!ta.closest('.secret-item-body.open')&&!ta.closest('[style*="display:block"]'))return;
-  ta.style.height='36px';
+  const minH=ta.classList.contains('item-note')?'22px':'36px';
+  ta.style.height=minH;
   ta.style.height=ta.scrollHeight+'px';
 }
 function autoResizeAll(){
