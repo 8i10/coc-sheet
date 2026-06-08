@@ -1544,8 +1544,13 @@ function autoResize(inp){
 }
 function autoResizeTA(ta){
   if(!ta||ta.offsetParent===null&&!ta.closest('.acc-body.open')&&!ta.closest('.sub-acc-body.open')&&!ta.closest('.secret-item-body.open')&&!ta.closest('[style*="display:block"]'))return;
-  const minH=ta.classList.contains('item-note')?'22px':'36px';
-  ta.style.height=minH;
+  if(ta.classList.contains('item-note')){
+    // 1行に収まる場合は22px固定、折り返し/改行時のみ伸ばす
+    ta.style.height='22px';
+    if(ta.scrollHeight>24)ta.style.height=ta.scrollHeight+'px';
+    return;
+  }
+  ta.style.height='36px';
   ta.style.height=ta.scrollHeight+'px';
 }
 function autoResizeAll(){

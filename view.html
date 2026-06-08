@@ -1251,8 +1251,12 @@ function autoResize(inp){
   inp.style.width=Math.max(44,inp.scrollWidth+4)+'px';
 }
 function autoResizeTA(ta){
-  const minH=ta.classList.contains('item-note')?'22px':'36px';
-  ta.style.height=minH;
+  if(ta.classList.contains('item-note')){
+    ta.style.height='22px';
+    if(ta.scrollHeight>24)ta.style.height=ta.scrollHeight+'px';
+    return;
+  }
+  ta.style.height='36px';
   ta.style.height=ta.scrollHeight+'px';
 }
 function autoResizeAll(){
