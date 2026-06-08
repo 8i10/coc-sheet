@@ -2618,19 +2618,13 @@ async function saveToStorage() {
     const { data: { user } } = await db.auth.getUser();
     if (!user) { alert('ログインしてください'); return; }
 
-    const { data: existing } = await db
-      .from('character_sheets')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('char_name', name)
-      .single();
-
-    if (existing) {
+    // currentCharId があればそのCSを更新、なければ新規作成（PC名での上書きはしない）
+    if (currentCharId) {
       const {error: upErr} = await db.from('character_sheets')
-        .update({ data: data, updated_at: new Date() })
-        .eq('id', existing.id);
+        .update({ char_name: name, data: data, updated_at: new Date() })
+        .eq('id', currentCharId)
+        .eq('user_id', user.id);
       if(upErr){alert('更新エラー: '+upErr.message);return;}
-      currentCharId = existing.id;
     } else {
       const { data: inserted, error: insErr } = await db.from('character_sheets')
         .insert({ user_id: user.id, char_name: name, data: data })
@@ -3807,15 +3801,17 @@ function parseSpreadsheetHTML(html){
     itemTbody.innerHTML='';
     items.forEach(it=>{
       const tr=makeItemTr();
+      itemTbody.appendChild(tr);
       const inputs=tr.querySelectorAll('input');
       const noteTA=tr.querySelector('textarea');
       if(inputs[0])inputs[0].value=it.name;
       if(inputs[1])inputs[1].value=it.qty;
-      if(noteTA){noteTA.value=it.note||'';autoResizeTA(noteTA);}
-      itemTbody.appendChild(tr);
+      if(noteTA)noteTA.value=it.note||'';
     });
     const itemsAcc=document.getElementById('items_acc');
     if(itemsAcc&&!itemsAcc.classList.contains('open'))toggleAcc('items_acc');
+    // アコーディオンを開いてから高さ計算
+    setTimeout(()=>{itemTbody.querySelectorAll('textarea.item-note').forEach(ta=>autoResizeTA(ta));},80);
   }
 
   // メモ（改行を保持）
@@ -3915,6 +3911,7 @@ const SHEET_KEY = 'coc_sheet_draft';
   if (isNew) {
     sessionStorage.removeItem('coc_new_char');
     sessionStorage.removeItem(SHEET_KEY);
+    currentCharId = null; // 新規なので既存CSのIDをクリア
     return;
   }
 
@@ -3972,11 +3969,8 @@ async function autoSaveToSupabase() {
     _autoSaving = true;
     const data = collectData();
     const nm = document.getElementById('pcname').value || '名無し';
-    const { data: existing } = await db.from('character_sheets').select('id')
-      .eq('user_id', user.id).eq('char_name', nm).single();
-    if (existing) {
-      await db.from('character_sheets').update({data, updated_at: new Date()}).eq('id', existing.id);
-      currentCharId = existing.id;
+    if (currentCharId) {
+      await db.from('character_sheets').update({char_name: nm, data, updated_at: new Date()}).eq('id', currentCharId).eq('user_id', user.id);
     } else {
       const { data: ins } = await db.from('character_sheets')
         .insert({user_id: user.id, char_name: nm, data}).select('id').single();
