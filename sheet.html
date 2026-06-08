@@ -80,6 +80,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 /* FIX5: 合計列右の余白（sk-del列）を幅0・border無しで消す */
 .sk-del{width:0;padding:0;border:none;overflow:visible}
 .add-row-btn{font-size:11px;padding:1px 7px;cursor:pointer;margin:2px 2px 2px 0;background:#eee;border:1px solid var(--border);border-radius:2px}
+.del-row-btn-sp{display:none}
 .del-btn{font-size:11px;padding:0 3px;cursor:pointer;background:none;border:none;color:#bbb;line-height:1;font-weight:normal;transition:color .15s}.del-btn:hover{color:#933}
 .right-panel{display:flex;flex-direction:column;gap:5px}
 .secret-item{border:1px solid var(--border);border-radius:3px;margin-bottom:4px;overflow:hidden}
@@ -972,6 +973,14 @@ body.light td.hdr{
   #skill_col{ overflow-x:auto; }
   .skill-table{ min-width:320px; }
 
+  /* スマホのみ追加技能削除ボタンを表示 */
+  .del-row-btn-sp{ display:inline-block; }
+
+  /* 所持品テーブルを横スクロール可能に（備考全文表示） */
+  .item-scroll-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .item-scroll-wrap table{ min-width:480px; }
+  .item-scroll-wrap col:nth-child(3){ width:240px !important; }
+
   /* 後遺症・AF・呪文テーブルを全幅に */
   .sub2-acc-body table{ width:100% !important; table-layout:fixed; }
 
@@ -1277,7 +1286,7 @@ if (('standalone' in navigator) && navigator.standalone) {
         <thead><tr><th class="sk-chk">✓</th><th class="sk-name" style="text-align:left;padding-left:3px">技能名</th><th class="sk-base">初期</th><th class="sk-inp">職P</th><th class="sk-inp">興P</th><th class="sk-inp">成長</th><th class="sk-inp">他</th><th class="sk-total">計</th><th class="sk-del"></th></tr></thead>
         <tbody id="tbody_combat"></tbody>
       </table>
-      <button class="add-row-btn" onclick="addCustomSkill('tbody_combat')">＋追加</button>
+      <button class="add-row-btn" onclick="addCustomSkill('tbody_combat')">＋追加</button><button class="add-row-btn del-row-btn-sp" onclick="delLastCustomSkill('tbody_combat')" style="margin-left:6px">－削除</button>
     </div>
     <div style="margin-bottom:2px">
       <div class="skill-sec-hdr">探索技能</div>
@@ -1285,7 +1294,7 @@ if (('standalone' in navigator) && navigator.standalone) {
         <thead><tr><th class="sk-chk">✓</th><th class="sk-name" style="text-align:left;padding-left:3px">技能名</th><th class="sk-base">初期</th><th class="sk-inp">職P</th><th class="sk-inp">興P</th><th class="sk-inp">成長</th><th class="sk-inp">他</th><th class="sk-total">計</th><th class="sk-del"></th></tr></thead>
         <tbody id="tbody_search"></tbody>
       </table>
-      <button class="add-row-btn" onclick="addCustomSkill('tbody_search')">＋追加</button>
+      <button class="add-row-btn" onclick="addCustomSkill('tbody_search')">＋追加</button><button class="add-row-btn del-row-btn-sp" onclick="delLastCustomSkill('tbody_search')" style="margin-left:6px">－削除</button>
     </div>
     <div style="margin-bottom:2px">
       <div class="skill-sec-hdr">行動技能</div>
@@ -1293,7 +1302,7 @@ if (('standalone' in navigator) && navigator.standalone) {
         <thead><tr><th class="sk-chk">✓</th><th class="sk-name" style="text-align:left;padding-left:3px">技能名</th><th class="sk-base">初期</th><th class="sk-inp">職P</th><th class="sk-inp">興P</th><th class="sk-inp">成長</th><th class="sk-inp">他</th><th class="sk-total">計</th><th class="sk-del"></th></tr></thead>
         <tbody id="tbody_action"></tbody>
       </table>
-      <button class="add-row-btn" onclick="addCustomSkill('tbody_action')">＋追加</button>
+      <button class="add-row-btn" onclick="addCustomSkill('tbody_action')">＋追加</button><button class="add-row-btn del-row-btn-sp" onclick="delLastCustomSkill('tbody_action')" style="margin-left:6px">－削除</button>
     </div>
     <div style="margin-bottom:2px">
       <div class="skill-sec-hdr">交渉技能</div>
@@ -1301,7 +1310,7 @@ if (('standalone' in navigator) && navigator.standalone) {
         <thead><tr><th class="sk-chk">✓</th><th class="sk-name" style="text-align:left;padding-left:3px">技能名</th><th class="sk-base">初期</th><th class="sk-inp">職P</th><th class="sk-inp">興P</th><th class="sk-inp">成長</th><th class="sk-inp">他</th><th class="sk-total">計</th><th class="sk-del"></th></tr></thead>
         <tbody id="tbody_talk"></tbody>
       </table>
-      <button class="add-row-btn" onclick="addCustomSkill('tbody_talk')">＋追加</button>
+      <button class="add-row-btn" onclick="addCustomSkill('tbody_talk')">＋追加</button><button class="add-row-btn del-row-btn-sp" onclick="delLastCustomSkill('tbody_talk')" style="margin-left:6px">－削除</button>
     </div>
     <div style="margin-bottom:2px">
       <div class="skill-sec-hdr">知識技能</div>
@@ -1309,7 +1318,7 @@ if (('standalone' in navigator) && navigator.standalone) {
         <thead><tr><th class="sk-chk">✓</th><th class="sk-name" style="text-align:left;padding-left:3px">技能名</th><th class="sk-base">初期</th><th class="sk-inp">職P</th><th class="sk-inp">興P</th><th class="sk-inp">成長</th><th class="sk-inp">他</th><th class="sk-total">計</th><th class="sk-del"></th></tr></thead>
         <tbody id="tbody_know"></tbody>
       </table>
-      <button class="add-row-btn" onclick="addCustomSkill('tbody_know')">＋追加</button>
+      <button class="add-row-btn" onclick="addCustomSkill('tbody_know')">＋追加</button><button class="add-row-btn del-row-btn-sp" onclick="delLastCustomSkill('tbody_know')" style="margin-left:6px">－削除</button>
     </div>
   </div>
 
@@ -1332,11 +1341,13 @@ if (('standalone' in navigator) && navigator.standalone) {
       <div class="acc-header" onclick="toggleAcc('items_acc')"><span>▮ 所持品</span><span id="arr_items_acc">▶</span></div>
       <div class="acc-body" id="items_acc">
         <div style="padding:4px">
+          <div class="item-scroll-wrap">
           <table style="table-layout:fixed">
             <colgroup><col style="width:130px"><col style="width:36px"><col><col style="width:16px"></colgroup>
             <thead><tr><th>品名</th><th>個数</th><th>備考</th><th></th></tr></thead>
             <tbody id="item_rows"></tbody>
           </table>
+          </div>
           <button class="add-row-btn" onclick="addItemRow()">＋追加</button>
         </div>
       </div>
@@ -1608,7 +1619,15 @@ function addCustomSkill(tbodyId){
   });
   tbody.appendChild(tr);
 }
-// FIX1: 初期値トグル — skill-default-row かつ未入力のみ非表示
+// スマホ用: 指定セクションの最後のカスタム技能行を削除
+function delLastCustomSkill(tbodyId){
+  const tbody=document.getElementById(tbodyId);
+  if(!tbody)return;
+  // custom_ キーを持つ行のうち最後のものを削除
+  const customRows=[...tbody.querySelectorAll('tr')].filter(tr=>(tr.querySelector('[data-skill]')?.dataset.skill||'').startsWith('custom_'));
+  if(customRows.length===0){alert('削除できる追加技能がありません');return;}
+  customRows[customRows.length-1].remove();
+}
 let allDefaultHidden=false;
 function toggleAllDefault(){
   allDefaultHidden=!allDefaultHidden;
@@ -3174,6 +3193,9 @@ function parseSpreadsheetHTML(html){
   let height='',weight='',origin='',hair='',eye='',birthday='';
   let stats={str:'',con:'',pow:'',dex:'',app:'',siz:'',int_v:'',edu:''};
   let sanNow='';
+  // その他増加分(_m)・一時的増減(_t): STR,CON,POW,DEX,APP,SIZ,INT,EDU,HP,MP,SAN,IDEA,LUCK,KNOW
+  const statColKeys=['str','con','pow','dex','app','siz','int','edu','hp','mp','san','idea','luck','know'];
+  let statOther={}, statTemp={};
   let tokucho1='', tokucho2='';
   let jobFormula='', jobTokki='';
   let selectSkills=[];
@@ -3221,17 +3243,20 @@ function parseSpreadsheetHTML(html){
       if(v==='出身' && !origin){
         for(let d=1;d<=2;d++){const t=row[ci+d]?.text||'';if(t&&!/^(身長|体重|出身|年齢)$/.test(t)){origin=t;break;}}
       }
-      // 髪の色
+      // 髪の色（直後の値セルのみ）
       if(v==='髪の色' && !hair){
-        for(let d=1;d<=2;d++){const t=row[ci+d]?.text||'';if(t&&!/^(髪の色|瞳の色|誕生日)$/.test(t)){hair=t;break;}}
+        const t=(row[ci+1]?.text||'').trim();
+        if(t&&!/^(髪の色|瞳の色|誕生日|職業P|興味P|職P|興P)$/.test(t))hair=t;
       }
-      // 瞳の色
+      // 瞳の色（直後の値セルのみ）
       if(v==='瞳の色' && !eye){
-        for(let d=1;d<=2;d++){const t=row[ci+d]?.text||'';if(t&&!/^(髪の色|瞳の色|誕生日)$/.test(t)){eye=t;break;}}
+        const t=(row[ci+1]?.text||'').trim();
+        if(t&&!/^(髪の色|瞳の色|誕生日|職業P|興味P|職P|興P)$/.test(t))eye=t;
       }
-      // 誕生日
+      // 誕生日（直後の値セルのみ。空欄なら職業P等のラベルを拾わない）
       if(v==='誕生日' && !birthday){
-        for(let d=1;d<=2;d++){const t=row[ci+d]?.text||'';if(t&&!/^(髪の色|瞳の色|誕生日)$/.test(t)){birthday=t;break;}}
+        const t=(row[ci+1]?.text||'').trim();
+        if(t&&!/^(髪の色|瞳の色|誕生日|職業P|興味P|職P|興P|成長分|その他|合計)$/.test(t))birthday=t;
       }
       // 現在値行からSTR〜EDU取得
       if(v==='現在値' && !stats.str){
@@ -3240,6 +3265,20 @@ function parseSpreadsheetHTML(html){
         for(let d=1;d<=20&&found<8;d++){
           const t=row[ci+d]?.text||'';
           if(/^\d+$/.test(t)){stats[statKeys[found]]=t;found++;}
+        }
+      }
+      // その他増加分（_m）: ラベルの右14セルを順に対応
+      if(v==='その他増加分'&&Object.keys(statOther).length===0){
+        for(let i=0;i<14;i++){
+          const t=(row[ci+1+i]?.text||'').trim();
+          if(/^-?\d+$/.test(t)&&t!=='0')statOther[statColKeys[i]]=t;
+        }
+      }
+      // 一時的増減（_t）
+      if(v==='一時的増減'&&Object.keys(statTemp).length===0){
+        for(let i=0;i<14;i++){
+          const t=(row[ci+1+i]?.text||'').trim();
+          if(/^-?\d+$/.test(t)&&t!=='0')statTemp[statColKeys[i]]=t;
         }
       }
       // SAN値
@@ -3251,16 +3290,20 @@ function parseSpreadsheetHTML(html){
         if(!tokucho1)tokucho1=v;
         else if(!tokucho2&&v!==tokucho1)tokucho2=v;
       }
-      // 職業参照名: 「参照：」直後の非数値セル
+      // 職業参照名: 「参照：」直後の非数値・非チャパレセル
       if((v==='参照：'||v==='参照:')&&!jobRefName){
         for(let d=1;d<=3;d++){
           const t=(row[ci+d]?.text||'').trim();
-          if(t&&!/^\d+$/.test(t)&&t!=='-'){jobRefName=t;break;}
+          if(t&&!/^\d+$/.test(t)&&t!=='-'&&
+             !t.startsWith('CCB')&&!t.startsWith('CBRB')&&!t.startsWith('RESB')&&
+             !t.startsWith('###')&&!t.startsWith('1d')&&!t.startsWith('x2')&&
+             !/^\d+d\d+/.test(t)&&!t.includes('【')){jobRefName=t;break;}
         }
       }
       if((v.startsWith('参照：')||v.startsWith('参照:'))&&v.length>3){
         const refName=v.replace(/^参照[：:]\s*/,'').trim();
-        if(refName&&!/^\d+$/.test(refName)&&!jobRefName)jobRefName=refName;
+        if(refName&&!/^\d+$/.test(refName)&&!jobRefName&&
+           !refName.startsWith('CCB')&&!refName.includes('【'))jobRefName=refName;
       }
       // 特記事項エリア（Row38-41付近）: cs=5のセルが同行に職業名＋計算式で並ぶパターン
       // 例: [ネットタレント cs=5][EDU*10+DEX*10 cs=5]
@@ -3377,26 +3420,28 @@ function parseSpreadsheetHTML(html){
     const name=nameCell.text;
     if(!name||/^(成長|技能|初期値|職業P|興味P|成長分|その他|合計|＜|選択技能|─|―)/.test(name))return;
     const isFree=freeInputSkills.has(name)&&nameCell.colspan===1;
-    let jobV='',intV='',grwV='',othV='',freeVal='';
+    let jobV='',intV='',grwV='',othV='',freeVal='',baseV='';
     const toNum=v=>/^-?\d+$/.test(v?.trim()||'')?v.trim():'';
 
     if(isFree){
       // [nameIdx]=技名(cs1), [nameIdx+1]=種類(cs2), [nameIdx+2]=初期値, [nameIdx+3]=職P, [nameIdx+4]=興P, [nameIdx+5]=成長, [nameIdx+6]=他
       freeVal=row[nameIdx+1]?.text||'';
+      baseV=toNum(row[nameIdx+2]?.text);
       jobV=toNum(row[nameIdx+3]?.text);
       intV=toNum(row[nameIdx+4]?.text);
       grwV=toNum(row[nameIdx+5]?.text);
       othV=toNum(row[nameIdx+6]?.text);
     } else {
       // [nameIdx]=技名(cs3), [nameIdx+1]=初期値, [nameIdx+2]=職P, [nameIdx+3]=興P, [nameIdx+4]=成長, [nameIdx+5]=他
+      baseV=toNum(row[nameIdx+1]?.text);
       jobV=toNum(row[nameIdx+2]?.text);
       intV=toNum(row[nameIdx+3]?.text);
       grwV=toNum(row[nameIdx+4]?.text);
       othV=toNum(row[nameIdx+5]?.text);
     }
 
-    // 全て0なら記録しない（初期値のみ）
-    if(!jobV&&!intV&&!grwV&&!othV)return;
+    // 全て0なら記録しない（ただし自由入力欄に値があれば保持）
+    if(!jobV&&!intV&&!grwV&&!othV&&!(isFree&&freeVal))return;
 
     const sectionTbody={combat:'tbody_combat',search:'tbody_search',action:'tbody_action',talk:'tbody_talk',know:'tbody_know'}[section]||'tbody_combat';
     const key=skillNameToKey[name];
@@ -3404,10 +3449,10 @@ function parseSpreadsheetHTML(html){
       if(!skillData[key]){
         skillData[key]={key,job:jobV,int:intV,grw:grwV,oth:othV,freeVal};
       } else if(freeInputSkills.has(name)){
-        customSkillRows.push({name:name+(freeVal?'('+freeVal+')':''),job:jobV,int:intV,grw:grwV,oth:othV,tbodyId:sectionTbody});
+        customSkillRows.push({name:name+(freeVal?'('+freeVal+')':''),base:baseV,job:jobV,int:intV,grw:grwV,oth:othV,tbodyId:sectionTbody});
       }
     } else if(name&&!/^(\d+|#ERROR!)/.test(name)){
-      customSkillRows.push({name:name+(freeVal?'('+freeVal+')':''),job:jobV,int:intV,grw:grwV,oth:othV,tbodyId:sectionTbody});
+      customSkillRows.push({name:name+(freeVal?'('+freeVal+')':''),base:baseV,job:jobV,int:intV,grw:grwV,oth:othV,tbodyId:sectionTbody});
     }
   }
 
@@ -3424,10 +3469,16 @@ function parseSpreadsheetHTML(html){
       }
     }
     // 中列: 行動（row13〜29）・交渉（row30〜44）
-    // インデックス11付近
+    // 技能行のみ: 名前セルの直前(mi-1)が成長列（空セル）であること、名前が記号でないこと
     for(const mi of [11,12]){
       const mc=row[mi];
-      if(mc&&mc.text&&mc.text!==''&&(skillNameToKey[mc.text]!==undefined||freeInputSkills.has(mc.text))){
+      if(!mc||!mc.text||mc.text==='')continue;
+      const isKnown=skillNameToKey[mc.text]!==undefined||freeInputSkills.has(mc.text);
+      // カスタム判定: 名前が日本語/英字を含み、記号や数値や注釈でない & 直前が成長列(空) & 後続に数値
+      const looksLikeName=/[ぁ-んァ-ヶー一-龠a-zA-Z]/.test(mc.text)&&!/[／()（）]/.test(mc.text)&&!/^(追加P|不定|迄|参照|興味P|職業P)/.test(mc.text);
+      const hasNum=/^\d+$/.test(row[mi+1]?.text||'')||/^\d+$/.test(row[mi+3]?.text||'');
+      const prevGrowth=(row[mi-1]?.text||'')===''; // 成長列は空
+      if(isKnown||(looksLikeName&&hasNum&&prevGrowth&&mc.colspan>=1&&ri>=13)){
         const section=ri<=29?'action':'talk';
         extractSkill(row,mi,section);
         break;
@@ -3436,7 +3487,12 @@ function parseSpreadsheetHTML(html){
     // 右列: 知識（全行）
     for(const ki of [21,22,23]){
       const kc=row[ki];
-      if(kc&&kc.text&&kc.text!==''&&(skillNameToKey[kc.text]!==undefined||freeInputSkills.has(kc.text))){
+      if(!kc||!kc.text||kc.text==='')continue;
+      const isKnown=skillNameToKey[kc.text]!==undefined||freeInputSkills.has(kc.text);
+      const looksLikeName=/[ぁ-んァ-ヶー一-龠a-zA-Z]/.test(kc.text)&&!/[／()（）]/.test(kc.text)&&!/^(追加P|不定|迄|参照|興味P|職業P)/.test(kc.text);
+      const hasNum=/^\d+$/.test(row[ki+2]?.text||'');
+      const prevGrowth=(row[ki-1]?.text||'')==='';
+      if(isKnown||(looksLikeName&&hasNum&&prevGrowth&&kc.colspan>=3&&ri>=13)){
         extractSkill(row,ki,'know');
         break;
       }
@@ -3454,11 +3510,14 @@ function parseSpreadsheetHTML(html){
     if(inWeaponTable){
       const pctIdx=row.findIndex(c=>c.text==='％');
       if(pctIdx>=0){
-        const nameCell=row.find(c=>c.colspan>=3&&c.text&&c.text!=='ダメージボーナス：'&&!/^(名前|成功率|ダメージ|射程|攻撃回数|装弾数|耐久力|その他)$/.test(c.text));
+        // 武器名は％列より前のcolspan>=3セル（％より後の「その他」列は除外）
+        const nameCell=row.find((c,i)=>i<pctIdx&&c.colspan>=3&&c.text&&c.text!=='ダメージボーナス：'&&!/^(名前|成功率|ダメージ|射程|攻撃回数|装弾数|耐久力|その他)$/.test(c.text));
         const skillPct=row[pctIdx-1]?.text||'';
-        const dmgCell=row.find((c,i)=>i>pctIdx&&c.text&&!/^(射程|攻撃回数|装弾数|耐久力|その他|％)$/.test(c.text));
+        // ダメージは％列の直後付近のcolspan>=2セル
+        const dmgCell=row.find((c,i)=>i>pctIdx&&c.colspan>=2&&c.text&&!/^(射程|攻撃回数|装弾数|耐久力|その他|％)$/.test(c.text));
+        // 武器名が空の行はスキップ
         if(nameCell&&nameCell.text){
-          weapons.push({name:nameCell.text,skill:skillPct,damage:dmgCell?.text||'',range:'',shots:'',ammo:'',hp:'',note:''});
+          weapons.push({name:nameCell.text,skill:/^\d+$/.test(skillPct)?skillPct:'',damage:dmgCell?.text||'',range:'',shots:'',ammo:'',hp:'',note:''});
         }
       } else {
         if(texts.some(t=>t.includes('所持品')))inWeaponTable=false;
@@ -3579,6 +3638,10 @@ function parseSpreadsheetHTML(html){
   // ステータス
   ['str','con','pow','dex','app','siz','int_v','edu'].forEach(k=>sv(k,stats[k]));
   if(sanNow)sv('san_now',sanNow);
+  // その他増加分(_m)・一時的増減(_t)を反映
+  Object.entries(statOther).forEach(([k,val])=>{const el=document.getElementById(k+'_m');if(el){el.value=val;}});
+  Object.entries(statTemp).forEach(([k,val])=>{const el=document.getElementById(k+'_t');if(el){el.value=val;}});
+  if(typeof calc==='function')calc();
 
   // 特徴表を自動選択
   [tokucho1,tokucho2].forEach((label,n)=>{
@@ -3711,12 +3774,12 @@ function parseSpreadsheetHTML(html){
     tr.innerHTML=`
       <td class="sk-chk"><input type="checkbox"></td>
       <td class="sk-name" data-skill="${key}"><input type="text" value="${cr.name}" style="border:none;border-bottom:1px solid var(--border);width:90%;font-size:11px;outline:none;background:transparent;text-align:left"></td>
-      <td class="sk-base" data-base>0</td>
+      <td class="sk-base" data-base>${cr.base||0}</td>
       <td class="sk-inp"><input type="number" class="job-inp" value="${cr.job}" oninput="skillChanged(this)"></td>
       <td class="sk-inp"><input type="number" class="int-inp" value="${cr.int}" oninput="skillChanged(this)"></td>
       <td class="sk-inp"><input type="number" class="grw-inp" value="${cr.grw}" oninput="skillChanged(this)"></td>
       <td class="sk-inp"><input type="number" class="oth-inp" value="${cr.oth}" oninput="skillChanged(this)"></td>
-      <td class="sk-total">${(parseInt(cr.job)||0)+(parseInt(cr.int)||0)+(parseInt(cr.grw)||0)+(parseInt(cr.oth)||0)}</td>
+      <td class="sk-total">${(parseInt(cr.base)||0)+(parseInt(cr.job)||0)+(parseInt(cr.int)||0)+(parseInt(cr.grw)||0)+(parseInt(cr.oth)||0)}</td>
       <td class="sk-del"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
     tbody.appendChild(tr);
   });
