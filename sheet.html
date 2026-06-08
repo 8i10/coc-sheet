@@ -1015,7 +1015,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 
 <!-- ≡ メニュー（fixed配置）-->
 <div id="sheet_menu" style="display:none;position:fixed;top:38px;right:10px;background:#1a1a1a;border:1px solid var(--border);border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.4);min-width:160px;z-index:99999;overflow:hidden">
-  <div onclick="location.href='index.html';closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>←</span> 一覧に戻る</div>
+  <div onclick="duplicateCS();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>⧉</span> 複製</div>
   <div id="menu_coco" onclick="openCocofoliaCopyDialog();closeMenu()" style="display:none;padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#333;display:none;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"">🐔 駒出力</div>
   <div onclick="applyTheme(document.body.classList.contains('light')?'dark':'light');closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#333'" onmouseout="this.style.background=''">🌙 テーマ切替</div>
   <div onclick="exportJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>⬇</span> JSON出力</div>
@@ -2609,6 +2609,33 @@ function applyData(json){
 }
 // 保存ボタン
 let currentCharId = null;
+
+// 現在開いているCSを別IDで複製
+async function duplicateCS() {
+  let data;
+  try { data = collectData(); } catch(e) { alert('データ収集エラー: ' + e.message); return; }
+  const name = document.getElementById('pcname').value || '名無し';
+  if (!confirm('「' + name + '」を複製しますか？\n複製後は複製したシートが開きます。')) return;
+  try {
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) { alert('ログインしてください'); return; }
+    const { data: inserted, error } = await db.from('character_sheets')
+      .insert({ user_id: user.id, char_name: name, data: data })
+      .select('id')
+      .single();
+    if (error) { alert('複製エラー: ' + error.message); return; }
+    // 複製した新しいIDに切り替え（以後の保存は複製先を更新）
+    currentCharId = inserted.id;
+    try {
+      const obj = JSON.parse(data);
+      obj._charId = currentCharId;
+      sessionStorage.setItem(SHEET_KEY, JSON.stringify(obj));
+    } catch(e) {}
+    showSaveMsg('✓ 複製しました');
+  } catch(e) {
+    alert('複製エラー: ' + e.message);
+  }
+}
 
 async function saveToStorage() {
   let data;
