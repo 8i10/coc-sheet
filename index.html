@@ -951,6 +951,17 @@ function _buildChatPalette(sheet) {
     });
   });
 
+  // カスタム追加技能（custom_xxx キー）
+  skills.forEach(s => {
+    if (!s.key || !s.key.startsWith('custom_')) return;
+    const name = (s.freeVal || '').trim();
+    if (!name) return; // 名前未入力はスキップ
+    const base = parseInt(s.base) || 0;
+    const total = base + (parseInt(s.job)||0) + (parseInt(s.int)||0) + (parseInt(s.grw)||0) + (parseInt(s.oth)||0);
+    if (total <= base) return; // 初期値超えのみ出力
+    lines.push(`CCB<=${total} 【${name}】`);
+  });
+
   lines.push(`CCB<={STR}*5 【STR】`);
   lines.push(`CCB<={CON}*5 【CON】`);
   lines.push(`CCB<={POW}*5 【POW】`);
