@@ -91,7 +91,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 /* FIX1: 技能初期値トグル対象は skill-default-row のみ */
 .skill-table tbody tr.skill-default-row.hidden{display:none}
 .item-input{height:22px;line-height:22px;border:none;outline:none;background:var(--surface);width:100%;font-size:11px;font-family:inherit;padding:0 2px;text-align:left}
-textarea.item-note{height:22px;min-height:22px;line-height:18px;padding:2px;box-sizing:border-box;overflow:hidden}
+textarea.item-note{height:22px;min-height:22px;line-height:16px;padding:3px 2px;box-sizing:border-box;overflow:hidden;vertical-align:top;display:block}
 /* FIX2: うちよそグループ header */
 .relg-header{background:#666;color:#fff;padding:2px 5px;font-size:11px;display:flex;align-items:center;gap:4px;user-select:none;margin-bottom:1px}
 .relg-header:hover{background:#555}
@@ -2458,7 +2458,7 @@ function applyData(json){
     data.items.forEach((vals,i)=>{
       let tr=rows[i];
       if(!tr){tr=makeItemTr();tbody.appendChild(tr);}
-      [...tr.querySelectorAll('input,textarea')].forEach((inp,j)=>{if(j<vals.length){inp.value=vals[j];if(inp.tagName==='TEXTAREA'){inp.style.height='auto';inp.style.height=inp.scrollHeight+'px';}}});
+      [...tr.querySelectorAll('input,textarea')].forEach((inp,j)=>{if(j<vals.length){inp.value=vals[j];if(inp.tagName==='TEXTAREA')autoResizeTA(inp);}});
     });
   }
 
@@ -3806,7 +3806,7 @@ function parseSpreadsheetHTML(html){
       const noteTA=tr.querySelector('textarea');
       if(inputs[0])inputs[0].value=it.name;
       if(inputs[1])inputs[1].value=it.qty;
-      if(noteTA){noteTA.value=it.note||'';noteTA.style.height='auto';noteTA.style.height=noteTA.scrollHeight+'px';}
+      if(noteTA){noteTA.value=it.note||'';autoResizeTA(noteTA);}
       itemTbody.appendChild(tr);
     });
     const itemsAcc=document.getElementById('items_acc');
