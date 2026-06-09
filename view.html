@@ -2219,7 +2219,8 @@ function openCocofoliaCopyDialog() {
   const hpMax  = parseInt(document.getElementById('hp_c')?.textContent) || 0;
   const mpMax  = parseInt(document.getElementById('mp_c')?.textContent) || 0;
   const sanNow = parseInt(document.getElementById('san_now')?.value) || (c.pow*5);
-  const sanMax = parseInt(document.getElementById('max_san')?.textContent) || 99;
+  let sanMax = parseInt(document.getElementById('max_san')?.textContent) || 99;
+  { const _mythosTr=document.querySelector('[data-skill="mythos"]')?.closest('tr'); const _mythos=_mythosTr?parseInt(_mythosTr.querySelector('.sk-total')?.textContent)||0:0; sanMax=99-_mythos; }
   const dbVal  = document.getElementById('db')?.textContent || '0';
 
   const palette = buildChatPalette(c);
@@ -2254,7 +2255,8 @@ function doCocofolicaCopy() {
   const hpMax  = parseInt(document.getElementById('hp_c')?.textContent) || 0;
   const mpMax  = parseInt(document.getElementById('mp_c')?.textContent) || 0;
   const sanNow = parseInt(document.getElementById('san_now')?.value) || (c.pow*5);
-  const sanMax = parseInt(document.getElementById('max_san')?.textContent) || 99;
+  let sanMax = parseInt(document.getElementById('max_san')?.textContent) || 99;
+  { const _mythosTr=document.querySelector('[data-skill="mythos"]')?.closest('tr'); const _mythos=_mythosTr?parseInt(_mythosTr.querySelector('.sk-total')?.textContent)||0:0; sanMax=99-_mythos; }
   const dbVal  = document.getElementById('db')?.textContent || '0';
 
   const palette = document.getElementById('coco_palette_preview')?.value || buildChatPalette(c);

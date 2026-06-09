@@ -3839,14 +3839,17 @@ function parseSpreadsheetHTML(html){
       itemTbody.appendChild(tr);
       const inputs=tr.querySelectorAll('input');
       const noteTA=tr.querySelector('textarea');
-      if(inputs[0])inputs[0].value=it.name;
-      if(inputs[1])inputs[1].value=it.qty;
-      if(noteTA)noteTA.value=it.note||'';
+      if(inputs[0])inputs[0].value=(it.name||'').trim();
+      if(inputs[1])inputs[1].value=(it.qty||'').toString().trim();
+      if(noteTA){
+        noteTA.value=(it.note||'').trim();
+        noteTA.style.height='22px';
+      }
     });
     const itemsAcc=document.getElementById('items_acc');
     if(itemsAcc&&!itemsAcc.classList.contains('open'))toggleAcc('items_acc');
-    // アコーディオンを開いてから高さ計算
-    setTimeout(()=>{itemTbody.querySelectorAll('textarea.item-note').forEach(ta=>autoResizeTA(ta));},80);
+    // アコーディオンを開いてから、内容のあるものだけ高さ計算
+    setTimeout(()=>{itemTbody.querySelectorAll('textarea.item-note').forEach(ta=>{ta.style.height='22px';if(ta.value&&ta.scrollHeight>24)ta.style.height=ta.scrollHeight+'px';});},120);
   }
 
   // メモ（改行を保持）
