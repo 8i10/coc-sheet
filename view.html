@@ -2166,6 +2166,7 @@ function buildChatPalette(c) {
 }
 
 function openCocofoliaCopyDialog() {
+ try {
   const old = document.getElementById('cocofolia_modal');
   if (old) old.remove();
 
@@ -2198,6 +2199,9 @@ function openCocofoliaCopyDialog() {
 
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+ } catch(err) {
+  alert('駒出力エラー: ' + err.message + '\n' + (err.stack||'').split('\n')[1]);
+ }
 }
 
 function doCocofolicaCopy() {
