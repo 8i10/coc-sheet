@@ -2225,8 +2225,8 @@ function doCocofolicaCopy() {
   let _iconUrl = _rawImg;
   if (_rawImg.includes('dropbox.com')) {
     _iconUrl = _rawImg.replace('www.dropbox.com','dl.dropboxusercontent.com').replace('dropbox.com','dl.dropboxusercontent.com');
-    if(/[?&]dl=0/.test(_iconUrl))_iconUrl=_iconUrl.replace(/([?&])dl=0/,'$1dl=1');
-    else if(!/[?&]dl=1/.test(_iconUrl))_iconUrl+=(_iconUrl.includes('?')?'&':'?')+'dl=1';
+    _iconUrl=_iconUrl.replace(/([?&])dl=[01]/,'$1raw=1');
+    if(!/[?&]raw=1/.test(_iconUrl))_iconUrl+=(_iconUrl.includes('?')?'&':'?')+'raw=1';
   }
   const cocoJSON = {kind: 'character',data: {  name: pcname,  initiative: c.dex,  externalUrl: '',  iconUrl: _iconUrl,  status: [    { label:'HP',  value: hpMax,  max: hpMax  },    { label:'MP',  value: mpMax,  max: mpMax  },    { label:'SAN', value: sanNow, max: sanMax },  ],  params: params,  commands: palette,  secret: document.getElementById('coco_secret_check')?.checked || false,  invisible: false,  hideStatus: false,  color: color,}
   };

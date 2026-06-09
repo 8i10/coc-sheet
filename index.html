@@ -749,8 +749,8 @@ function fixDropboxUrlIndex(url) {
   if (!url) return '';
   if (url.includes('dropbox.com')) {
     let u = url.replace('www.dropbox.com','dl.dropboxusercontent.com').replace('dropbox.com','dl.dropboxusercontent.com');
-    if(/[?&]dl=0/.test(u))u=u.replace(/([?&])dl=0/,'$1dl=1');
-    else if(!/[?&]dl=1/.test(u))u+=(u.includes('?')?'&':'?')+'dl=1';
+    u=u.replace(/([?&])dl=[01]/,'$1raw=1');
+    if(!/[?&]raw=1/.test(u))u+=(u.includes('?')?'&':'?')+'raw=1';
     return u;
   }
   return url;
