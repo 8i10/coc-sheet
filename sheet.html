@@ -2988,7 +2988,7 @@ function openCocofoliaCopyDialog(){
   const hpMax   = parseInt(document.getElementById('hp_c')?.textContent) || 0;
   const mpMax   = parseInt(document.getElementById('mp_c')?.textContent) || 0;
   const sanNow  = parseInt(document.getElementById('san_now')?.value) || (c.pow*5);
-  const sanMax  = parseInt(document.getElementById('max_san')?.textContent) || 99;
+  const sanMax  = sanNow; // コマ出力は現在SAN＝最大SAN
   const dbVal   = document.getElementById('db')?.textContent || '0';
 
   // チャットパレットを事前生成してプレビュー
@@ -3050,7 +3050,7 @@ function doCocofolicaCopy(){
   const hpMax   = parseInt(document.getElementById('hp_c')?.textContent) || 0;
   const mpMax   = parseInt(document.getElementById('mp_c')?.textContent) || 0;
   const sanNow  = parseInt(document.getElementById('san_now')?.value) || (c.pow*5);
-  const sanMax  = parseInt(document.getElementById('max_san')?.textContent) || 99;
+  const sanMax  = sanNow; // コマ出力は現在SAN＝最大SAN
   const dbVal   = document.getElementById('db')?.textContent || '0';
 
   // パレットはプレビューテキストエリアの内容を使う（編集反映）
@@ -3288,8 +3288,8 @@ function parseSpreadsheetHTML(html){
         const t=(row[ci+1]?.text||'').trim();
         if(t&&!/^(髪の色|瞳の色|誕生日|職業P|興味P|職P|興P|成長分|その他|合計)$/.test(t))birthday=t;
       }
-      // 現在値行からSTR〜EDU取得
-      if(v==='現在値' && !stats.str){
+      // 能力値行（基本値）からSTR〜EDU取得（現在値ではなく基本値を使う）
+      if(v==='能力値' && !stats.str){
         const statKeys=['str','con','pow','dex','app','siz','int_v','edu'];
         let found=0;
         for(let d=1;d<=20&&found<8;d++){

@@ -985,9 +985,7 @@ function _buildCocoJSON(sheet) {
   const pcname = inp.pcname || 'キャラクター';
   const txtcolor = inp.txtcolor || '#000000';
   const san_now = parseInt(inp.san_now)||0;
-  const skills_ = sheet.skills || [];
-  const mythosTotal = _getSkillTotal('mythos', skills_, stats) || 0;
-  const max_san = 99 - mythosTotal;
+  const max_san = san_now; // コマ出力は現在SAN＝最大SAN
   const hp = Math.ceil((stats.con + stats.siz) / 2);
   const mp = stats.pow;
   const iconUrl = inp.charImage ? fixDropboxUrlIndex(inp.charImage) : '';

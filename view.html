@@ -2219,8 +2219,7 @@ function openCocofoliaCopyDialog() {
   const hpMax  = parseInt(document.getElementById('hp_c')?.textContent) || 0;
   const mpMax  = parseInt(document.getElementById('mp_c')?.textContent) || 0;
   const sanNow = parseInt(document.getElementById('san_now')?.value) || (c.pow*5);
-  let sanMax = parseInt(document.getElementById('max_san')?.textContent) || 99;
-  { const _mythosTr=document.querySelector('[data-skill="mythos"]')?.closest('tr'); const _mythos=_mythosTr?parseInt(_mythosTr.querySelector('.sk-total')?.textContent)||0:0; sanMax=99-_mythos; }
+  const sanMax = sanNow; // コマ出力は現在SAN＝最大SAN
   const dbVal  = document.getElementById('db')?.textContent || '0';
 
   const palette = buildChatPalette(c);
@@ -2255,8 +2254,7 @@ function doCocofolicaCopy() {
   const hpMax  = parseInt(document.getElementById('hp_c')?.textContent) || 0;
   const mpMax  = parseInt(document.getElementById('mp_c')?.textContent) || 0;
   const sanNow = parseInt(document.getElementById('san_now')?.value) || (c.pow*5);
-  let sanMax = parseInt(document.getElementById('max_san')?.textContent) || 99;
-  { const _mythosTr=document.querySelector('[data-skill="mythos"]')?.closest('tr'); const _mythos=_mythosTr?parseInt(_mythosTr.querySelector('.sk-total')?.textContent)||0:0; sanMax=99-_mythos; }
+  const sanMax = sanNow; // コマ出力は現在SAN＝最大SAN
   const dbVal  = document.getElementById('db')?.textContent || '0';
 
   const palette = document.getElementById('coco_palette_preview')?.value || buildChatPalette(c);
@@ -2302,11 +2300,19 @@ function applyTheme(mode){
   applyTheme(saved);
 })();
 
-// 画像・職業特記・特徴表内容を右クリック禁止
+// 画像・職業特記・特徴表内容のみ右クリック禁止（他要素は許可）
 (function(){
   function blockContextMenu(){
-    const ids=['char_icon_wrap','job_tokki','t1_desc','t2_desc'];
-    ids.forEach(id=>{
+    // 画像本体（imgとアイコンラッパー直接のみ）
+    const iconWrap=document.getElementById('char_icon_wrap');
+    if(iconWrap){
+      iconWrap.addEventListener('contextmenu',e=>{
+        // ラッパー自身または画像上でのみ禁止
+        if(e.target===iconWrap||e.target.tagName==='IMG'){e.preventDefault();return false;}
+      });
+    }
+    // 職業特記・特徴表内容（テキスト要素のみ）
+    ['job_tokki','t1_desc','t2_desc'].forEach(id=>{
       const el=document.getElementById(id);
       if(el)el.addEventListener('contextmenu',e=>{e.preventDefault();return false;});
     });
