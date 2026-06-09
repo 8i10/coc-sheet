@@ -3062,12 +3062,17 @@ function doCocofolicaCopy(){
   }));
   params.push({ label:'DB', value: dbVal });
 
+  // コマ画像URL（Dropbox等は直リンクに変換）
+  const rawImgUrl = document.getElementById('char_image_url')?.value || '';
+  const iconUrl = rawImgUrl ? fixDropboxUrl(rawImgUrl) : '';
+
   const cocoJSON = {
     kind: 'character',
     data: {
       name: pcname,
       initiative: c.dex,
       externalUrl: '',
+      iconUrl: iconUrl,
       status: [
         { label:'HP',  value: hpMax,  max: hpMax  },
         { label:'MP',  value: mpMax,  max: mpMax  },

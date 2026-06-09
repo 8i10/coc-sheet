@@ -983,6 +983,7 @@ function _buildCocoJSON(sheet) {
   const max_san = stats.pow * 5;
   const hp = Math.ceil((stats.con + stats.siz) / 2);
   const mp = stats.pow;
+  const iconUrl = inp.charImage ? fixDropboxUrlIndex(inp.charImage) : '';
 
   return {
     kind: 'character',
@@ -991,6 +992,7 @@ function _buildCocoJSON(sheet) {
       name: pcname,
       initiative: stats.dex,
       externalUrl: '',
+      iconUrl: iconUrl,
       status: [
         {label:'HP', value: hp, max: hp},
         {label:'MP', value: mp, max: mp},

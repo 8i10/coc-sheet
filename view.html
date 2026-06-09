@@ -2217,7 +2217,9 @@ function doCocofolicaCopy() {
   const params = paramOrder.map((k,i) => ({ label: paramLabels[i], value: String(c[k]||0) }));
   params.push({ label:'DB', value: dbVal });
 
-  const cocoJSON = {kind: 'character',data: {  name: pcname,  initiative: c.dex,  externalUrl: '',  status: [    { label:'HP',  value: hpMax,  max: hpMax  },    { label:'MP',  value: mpMax,  max: mpMax  },    { label:'SAN', value: sanNow, max: sanMax },  ],  params: params,  commands: palette,  secret: document.getElementById('coco_secret_check')?.checked || false,  invisible: false,  hideStatus: false,  color: color,}
+  const _rawImg = document.getElementById('char_image_url')?.value || '';
+  const _iconUrl = _rawImg.includes('dropbox.com') ? _rawImg.replace('www.dropbox.com','dl.dropboxusercontent.com').replace('?dl=0','').replace('?dl=1','') : _rawImg;
+  const cocoJSON = {kind: 'character',data: {  name: pcname,  initiative: c.dex,  externalUrl: '',  iconUrl: _iconUrl,  status: [    { label:'HP',  value: hpMax,  max: hpMax  },    { label:'MP',  value: mpMax,  max: mpMax  },    { label:'SAN', value: sanNow, max: sanMax },  ],  params: params,  commands: palette,  secret: document.getElementById('coco_secret_check')?.checked || false,  invisible: false,  hideStatus: false,  color: color,}
   };
 
   const jsonStr = JSON.stringify(cocoJSON);
@@ -2244,6 +2246,19 @@ function applyTheme(mode){
   const ver = localStorage.getItem(THEME_KEY+'_ver');
   const saved = (ver === THEME_VER) ? (localStorage.getItem(THEME_KEY) || 'light') : 'light';
   applyTheme(saved);
+})();
+
+// 画像・職業特記・特徴表内容を右クリック禁止
+(function(){
+  function blockContextMenu(){
+    const ids=['char_icon_wrap','job_tokki','t1_desc','t2_desc'];
+    ids.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.addEventListener('contextmenu',e=>{e.preventDefault();return false;});
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',blockContextMenu);
+  else blockContextMenu();
 })();
 
 </script>
