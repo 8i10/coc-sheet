@@ -2003,14 +2003,14 @@ async function initViewMode() {
     el.style.display = el.value.trim() ? 'block' : 'none';
   });
 
-  // 全input readonly化
+  // 全input readonly化（コピーは可能にするためpointer-eventsは残す）
   document.querySelectorAll('input, textarea, select').forEach(el => {
     if (el.closest('#secret_items_wrap')) return;
     if (el.type === 'checkbox') { el.style.pointerEvents = 'none'; return; }
     if (el.tagName === 'SELECT') { el.style.pointerEvents = 'none'; return; }
     el.setAttribute('readonly', true);
-    el.style.pointerEvents = 'none';
     el.style.userSelect = 'text';
+    el.style.webkitUserSelect = 'text';
   });
 
   // ボタン非表示
