@@ -2147,9 +2147,10 @@ function unlockSecretItem(id){
 function lockSecretItem(id){document.getElementById('content_'+id).style.display='none';document.getElementById('pass_'+id).value='';}
 function changeSecretPass(id){
   const np=document.getElementById('newpass_'+id).value;
-  if(!np){alert('新しいPASSを入力してください');return;}
   if(document.getElementById('content_'+id).style.display==='none'){alert('先に現在のPASSで解除してください');return;}
-  document.getElementById(id).dataset.pass=np;document.getElementById('newpass_'+id).value='';alert('PASSを変更しました');
+  document.getElementById(id).dataset.pass=np;
+  document.getElementById('newpass_'+id).value='';
+  alert(np?'PASSを変更しました':'PASSを解除しました（PASS無しで開けます）');
 }
 function addSecretContentRow(contentId){
   const div=document.getElementById(contentId);const w=document.createElement('div');w.style.cssText='position:relative;margin-top:4px';
@@ -2535,6 +2536,10 @@ function applyData(json){
       if(titleInp)titleInp.value=s.title;
       const summInp=item.querySelector('#body_'+item.id+' input[type=text]');
       if(summInp)summInp.value=s.summary||'';
+      // 保存された行数だけメモ行を用意してから値を流し込む（2行目以降が消える不具合の修正）
+      const _contentId='content_'+item.id;
+      const _need=Math.max((s.contents||[]).length,(s.contentTitles||[]).length);
+      while(item.querySelectorAll('#'+_contentId+' textarea').length < _need){ addSecretContentRow(_contentId); }
       const tas=[...item.querySelectorAll('#content_'+item.id+' textarea')];
       s.contents.forEach((c,i)=>{if(i<tas.length)tas[i].value=c;});
       const sels=[...item.querySelectorAll('#content_'+item.id+' select')];

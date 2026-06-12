@@ -1008,6 +1008,7 @@ function _buildCocoJSON(sheet) {
         {label:'POW',value:String(stats.pow)},{label:'DEX',value:String(stats.dex)},
         {label:'APP',value:String(stats.app)},{label:'SIZ',value:String(stats.siz)},
         {label:'INT',value:String(stats.int_c)},{label:'EDU',value:String(stats.edu)},
+        {label:'DB',value:(()=>{const ss=stats.str+stats.siz;return ss<=12?'-1D6':ss<=16?'-1D4':ss<=24?'0':ss<=32?'+1D4':ss<=40?'+1D6':'+2D6';})()},
       ],
       commands: _buildChatPalette(sheet),
       memo: '',
