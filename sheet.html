@@ -2152,8 +2152,8 @@ function changeSecretPass(id){
   document.getElementById(id).dataset.pass=np;document.getElementById('newpass_'+id).value='';alert('PASSを変更しました');
 }
 function addSecretContentRow(contentId){
-  const div=document.getElementById(contentId);const w=document.createElement('div');w.style.cssText='margin-top:4px;position:relative;display:flex;align-items:flex-start;gap:4px';
-  w.innerHTML='<div style="flex:1;min-width:0"><input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h" style="width:100%;box-sizing:border-box" placeholder="追加情報..." oninput="autoResizeTA(this)"></textarea></div><button class="del-btn" onclick="this.parentElement.remove()" style="flex-shrink:0;margin-top:3px">✕</button>';
+  const div=document.getElementById(contentId);const w=document.createElement('div');w.style.cssText='position:relative;margin-top:4px';
+  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h" style="width:100%" placeholder="追加情報..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
   div.insertBefore(w,div.querySelector('.add-row-btn'));
 }
 
