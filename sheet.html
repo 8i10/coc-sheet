@@ -2152,8 +2152,8 @@ function changeSecretPass(id){
   document.getElementById(id).dataset.pass=np;document.getElementById('newpass_'+id).value='';alert('PASSを変更しました');
 }
 function addSecretContentRow(contentId){
-  const div=document.getElementById(contentId);const w=document.createElement('div');w.style.marginTop='4px';
-  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><div style="display:flex;gap:4px"><textarea class="auto-h" style="flex:1" placeholder="追加情報..." oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="this.closest(\'div[style]\').remove()">✕</button></div>';
+  const div=document.getElementById(contentId);const w=document.createElement('div');w.style.cssText='margin-top:4px;position:relative;display:flex;align-items:flex-start;gap:4px';
+  w.innerHTML='<div style="flex:1;min-width:0"><input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h" style="width:100%;box-sizing:border-box" placeholder="追加情報..." oninput="autoResizeTA(this)"></textarea></div><button class="del-btn" onclick="this.parentElement.remove()" style="flex-shrink:0;margin-top:3px">✕</button>';
   div.insertBefore(w,div.querySelector('.add-row-btn'));
 }
 
@@ -3499,14 +3499,16 @@ function parseSpreadsheetHTML(html){
       }
     }
     // 中列: 行動（row13〜29）・交渉（row30〜44）
+    // 技能行のみ: 名前セルの直前(mi-1)が成長列（空セル）であること、名前が記号でないこと
     for(const mi of [11,12]){
       const mc=row[mi];
       if(!mc||!mc.text||mc.text==='')continue;
       const isKnown=skillNameToKey[mc.text]!==undefined||freeInputSkills.has(mc.text);
-      // カスタム判定: 名前が日本語/英字を含み記号・注釈でない、直前が成長列(空)、技能テーブル領域内
-      const looksLikeName=/[ぁ-んァ-ヶー一-龠a-zA-Z]/.test(mc.text)&&!/[／]/.test(mc.text)&&!/^(追加P|不定|迄|参照|興味P|職業P|成長分|その他|合計|選択技能|初期値|技能|成長)/.test(mc.text);
+      // カスタム判定: 名前が日本語/英字を含み、記号や数値や注釈でない & 直前が成長列(空) & 後続に数値
+      const looksLikeName=/[ぁ-んァ-ヶー一-龠a-zA-Z]/.test(mc.text)&&!/[／()（）]/.test(mc.text)&&!/^(追加P|不定|迄|参照|興味P|職業P)/.test(mc.text);
+      const hasNum=/^\d+$/.test(row[mi+1]?.text||'')||/^\d+$/.test(row[mi+3]?.text||'');
       const prevGrowth=(row[mi-1]?.text||'')===''; // 成長列は空
-      if(isKnown||(looksLikeName&&prevGrowth&&ri>=13&&ri<=44)){
+      if(isKnown||(looksLikeName&&hasNum&&prevGrowth&&mc.colspan>=1&&ri>=13)){
         const section=ri<=29?'action':'talk';
         extractSkill(row,mi,section);
         break;
@@ -3517,9 +3519,10 @@ function parseSpreadsheetHTML(html){
       const kc=row[ki];
       if(!kc||!kc.text||kc.text==='')continue;
       const isKnown=skillNameToKey[kc.text]!==undefined||freeInputSkills.has(kc.text);
-      const looksLikeName=/[ぁ-んァ-ヶー一-龠a-zA-Z]/.test(kc.text)&&!/[／]/.test(kc.text)&&!/^(追加P|不定|迄|参照|興味P|職業P|成長分|その他|合計|選択技能|初期値|技能|成長)/.test(kc.text)&&!kc.text.startsWith('CCB')&&!kc.text.startsWith('CBRB')&&!kc.text.startsWith('D:')&&!kc.text.includes('【');
+      const looksLikeName=/[ぁ-んァ-ヶー一-龠a-zA-Z]/.test(kc.text)&&!/[／()（）]/.test(kc.text)&&!/^(追加P|不定|迄|参照|興味P|職業P)/.test(kc.text);
+      const hasNum=/^\d+$/.test(row[ki+2]?.text||'');
       const prevGrowth=(row[ki-1]?.text||'')==='';
-      if(isKnown||(looksLikeName&&prevGrowth&&kc.colspan>=3&&ri>=13&&ri<=44)){
+      if(isKnown||(looksLikeName&&hasNum&&prevGrowth&&kc.colspan>=3&&ri>=13)){
         extractSkill(row,ki,'know');
         break;
       }
