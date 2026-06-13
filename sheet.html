@@ -1471,13 +1471,13 @@ function vn(id){return parseInt(document.getElementById(id)?.value)||0;}
 function tx(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
 function getCur(){
   const c={};
-  AB.forEach(a=>{c[a]=vn(a)+vn(a+'_m')+vn(a+'_t');});
+  AB.forEach(a=>{const stem=a==='int_v'?'int':a;c[a]=vn(a)+vn(stem+'_m')+vn(stem+'_t');});
   c.int=c.int_v;
   return c;
 }
 function calc(){
   const c=getCur();
-  AB.forEach(a=>tx(a+'_c',c[a]||0));
+  AB.forEach(a=>{const stem=a==='int_v'?'int':a;tx(stem+'_c',c[a]||0);});
   const baseHP=Math.floor((c.con+c.siz)/2);
   const baseMP=c.pow,baseSAN=c.pow*5,baseIDEA=c.int*5,baseLUCK=c.pow*5,baseKNOW=c.edu*5;
   tx('hp',baseHP||'');tx('mp',baseMP||'');tx('san0',baseSAN||'');tx('idea',baseIDEA||'');tx('luck',baseLUCK||'');tx('know',baseKNOW||'');
@@ -3511,7 +3511,7 @@ function parseSpreadsheetHTML(html){
       const isKnown=skillNameToKey[mc.text]!==undefined||freeInputSkills.has(mc.text);
       // カスタム判定: 名前が日本語/英字を含み、記号や数値や注釈でない & 直前が成長列(空) & 後続に数値
       const looksLikeName=/[ぁ-んァ-ヶー一-龠a-zA-Z]/.test(mc.text)&&!/[／()（）]/.test(mc.text)&&!/^(追加P|不定|迄|参照|興味P|職業P)/.test(mc.text);
-      const hasNum=/^\d+$/.test(row[mi+1]?.text||'')||/^\d+$/.test(row[mi+3]?.text||'');
+      const hasNum=[1,2,3,4,5].some(d=>/^-?\d+$/.test((row[mi+d]?.text||'').trim()));
       const prevGrowth=(row[mi-1]?.text||'')===''; // 成長列は空
       if(isKnown||(looksLikeName&&hasNum&&prevGrowth&&mc.colspan>=1&&ri>=13)){
         const section=ri<=29?'action':'talk';
