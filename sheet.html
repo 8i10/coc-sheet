@@ -2051,6 +2051,7 @@ function toggleRelGroup(id) {
   if (!body) return;
   const isOpen = body.classList.toggle('open');
   if (btn) btn.textContent = isOpen ? '▼ 閉じる' : '▶ 開く';
+  if (isOpen) setTimeout(()=>_resizeInEl(body),50);
 }
 function addRelSubRow(bodyId){
   const body=document.getElementById(bodyId);const addBtn=body.querySelector('.add-row-btn');
@@ -3854,7 +3855,10 @@ function parseSpreadsheetHTML(html){
     const itemsAcc=document.getElementById('items_acc');
     if(itemsAcc&&!itemsAcc.classList.contains('open'))toggleAcc('items_acc');
     // アコーディオンを開いてから、内容のあるものだけ高さ計算
-    setTimeout(()=>{itemTbody.querySelectorAll('textarea.item-note').forEach(ta=>{ta.style.height='22px';if(ta.value&&ta.scrollHeight>24)ta.style.height=ta.scrollHeight+'px';});},120);
+    const fitItemNotes=()=>itemTbody.querySelectorAll('textarea.item-note').forEach(ta=>{ta.style.height='22px';if(ta.value&&ta.scrollHeight>24)ta.style.height=ta.scrollHeight+'px';});
+    setTimeout(fitItemNotes,120);
+    // Webフォント読み込み後に再計算（フォント差し替えで1行が2行に固定される不具合の対策）
+    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>setTimeout(fitItemNotes,30));
   }
 
   // メモ（改行を保持）
