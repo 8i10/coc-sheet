@@ -55,7 +55,7 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .pts-bar{height:5px;border-radius:3px;background:#ddd;width:40px;overflow:hidden;border:1px solid var(--border);flex-shrink:0}
 .pts-bar-fill{height:100%;border-radius:3px;transition:width .2s,background .2s}
-.acc-header{background:var(--hdr-bg);color:var(--hdr-text);padding:3px 8px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.acc-header{background:var(--hdr-bg);color:var(--hdr-text);padding:4px 8px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;user-select:none}
 .acc-header:hover{background:#222}
 .acc-body{display:none}
 .acc-body.open{display:block}
@@ -1001,6 +1001,8 @@ body.light td.hdr{
 .acc-header>span[id^="arr_"],.sub-acc-header>span[id^="arr_"],.sub2-acc-header>span[id^="arr_"]{order:-1}
 /* 人間関係・ネタバレ見出しの▶/▼ボタン */
 .acc-arrow-btn{background:transparent;border:none;color:inherit;cursor:pointer;font-size:11px;padding:0 2px;flex:0 0 auto;line-height:1;font-family:inherit}
+/* アコーディオン間の区切り罫線 */
+.acc-divider{border:none;border-top:1px solid var(--border);margin:0 2px}
 </style>
 
 <!-- PWA: Safari スタンドアロンモード維持 -->
@@ -1382,6 +1384,7 @@ if (('standalone' in navigator) && navigator.standalone) {
         </div>
       </div>
     </div>
+    <hr class="acc-divider">
     <div class="section">
       <div class="acc-header" onclick="toggleAcc('aftereffect_outer')"><span>後遺症・AF・呪文・不定</span><span id="arr_aftereffect_outer">▶</span></div>
       <div class="acc-body" id="aftereffect_outer">
@@ -1417,6 +1420,7 @@ if (('standalone' in navigator) && navigator.standalone) {
             </div>
           </div>
           <!-- 不定（後遺症アコーディオン内） -->
+          <hr class="acc-divider">
           <div id="fute_area" style="border:1px solid var(--border);border-radius:2px;margin-bottom:4px">
             <div class="sub2-acc-header" onclick="toggleSub2Acc('fute_inner')"><span>不定</span><span id="arr_fute_inner">▶</span></div>
             <div class="sub2-acc-body" id="fute_inner">
