@@ -21,27 +21,34 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Kaku 
 .hbtn{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;padding:5px 10px;font-size:12px;cursor:pointer}
 .hbtn:hover{border-color:var(--accent)}
 .container{max-width:760px;margin:0 auto;padding:12px}
-#totals{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:10px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
-#totals b{font-size:16px}
+#search{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);font-size:13px;margin-bottom:10px}
 .crit-c{color:#2ea86a}
 .fmbl-c{color:#d8615e}
-#search{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);font-size:13px;margin-bottom:10px}
-.crow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:7px}
-.cname{flex:1 1 140px;min-width:120px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cstat{display:flex;align-items:center;gap:4px}
-.clabel{font-size:11px;width:34px;text-align:right}
-.clabel.crit{color:#2ea86a}
-.clabel.fmbl{color:#d8615e}
-.stp{width:30px;height:30px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;font-size:16px;line-height:1;cursor:pointer;flex:0 0 auto;user-select:none}
+
+.ccard{background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:7px;overflow:hidden}
+.chead{display:flex;align-items:center;gap:8px;padding:9px 10px;cursor:pointer;user-select:none}
+.chead .arrow{flex:0 0 auto;font-size:11px;color:var(--text-muted)}
+.chead .cname{flex:1;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chead .ctot{flex:0 0 auto;font-size:13px;white-space:nowrap}
+.chead .ctot b{font-size:15px}
+.cbody{display:none;padding:4px 10px 8px;border-top:1px solid var(--border)}
+.ccard.open .cbody{display:block}
+
+.srow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;border-bottom:1px dashed var(--border)}
+.srow:last-child{border-bottom:none}
+.sname{flex:1 1 130px;min-width:120px;font-size:12px;white-space:pre-wrap;word-break:break-word}
+.sctl{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.stp{width:28px;height:28px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;font-size:15px;line-height:1;cursor:pointer;flex:0 0 auto;user-select:none}
 .stp:active{background:var(--accent);color:#fff}
-.cnum{width:46px;height:30px;text-align:center;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:5px;font-size:14px;-moz-appearance:textfield}
+.cnum{width:42px;height:28px;text-align:center;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:5px;font-size:14px;-moz-appearance:textfield}
 .cnum::-webkit-outer-spin-button,.cnum::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.csave{font-size:12px;width:18px;text-align:center;color:var(--text-muted)}
+.lab{font-size:12px;font-weight:bold;width:10px}
+.snone{font-size:12px;color:var(--text-muted);padding:6px 0}
+.csave{font-size:11px;color:var(--text-muted);margin-left:2px}
 .csave.ok{color:#2ea86a}
 .csave.ng{color:#d8615e}
 #msg{padding:24px 12px;text-align:center;color:var(--text-muted)}
 #msg a{color:var(--accent2)}
-.divider{flex-basis:100%;height:0}
 </style>
 </head>
 <body>
@@ -54,10 +61,6 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Kaku 
 </div>
 
 <div class="container">
-  <div id="totals" style="display:none">
-    <span>合計 <span class="crit-c">クリティカル</span> <b id="t_crit" class="crit-c">0</b></span>
-    <span>合計 <span class="fmbl-c">ファンブル</span> <b id="t_fmbl" class="fmbl-c">0</b></span>
-  </div>
   <input id="search" type="text" placeholder="PC名で絞り込み..." oninput="renderList()" style="display:none">
   <div id="list"></div>
   <div id="msg">読込中...</div>
@@ -81,49 +84,45 @@ function toggleTheme(){applyTheme(document.body.classList.contains('light')?'dar
 (function(){const ver=localStorage.getItem(THEME_KEY+'_ver');const saved=(ver===THEME_VER)?(localStorage.getItem(THEME_KEY)||'light'):'light';applyTheme(saved);})();
 
 /* ===== データ ===== */
-let chars=[]; // {id, name, crit, fumble}
+let chars=[]; // {id, name, scenarios:[..], counts:{<scenario>:{crit,fumble}}, open:false}
 const saveTimers={};
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-function pcNameOf(row){
+function parseRow(row){
   let sheet={}; try{sheet=JSON.parse(row.data)||{};}catch(e){}
   const inp=sheet.inputs||{};
-  return inp.pcname||row.char_name||'名無し';
-}
-function countersOf(row){
-  let sheet={}; try{sheet=JSON.parse(row.data)||{};}catch(e){}
-  const c=sheet.counters||{};
-  return {crit:parseInt(c.crit)||0, fumble:parseInt(c.fumble)||0};
+  const name=inp.pcname||row.char_name||'名無し';
+  // 通過シナリオ（空欄除外・重複除外）
+  const seen={}, scenarios=[];
+  (sheet.scenarios||[]).forEach(s=>{const t=(s||'').trim();if(t&&!seen[t]){seen[t]=1;scenarios.push(t);}});
+  const by=(sheet.counters&&sheet.counters.byScenario)||{};
+  const counts={};
+  scenarios.forEach(s=>{const c=by[s]||{};counts[s]={crit:parseInt(c.crit)||0,fumble:parseInt(c.fumble)||0};});
+  return {id:row.id,name,scenarios,counts,open:false};
 }
 
 async function load(){
   const msg=document.getElementById('msg');
   try{
     const {data:{user}}=await db.auth.getUser();
-    if(!user){
-      msg.innerHTML='ログインが必要です。<br><a href="index.html">一覧ページ</a>でログインしてください。';
-      return;
-    }
+    if(!user){msg.innerHTML='ログインが必要です。<br><a href="index.html">一覧ページ</a>でログインしてください。';return;}
     const {data:list,error}=await db
       .from('character_sheets')
       .select('id,char_name,data,updated_at')
       .eq('user_id',user.id)
       .order('updated_at',{ascending:false});
     if(error)throw error;
-    chars=(list||[]).map(r=>{const c=countersOf(r);return {id:r.id,name:pcNameOf(r),crit:c.crit,fumble:c.fumble};});
+    chars=(list||[]).map(parseRow);
     if(chars.length===0){msg.textContent='保存されたキャラクターがありません。';return;}
     msg.style.display='none';
-    document.getElementById('totals').style.display='flex';
     document.getElementById('search').style.display='block';
     renderList();
-  }catch(e){
-    msg.textContent='読込エラー: '+e.message;
-  }
+  }catch(e){ msg.textContent='読込エラー: '+e.message; }
 }
 
-function updateTotals(){
-  let tc=0,tf=0; chars.forEach(c=>{tc+=c.crit;tf+=c.fumble;});
-  document.getElementById('t_crit').textContent=tc;
-  document.getElementById('t_fmbl').textContent=tf;
+function totals(c){
+  let tc=0,tf=0; c.scenarios.forEach(s=>{tc+=c.counts[s].crit;tf+=c.counts[s].fumble;});
+  return {tc,tf};
 }
 
 function renderList(){
@@ -131,43 +130,68 @@ function renderList(){
   const q=document.getElementById('search').value.trim().toLowerCase();
   wrap.innerHTML='';
   chars.filter(c=>!q||c.name.toLowerCase().includes(q)).forEach(c=>{
-    const row=document.createElement('div');row.className='crow';
-    row.innerHTML=`
-      <div class="cname" title="${c.name.replace(/"/g,'&quot;')}">${c.name}</div>
-      <div class="cstat">
-        <span class="clabel crit">クリ</span>
-        <button class="stp" data-act="crit-">−</button>
-        <input class="cnum" type="number" inputmode="numeric" min="0" data-fld="crit" value="${c.crit}">
-        <button class="stp" data-act="crit+">＋</button>
+    const {tc,tf}=totals(c);
+    const card=document.createElement('div');card.className='ccard'+(c.open?' open':'');
+    let body='';
+    if(c.scenarios.length===0){
+      body='<div class="snone">通過シナリオがありません（シート側で追加してください）</div>';
+    }else{
+      body=c.scenarios.map((s,i)=>`
+        <div class="srow" data-s="${i}">
+          <span class="sname">${esc(s)}</span>
+          <span class="sctl">
+            <button class="stp" data-act="crit+">＋</button>
+            <input class="cnum" type="number" inputmode="numeric" min="0" data-fld="crit" value="${c.counts[s].crit}">
+            <button class="stp" data-act="crit-">−</button>
+            <span class="lab crit-c">c</span>
+          </span>
+          <span class="sctl">
+            <button class="stp" data-act="fumble+">＋</button>
+            <input class="cnum" type="number" inputmode="numeric" min="0" data-fld="fumble" value="${c.counts[s].fumble}">
+            <button class="stp" data-act="fumble-">−</button>
+            <span class="lab fmbl-c">f</span>
+          </span>
+        </div>`).join('');
+    }
+    card.innerHTML=`
+      <div class="chead">
+        <span class="arrow">${c.open?'▼':'▶'}</span>
+        <span class="cname" title="${esc(c.name)}">${esc(c.name)}</span>
+        <span class="ctot"><b class="crit-c">${tc}</b>c　<b class="fmbl-c">${tf}</b>f <span class="csave"></span></span>
       </div>
-      <div class="cstat">
-        <span class="clabel fmbl">ファン</span>
-        <button class="stp" data-act="fumble-">−</button>
-        <input class="cnum" type="number" inputmode="numeric" min="0" data-fld="fumble" value="${c.fumble}">
-        <button class="stp" data-act="fumble+">＋</button>
-      </div>
-      <span class="csave"></span>`;
-    const statusEl=row.querySelector('.csave');
-    const critInp=row.querySelector('input[data-fld="crit"]');
-    const fmblInp=row.querySelector('input[data-fld="fumble"]');
-    row.querySelectorAll('.stp').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const a=btn.dataset.act;
-        if(a==='crit+')c.crit++; else if(a==='crit-')c.crit=Math.max(0,c.crit-1);
-        else if(a==='fumble+')c.fumble++; else if(a==='fumble-')c.fumble=Math.max(0,c.fumble-1);
-        critInp.value=c.crit; fmblInp.value=c.fumble;
-        updateTotals(); queueSave(c,statusEl);
+      <div class="cbody">${body}</div>`;
+
+    const head=card.querySelector('.chead');
+    const arrow=card.querySelector('.arrow');
+    const statusEl=card.querySelector('.csave');
+    const critTotEl=card.querySelector('.ctot b.crit-c');
+    const fmblTotEl=card.querySelector('.ctot b.fmbl-c');
+    head.addEventListener('click',()=>{c.open=!c.open;card.classList.toggle('open',c.open);arrow.textContent=c.open?'▼':'▶';});
+
+    function refreshTotals(){const t=totals(c);critTotEl.textContent=t.tc;fmblTotEl.textContent=t.tf;}
+
+    card.querySelectorAll('.srow').forEach(rowEl=>{
+      const s=c.scenarios[parseInt(rowEl.dataset.s)];
+      const critInp=rowEl.querySelector('input[data-fld="crit"]');
+      const fmblInp=rowEl.querySelector('input[data-fld="fumble"]');
+      rowEl.querySelectorAll('.stp').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const a=btn.dataset.act;
+          if(a==='crit+')c.counts[s].crit++; else if(a==='crit-')c.counts[s].crit=Math.max(0,c.counts[s].crit-1);
+          else if(a==='fumble+')c.counts[s].fumble++; else if(a==='fumble-')c.counts[s].fumble=Math.max(0,c.counts[s].fumble-1);
+          critInp.value=c.counts[s].crit; fmblInp.value=c.counts[s].fumble;
+          refreshTotals(); queueSave(c,statusEl);
+        });
+      });
+      [critInp,fmblInp].forEach(inp=>{
+        inp.addEventListener('change',()=>{
+          let v=parseInt(inp.value); if(isNaN(v)||v<0)v=0; inp.value=v;
+          c.counts[s][inp.dataset.fld]=v; refreshTotals(); queueSave(c,statusEl);
+        });
       });
     });
-    [critInp,fmblInp].forEach(inp=>{
-      inp.addEventListener('change',()=>{
-        let v=parseInt(inp.value); if(isNaN(v)||v<0)v=0; inp.value=v;
-        c[inp.dataset.fld]=v; updateTotals(); queueSave(c,statusEl);
-      });
-    });
-    wrap.appendChild(row);
+    wrap.appendChild(card);
   });
-  updateTotals();
 }
 
 function queueSave(c,statusEl){
@@ -178,11 +202,12 @@ function queueSave(c,statusEl){
 
 async function saveCounters(c,statusEl){
   try{
-    // 最新のdataを取得してcountersだけ差し替え（他項目を壊さない）
+    // 最新dataを取得し counters.byScenario だけ差し替え（他項目を壊さない）
     const {data:row,error:e1}=await db.from('character_sheets').select('data').eq('id',c.id).single();
     if(e1)throw e1;
     let obj={}; try{obj=JSON.parse(row.data)||{};}catch(_){obj={};}
-    obj.counters={crit:c.crit,fumble:c.fumble};
+    const by={}; c.scenarios.forEach(s=>{by[s]={crit:c.counts[s].crit,fumble:c.counts[s].fumble};});
+    obj.counters=Object.assign({},obj.counters,{byScenario:by});
     const {error:e2}=await db.from('character_sheets').update({data:JSON.stringify(obj)}).eq('id',c.id);
     if(e2)throw e2;
     statusEl.className='csave ok'; statusEl.textContent='✓';
