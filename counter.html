@@ -34,15 +34,15 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Kaku 
 .cbody{display:none;padding:4px 10px 8px;border-top:1px solid var(--border)}
 .ccard.open .cbody{display:block}
 
-.srow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;border-bottom:1px dashed var(--border)}
+.srow{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;padding:5px 0;border-bottom:1px dashed var(--border)}
 .srow:last-child{border-bottom:none}
-.sname{flex:1 1 130px;min-width:120px;font-size:12px;white-space:pre-wrap;word-break:break-word}
-.sctl{display:flex;align-items:center;gap:4px;flex:0 0 auto}
-.stp{width:28px;height:28px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;font-size:15px;line-height:1;cursor:pointer;flex:0 0 auto;user-select:none}
+.sname{flex:1 1 auto;min-width:0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sctl{display:flex;align-items:center;gap:2px;flex:0 0 auto}
+.stp{width:22px;height:22px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:4px;font-size:13px;line-height:1;cursor:pointer;flex:0 0 auto;user-select:none;padding:0}
 .stp:active{background:var(--accent);color:#fff}
-.cnum{width:42px;height:28px;text-align:center;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:5px;font-size:14px;-moz-appearance:textfield}
+.cnum{width:30px;height:22px;text-align:center;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:12px;padding:0;-moz-appearance:textfield}
 .cnum::-webkit-outer-spin-button,.cnum::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.lab{font-size:12px;font-weight:bold;width:10px}
+.lab{font-size:11px;font-weight:bold;width:8px;flex:0 0 auto}
 .snone{font-size:12px;color:var(--text-muted);padding:6px 0}
 .csave{font-size:11px;color:var(--text-muted);margin-left:2px}
 .csave.ok{color:#2ea86a}
@@ -92,9 +92,9 @@ function parseRow(row){
   let sheet={}; try{sheet=JSON.parse(row.data)||{};}catch(e){}
   const inp=sheet.inputs||{};
   const name=inp.pcname||row.char_name||'名無し';
-  // 通過シナリオ（空欄除外・重複除外）
+  // 通過シナリオ（改行単位に分割・空欄除外・重複除外）
   const seen={}, scenarios=[];
-  (sheet.scenarios||[]).forEach(s=>{const t=(s||'').trim();if(t&&!seen[t]){seen[t]=1;scenarios.push(t);}});
+  (sheet.scenarios||[]).forEach(block=>{String(block||'').split(/\r?\n/).forEach(line=>{const t=line.trim();if(t&&!seen[t]){seen[t]=1;scenarios.push(t);}});});
   const by=(sheet.counters&&sheet.counters.byScenario)||{};
   const counts={};
   scenarios.forEach(s=>{const c=by[s]||{};counts[s]={crit:parseInt(c.crit)||0,fumble:parseInt(c.fumble)||0};});
@@ -138,7 +138,7 @@ function renderList(){
     }else{
       body=c.scenarios.map((s,i)=>`
         <div class="srow" data-s="${i}">
-          <span class="sname">${esc(s)}</span>
+          <span class="sname" title="${esc(s)}">${esc(s)}</span>
           <span class="sctl">
             <button class="stp" data-act="crit+">＋</button>
             <input class="cnum" type="number" inputmode="numeric" min="0" data-fld="crit" value="${c.counts[s].crit}">
