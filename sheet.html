@@ -999,6 +999,8 @@ body.light td.hdr{
 /* アコーディオンの▶/▼を見出しの左側に表示 */
 .acc-header,.sub-acc-header,.sub2-acc-header{justify-content:flex-start;gap:6px}
 .acc-header>span[id^="arr_"],.sub-acc-header>span[id^="arr_"],.sub2-acc-header>span[id^="arr_"]{order:-1}
+/* 人間関係・ネタバレ見出しの▶/▼ボタン */
+.acc-arrow-btn{background:transparent;border:none;color:inherit;cursor:pointer;font-size:11px;padding:0 2px;flex:0 0 auto;line-height:1;font-family:inherit}
 </style>
 
 <!-- PWA: Safari スタンドアロンモード維持 -->
@@ -2028,10 +2030,9 @@ function addRelGroup(){
 
   wrap.innerHTML=`
     <div class="secret-item-header">
+      <button onclick="toggleRelGroup('${id}')" class="acc-arrow-btn" id="arr_${id}">▶</button>
       <input type="text" placeholder="うちよそ・関係名"
         style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;flex:1;text-align:left">
-      <button onclick="toggleRelGroup('${id}')"
-        style="font-size:10px;padding:0 5px;background:#666;border:none;color:#fff;cursor:pointer;border-radius:2px">▶ 開く</button>
       <button onclick="this.closest('.secret-item').remove()"
         class="del-btn" style="margin-left:4px">✕</button>
     </div>
@@ -2050,10 +2051,10 @@ function addRelGroup(){
 }
 function toggleRelGroup(id) {
   const body = document.getElementById(id);
-  const btn = body?.closest('.secret-item')?.querySelector('button[onclick*="toggleRelGroup"]');
+  const arr = document.getElementById('arr_'+id);
   if (!body) return;
   const isOpen = body.classList.toggle('open');
-  if (btn) btn.textContent = isOpen ? '▼ 閉じる' : '▶ 開く';
+  if (arr) arr.textContent = isOpen ? '▼' : '▶';
   if (isOpen) setTimeout(()=>_resizeInEl(body),50);
 }
 function addRelSubRow(bodyId){
@@ -2111,8 +2112,8 @@ function addSecretItem(title,pass){
   const wrap=document.createElement('div');wrap.className='secret-item';wrap.id=id;
   wrap.innerHTML=`
     <div class="secret-item-header">
+      <button onclick="toggleSecretItem('${id}')" class="acc-arrow-btn" id="arr_${id}">▶</button>
       <input type="text" value="${title||''}" placeholder="ネタバレタイトル" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;flex:1;text-align:left">
-      <button onclick="toggleSecretItem('${id}')" style="font-size:10px;padding:0 5px;background:#666;border:none;color:#fff;cursor:pointer;border-radius:2px" id="arr_${id}">▶ 開く</button>
       <button onclick="document.getElementById('${id}').remove()" class="del-btn" style="margin-left:4px">✕</button>
     </div>
     <div class="secret-item-body" id="body_${id}">
@@ -2139,7 +2140,7 @@ function addSecretItem(title,pass){
 }
 function toggleSecretItem(id){
   const body=document.getElementById('body_'+id);const arr=document.getElementById('arr_'+id);
-  const isOpen=body.classList.toggle('open');arr.textContent=isOpen?'▼ 閉じる':'▶ 開く';
+  const isOpen=body.classList.toggle('open');if(arr)arr.textContent=isOpen?'▼':'▶';
   if(!isOpen)document.getElementById('content_'+id).style.display='none';
 }
 function unlockSecretItem(id){
