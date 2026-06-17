@@ -996,6 +996,9 @@ body.light td.hdr{
 
 
 
+/* アコーディオンの▶/▼を見出しの左側に表示 */
+.acc-header,.sub-acc-header,.sub2-acc-header{justify-content:flex-start;gap:6px}
+.acc-header>span[id^="arr_"],.sub-acc-header>span[id^="arr_"],.sub2-acc-header>span[id^="arr_"]{order:-1}
 </style>
 
 <!-- PWA: Safari スタンドアロンモード維持 -->
@@ -1322,7 +1325,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   <!-- 右側パネル -->
   <div class="right-panel" style="flex:1;min-width:0">
     <div class="section">
-      <div class="acc-header" onclick="toggleAcc('combat_acc')"><span>▮ 戦闘・武器</span><span id="arr_combat_acc">▶</span></div>
+      <div class="acc-header" onclick="toggleAcc('combat_acc')"><span>戦闘・武器</span><span id="arr_combat_acc">▶</span></div>
       <div class="acc-body" id="combat_acc">
         <div style="padding:4px;overflow-x:auto">
           <table style="table-layout:fixed;width:100%">
@@ -1335,7 +1338,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       </div>
     </div>
     <div class="section">
-      <div class="acc-header" onclick="toggleAcc('items_acc')"><span>▮ 所持品</span><span id="arr_items_acc">▶</span></div>
+      <div class="acc-header" onclick="toggleAcc('items_acc')"><span>所持品</span><span id="arr_items_acc">▶</span></div>
       <div class="acc-body" id="items_acc">
         <div style="padding:4px">
           <table style="table-layout:fixed">
@@ -1348,7 +1351,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       </div>
     </div>
     <div class="section">
-      <div class="acc-header" onclick="toggleAcc('memo_acc')"><span>▮ その他メモ</span><span id="arr_memo_acc">▶</span></div>
+      <div class="acc-header" onclick="toggleAcc('memo_acc')"><span>その他メモ</span><span id="arr_memo_acc">▶</span></div>
       <div class="acc-body" id="memo_acc">
         <div style="padding:4px">
           <div id="memo_rows">
@@ -1359,7 +1362,7 @@ if (('standalone' in navigator) && navigator.standalone) {
           </div>
           <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
           <div style="margin-top:6px;border:1px solid var(--border);border-radius:2px">
-            <div class="sub-acc-header" onclick="toggleSubAcc('rel_acc')"><span>▮ 人間関係</span><span id="arr_rel_acc">▶</span></div>
+            <div class="sub-acc-header" onclick="toggleSubAcc('rel_acc')"><span>人間関係</span><span id="arr_rel_acc">▶</span></div>
             <div class="sub-acc-body" id="rel_acc">
               <div id="rel_groups_wrap"></div>
               <button class="add-row-btn" onclick="addRelGroup()">＋追加</button>
@@ -1369,7 +1372,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       </div>
     </div>
     <div class="section">
-      <div class="acc-header" onclick="toggleAcc('secret_outer')"><span>▮ ネタバレメモ</span><span id="arr_secret_outer">▶</span></div>
+      <div class="acc-header" onclick="toggleAcc('secret_outer')"><span>ネタバレメモ</span><span id="arr_secret_outer">▶</span></div>
       <div class="acc-body" id="secret_outer">
         <div style="padding:4px">
           <div id="secret_items_wrap"></div>
@@ -1378,7 +1381,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       </div>
     </div>
     <div class="section">
-      <div class="acc-header" onclick="toggleAcc('aftereffect_outer')"><span>▮ 後遺症・AF・呪文・不定</span><span id="arr_aftereffect_outer">▶</span></div>
+      <div class="acc-header" onclick="toggleAcc('aftereffect_outer')"><span>後遺症・AF・呪文・不定</span><span id="arr_aftereffect_outer">▶</span></div>
       <div class="acc-body" id="aftereffect_outer">
         <div style="padding:4px">
           <div style="border:1px solid var(--border);border-radius:2px;margin-bottom:4px">
@@ -1428,7 +1431,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       </div>
     </div>
     <div class="section">
-      <div class="acc-header" onclick="toggleAcc('scenario_outer')"><span>▮ 通過シナリオ</span><span id="arr_scenario_outer">▶</span></div>
+      <div class="acc-header" onclick="toggleAcc('scenario_outer')"><span>通過シナリオ</span><span id="arr_scenario_outer">▶</span></div>
       <div class="acc-body" id="scenario_outer">
         <div style="padding:4px">
           <div id="scenario_rows"><div style="position:relative;margin-bottom:4px"><textarea class="auto-h" style="width:100%" placeholder="通過シナリオを入力..." oninput="autoResizeTA(this)"></textarea></div></div>
