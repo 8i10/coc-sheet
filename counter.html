@@ -34,14 +34,11 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Kaku 
 .cbody{display:none;padding:4px 10px 8px;border-top:1px solid var(--border)}
 .ccard.open .cbody{display:block}
 
-.srow{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;padding:5px 0;border-bottom:1px dashed var(--border)}
+.srow{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;padding:5px 0;border-bottom:1px dashed var(--border)}
 .srow:last-child{border-bottom:none}
 .sname{flex:1 1 auto;min-width:0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sctl{display:flex;align-items:center;gap:2px;flex:0 0 auto}
-.stp{width:22px;height:22px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:4px;font-size:13px;line-height:1;cursor:pointer;flex:0 0 auto;user-select:none;padding:0}
-.stp:active{background:var(--accent);color:#fff}
-.cnum{width:30px;height:22px;text-align:center;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:12px;padding:0;-moz-appearance:textfield}
-.cnum::-webkit-outer-spin-button,.cnum::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sctl{display:flex;align-items:center;gap:3px;flex:0 0 auto}
+.cnum{width:52px;height:24px;text-align:center;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:13px}
 .lab{font-size:11px;font-weight:bold;width:8px;flex:0 0 auto}
 .snone{font-size:12px;color:var(--text-muted);padding:6px 0}
 .csave{font-size:11px;color:var(--text-muted);margin-left:2px}
@@ -140,15 +137,11 @@ function renderList(){
         <div class="srow" data-s="${i}">
           <span class="sname" title="${esc(s)}">${esc(s)}</span>
           <span class="sctl">
-            <button class="stp" data-act="crit+">＋</button>
-            <input class="cnum" type="number" inputmode="numeric" min="0" data-fld="crit" value="${c.counts[s].crit}">
-            <button class="stp" data-act="crit-">−</button>
+            <input class="cnum" type="number" inputmode="numeric" min="0" step="1" data-fld="crit" value="${c.counts[s].crit}">
             <span class="lab crit-c">c</span>
           </span>
           <span class="sctl">
-            <button class="stp" data-act="fumble+">＋</button>
-            <input class="cnum" type="number" inputmode="numeric" min="0" data-fld="fumble" value="${c.counts[s].fumble}">
-            <button class="stp" data-act="fumble-">−</button>
+            <input class="cnum" type="number" inputmode="numeric" min="0" step="1" data-fld="fumble" value="${c.counts[s].fumble}">
             <span class="lab fmbl-c">f</span>
           </span>
         </div>`).join('');
@@ -172,22 +165,13 @@ function renderList(){
 
     card.querySelectorAll('.srow').forEach(rowEl=>{
       const s=c.scenarios[parseInt(rowEl.dataset.s)];
-      const critInp=rowEl.querySelector('input[data-fld="crit"]');
-      const fmblInp=rowEl.querySelector('input[data-fld="fumble"]');
-      rowEl.querySelectorAll('.stp').forEach(btn=>{
-        btn.addEventListener('click',()=>{
-          const a=btn.dataset.act;
-          if(a==='crit+')c.counts[s].crit++; else if(a==='crit-')c.counts[s].crit=Math.max(0,c.counts[s].crit-1);
-          else if(a==='fumble+')c.counts[s].fumble++; else if(a==='fumble-')c.counts[s].fumble=Math.max(0,c.counts[s].fumble-1);
-          critInp.value=c.counts[s].crit; fmblInp.value=c.counts[s].fumble;
-          refreshTotals(); queueSave(c,statusEl);
+      rowEl.querySelectorAll('input.cnum').forEach(inp=>{
+        const fld=inp.dataset.fld;
+        inp.addEventListener('input',()=>{
+          let v=parseInt(inp.value); if(isNaN(v)||v<0)v=0;
+          c.counts[s][fld]=v; refreshTotals(); queueSave(c,statusEl);
         });
-      });
-      [critInp,fmblInp].forEach(inp=>{
-        inp.addEventListener('change',()=>{
-          let v=parseInt(inp.value); if(isNaN(v)||v<0)v=0; inp.value=v;
-          c.counts[s][inp.dataset.fld]=v; refreshTotals(); queueSave(c,statusEl);
-        });
+        inp.addEventListener('change',()=>{ inp.value=c.counts[s][fld]; });
       });
     });
     wrap.appendChild(card);
