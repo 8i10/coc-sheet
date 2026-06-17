@@ -40,6 +40,8 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 #toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 #toolbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
 #new_btn{display:flex;align-items:center;gap:5px;padding:6px 16px;font-size:12px;cursor:pointer;background:#2a7a4a !important;color:#fff !important;border:none;border-radius:3px;font-family:inherit;font-weight:bold;white-space:nowrap}
+#counter_btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;font-size:12px;cursor:pointer;background:#4a5a8a;color:#fff;border:none;border-radius:3px;font-family:inherit;font-weight:bold;white-space:nowrap}
+#counter_btn:hover{filter:brightness(1.1)}
 #new_btn:hover{background:#1a6a3a}
 #search_box{flex:1;min-width:180px;max-width:340px;border:1px solid #bbb;border-radius:3px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;background:#fff}
 #search_box:focus{border-color:#5588cc}
@@ -527,6 +529,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   <!-- ツールバー -->
   <div id="toolbar" style="display:none">
     <button id="new_btn" onclick="goNew()">＋ 新規作成</button>
+    <button id="counter_btn" onclick="location.href='counter.html'" style="margin-left:6px">🎲 クリ/ファン管理</button>
     <div id="toolbar-right">
       <input id="search_box" type="text" placeholder="PC名・ふりがな・職業・特徴表・通過シナリオで検索..." oninput="filterCards()">
       <span id="search_hint"></span>

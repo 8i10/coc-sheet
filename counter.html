@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>クリティカル / ファンブル管理</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#0d0d12; --surface:#16161f; --surface2:#1e1e2e; --border:#2a2a3d;
+  --accent:#c8a97e; --accent2:#7e9ec8; --text:#e8e4da; --text-muted:#8a8499;
+}
+body.light{
+  --bg:#fff; --surface:#ffffff; --surface2:#eeeeee; --border:#cccccc;
+  --accent:#555555; --accent2:#3366aa; --text:#111; --text-muted:#7a6e62;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;font-size:13px}
+#hdr{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5}
+#hdr .title{font-weight:bold;font-size:14px}
+.hbtn{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;padding:5px 10px;font-size:12px;cursor:pointer}
+.hbtn:hover{border-color:var(--accent)}
+.container{max-width:760px;margin:0 auto;padding:12px}
+#totals{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:10px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+#totals b{font-size:16px}
+.crit-c{color:#2ea86a}
+.fmbl-c{color:#d8615e}
+#search{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);font-size:13px;margin-bottom:10px}
+.crow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:7px}
+.cname{flex:1 1 140px;min-width:120px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cstat{display:flex;align-items:center;gap:4px}
+.clabel{font-size:11px;width:34px;text-align:right}
+.clabel.crit{color:#2ea86a}
+.clabel.fmbl{color:#d8615e}
+.stp{width:30px;height:30px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;font-size:16px;line-height:1;cursor:pointer;flex:0 0 auto;user-select:none}
+.stp:active{background:var(--accent);color:#fff}
+.cnum{width:46px;height:30px;text-align:center;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:5px;font-size:14px;-moz-appearance:textfield}
+.cnum::-webkit-outer-spin-button,.cnum::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.csave{font-size:12px;width:18px;text-align:center;color:var(--text-muted)}
+.csave.ok{color:#2ea86a}
+.csave.ng{color:#d8615e}
+#msg{padding:24px 12px;text-align:center;color:var(--text-muted)}
+#msg a{color:var(--accent2)}
+.divider{flex-basis:100%;height:0}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <div class="title">🎲 クリティカル / ファンブル管理</div>
+  <div style="display:flex;gap:6px">
+    <button class="hbtn" id="theme_btn" onclick="toggleTheme()">☀️</button>
+    <button class="hbtn" onclick="location.href='index.html'">← 一覧へ</button>
+  </div>
+</div>
+
+<div class="container">
+  <div id="totals" style="display:none">
+    <span>合計 <span class="crit-c">クリティカル</span> <b id="t_crit" class="crit-c">0</b></span>
+    <span>合計 <span class="fmbl-c">ファンブル</span> <b id="t_fmbl" class="fmbl-c">0</b></span>
+  </div>
+  <input id="search" type="text" placeholder="PC名で絞り込み..." oninput="renderList()" style="display:none">
+  <div id="list"></div>
+  <div id="msg">読込中...</div>
+</div>
+
+<script>
+const SUPABASE_URL='https://cicodhxebyqewfnngfwt.supabase.co/';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpY29kaHhlYnlxZXdmbm5nZnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzM4NDYsImV4cCI6MjA5NTY0OTg0Nn0.huLOglTPbW1CcGDbDB_yf5ftqEkqmtJ1HBY9WTx9J8E';
+const {createClient}=supabase;
+const db=createClient(SUPABASE_URL,SUPABASE_KEY);
+
+/* ===== テーマ（index.htmlと共通の保存キー） ===== */
+const THEME_KEY='coc_theme', THEME_VER='v2';
+function applyTheme(mode){
+  document.body.classList.toggle('light',mode==='light');
+  localStorage.setItem(THEME_KEY,mode);
+  localStorage.setItem(THEME_KEY+'_ver',THEME_VER);
+  const b=document.getElementById('theme_btn'); if(b)b.textContent=mode==='light'?'🌙':'☀️';
+}
+function toggleTheme(){applyTheme(document.body.classList.contains('light')?'dark':'light');}
+(function(){const ver=localStorage.getItem(THEME_KEY+'_ver');const saved=(ver===THEME_VER)?(localStorage.getItem(THEME_KEY)||'light'):'light';applyTheme(saved);})();
+
+/* ===== データ ===== */
+let chars=[]; // {id, name, crit, fumble}
+const saveTimers={};
+
+function pcNameOf(row){
+  let sheet={}; try{sheet=JSON.parse(row.data)||{};}catch(e){}
+  const inp=sheet.inputs||{};
+  return inp.pcname||row.char_name||'名無し';
+}
+function countersOf(row){
+  let sheet={}; try{sheet=JSON.parse(row.data)||{};}catch(e){}
+  const c=sheet.counters||{};
+  return {crit:parseInt(c.crit)||0, fumble:parseInt(c.fumble)||0};
+}
+
+async function load(){
+  const msg=document.getElementById('msg');
+  try{
+    const {data:{user}}=await db.auth.getUser();
+    if(!user){
+      msg.innerHTML='ログインが必要です。<br><a href="index.html">一覧ページ</a>でログインしてください。';
+      return;
+    }
+    const {data:list,error}=await db
+      .from('character_sheets')
+      .select('id,char_name,data,updated_at')
+      .eq('user_id',user.id)
+      .order('updated_at',{ascending:false});
+    if(error)throw error;
+    chars=(list||[]).map(r=>{const c=countersOf(r);return {id:r.id,name:pcNameOf(r),crit:c.crit,fumble:c.fumble};});
+    if(chars.length===0){msg.textContent='保存されたキャラクターがありません。';return;}
+    msg.style.display='none';
+    document.getElementById('totals').style.display='flex';
+    document.getElementById('search').style.display='block';
+    renderList();
+  }catch(e){
+    msg.textContent='読込エラー: '+e.message;
+  }
+}
+
+function updateTotals(){
+  let tc=0,tf=0; chars.forEach(c=>{tc+=c.crit;tf+=c.fumble;});
+  document.getElementById('t_crit').textContent=tc;
+  document.getElementById('t_fmbl').textContent=tf;
+}
+
+function renderList(){
+  const wrap=document.getElementById('list');
+  const q=document.getElementById('search').value.trim().toLowerCase();
+  wrap.innerHTML='';
+  chars.filter(c=>!q||c.name.toLowerCase().includes(q)).forEach(c=>{
+    const row=document.createElement('div');row.className='crow';
+    row.innerHTML=`
+      <div class="cname" title="${c.name.replace(/"/g,'&quot;')}">${c.name}</div>
+      <div class="cstat">
+        <span class="clabel crit">クリ</span>
+        <button class="stp" data-act="crit-">−</button>
+        <input class="cnum" type="number" inputmode="numeric" min="0" data-fld="crit" value="${c.crit}">
+        <button class="stp" data-act="crit+">＋</button>
+      </div>
+      <div class="cstat">
+        <span class="clabel fmbl">ファン</span>
+        <button class="stp" data-act="fumble-">−</button>
+        <input class="cnum" type="number" inputmode="numeric" min="0" data-fld="fumble" value="${c.fumble}">
+        <button class="stp" data-act="fumble+">＋</button>
+      </div>
+      <span class="csave"></span>`;
+    const statusEl=row.querySelector('.csave');
+    const critInp=row.querySelector('input[data-fld="crit"]');
+    const fmblInp=row.querySelector('input[data-fld="fumble"]');
+    row.querySelectorAll('.stp').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const a=btn.dataset.act;
+        if(a==='crit+')c.crit++; else if(a==='crit-')c.crit=Math.max(0,c.crit-1);
+        else if(a==='fumble+')c.fumble++; else if(a==='fumble-')c.fumble=Math.max(0,c.fumble-1);
+        critInp.value=c.crit; fmblInp.value=c.fumble;
+        updateTotals(); queueSave(c,statusEl);
+      });
+    });
+    [critInp,fmblInp].forEach(inp=>{
+      inp.addEventListener('change',()=>{
+        let v=parseInt(inp.value); if(isNaN(v)||v<0)v=0; inp.value=v;
+        c[inp.dataset.fld]=v; updateTotals(); queueSave(c,statusEl);
+      });
+    });
+    wrap.appendChild(row);
+  });
+  updateTotals();
+}
+
+function queueSave(c,statusEl){
+  statusEl.className='csave'; statusEl.textContent='…';
+  clearTimeout(saveTimers[c.id]);
+  saveTimers[c.id]=setTimeout(()=>saveCounters(c,statusEl),600);
+}
+
+async function saveCounters(c,statusEl){
+  try{
+    // 最新のdataを取得してcountersだけ差し替え（他項目を壊さない）
+    const {data:row,error:e1}=await db.from('character_sheets').select('data').eq('id',c.id).single();
+    if(e1)throw e1;
+    let obj={}; try{obj=JSON.parse(row.data)||{};}catch(_){obj={};}
+    obj.counters={crit:c.crit,fumble:c.fumble};
+    const {error:e2}=await db.from('character_sheets').update({data:JSON.stringify(obj)}).eq('id',c.id);
+    if(e2)throw e2;
+    statusEl.className='csave ok'; statusEl.textContent='✓';
+    setTimeout(()=>{if(statusEl.textContent==='✓')statusEl.textContent='';},1500);
+  }catch(err){
+    statusEl.className='csave ng'; statusEl.textContent='✗';
+    console.error(err); alert('保存に失敗しました: '+err.message);
+  }
+}
+
+load();
+</script>
+</body>
+</html>
