@@ -105,7 +105,14 @@ function parseRow(row){
   const name=inp.pcname||row.char_name||'名無し';
   const furigana=inp.furigana||'';
   const ab={};
-  AB.forEach(a=>{ab[a]=num(inp[a]);}); // 「能力値」行の値
+  AB.forEach(a=>{                       // 現在値 = 能力値 + その他修加分(_m) + 一時的増減(_t)
+    const base=num(inp[a]);
+    if(base==null){ab[a]=null;return;}
+    const stem=(a==='int_v')?'int':a;   // INTの修正値はint_m/int_t
+    const m=num(inp[stem+'_m'])||0;
+    const t=num(inp[stem+'_t'])||0;
+    ab[a]=base+m+t;
+  });
   return {id:row.id,name,furigana,ab};
 }
 
