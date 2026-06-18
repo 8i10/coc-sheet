@@ -1876,8 +1876,8 @@ function calcJobPts(){
   // スマホ用入力欄に同期
   const spJobInp=document.getElementById('job_add_sp');
   const spIntInp=document.getElementById('int_add_sp');
-  if(spJobInp&&spJobInp.value!==String(jobAdd))spJobInp.value=jobAdd||'';
-  if(spIntInp&&spIntInp.value!==String(intAdd))spIntInp.value=intAdd||'';
+  if(spJobInp&&document.activeElement!==spJobInp&&spJobInp.value!==String(jobAdd))spJobInp.value=jobAdd||'';
+  if(spIntInp&&document.activeElement!==spIntInp&&spIntInp.value!==String(intAdd))spIntInp.value=intAdd||'';
   updatePointBar();
 }
 
