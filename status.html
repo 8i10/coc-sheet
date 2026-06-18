@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ステータス一覧</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+:root{
+  --bg:#0d0d12; --surface:#16161f; --surface2:#1e1e2e; --border:#2a2a3d;
+  --accent:#c8a97e; --accent2:#7e9ec8; --text:#e8e4da; --text-muted:#8a8499;
+}
+body.light{
+  --bg:#fff; --surface:#ffffff; --surface2:#eeeeee; --border:#cccccc;
+  --accent:#555555; --accent2:#3366aa; --text:#111; --text-muted:#7a6e62;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--surface2);color:var(--text);font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:13px;min-height:100vh;padding-top:44px}
+#hdr{position:fixed;top:0;left:0;width:100%;display:flex;align-items:center;gap:8px;padding:5px 16px;background:#333;color:#fff;border-bottom:1px solid var(--border);box-shadow:0 2px 5px rgba(0,0,0,.35);z-index:999}
+#hdr .title{font-weight:bold;font-size:14px;flex:1}
+.hbtn{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;padding:5px 10px;font-size:12px;cursor:pointer}
+.hbtn:hover{border-color:var(--accent)}
+.container{max-width:860px;margin:0 auto;padding:12px}
+
+#search{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);font-size:13px;margin-bottom:10px}
+
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+@media(min-width:560px){.filters{grid-template-columns:repeat(4,1fr)}}
+.fcell{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:4px 6px}
+.flab{font-size:11px;font-weight:bold;width:30px;flex:0 0 auto}
+.fnum{width:100%;min-width:0;flex:1;height:26px;text-align:center;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:12px}
+.ftil{font-size:10px;color:var(--text-muted);flex:0 0 auto}
+.frow{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.fclear{flex:0 0 auto}
+#count{font-size:12px;color:var(--text-muted);margin-bottom:6px}
+
+.twrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:12px;background:var(--surface)}
+th,td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);padding:5px 6px;text-align:center;white-space:nowrap}
+th:last-child,td:last-child{border-right:none}
+tr:last-child td{border-bottom:none}
+thead th{background:var(--surface2);position:sticky;top:44px;z-index:1;font-size:11px}
+td.name,th.name{text-align:left;max-width:150px;overflow:hidden;text-overflow:ellipsis;font-weight:bold;position:sticky;left:0;background:var(--surface);z-index:0}
+thead th.name{background:var(--surface2);z-index:2}
+td.na{color:var(--text-muted)}
+tbody tr:nth-child(even) td{background:var(--surface2)}
+tbody tr:nth-child(even) td.name{background:var(--surface2)}
+
+#msg{padding:24px 12px;text-align:center;color:var(--text-muted)}
+#msg a{color:var(--accent2)}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <div class="title">📊 ステータス一覧</div>
+  <div style="display:flex;gap:6px">
+    <button class="hbtn" id="theme_btn" onclick="toggleTheme()">☀️</button>
+    <button class="hbtn" onclick="location.href='index.html'">← 一覧へ</button>
+  </div>
+</div>
+
+<div class="container">
+  <div id="controls" style="display:none">
+    <input id="search" type="text" placeholder="PC名・ふりがなで検索..." oninput="render()">
+    <div class="filters" id="filters"></div>
+    <div class="frow"><button class="hbtn fclear" onclick="clearFilters()">フィルターをクリア</button></div>
+    <div id="count"></div>
+    <div class="twrap"><table id="tbl"></table></div>
+  </div>
+  <div id="msg">読込中...</div>
+</div>
+
+<script>
+const SUPABASE_URL='https://cicodhxebyqewfnngfwt.supabase.co/';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpY29kaHhlYnlxZXdmbm5nZnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzM4NDYsImV4cCI6MjA5NTY0OTg0Nn0.huLOglTPbW1CcGDbDB_yf5ftqEkqmtJ1HBY9WTx9J8E';
+const {createClient}=supabase;
+const db=createClient(SUPABASE_URL,SUPABASE_KEY);
+
+/* ===== テーマ（index.htmlと共通の保存キー） ===== */
+const THEME_KEY='coc_theme', THEME_VER='v2';
+function applyTheme(mode){
+  document.body.classList.toggle('light',mode==='light');
+  localStorage.setItem(THEME_KEY,mode);
+  localStorage.setItem(THEME_KEY+'_ver',THEME_VER);
+  const b=document.getElementById('theme_btn'); if(b)b.textContent=mode==='light'?'🌙':'☀️';
+}
+function toggleTheme(){applyTheme(document.body.classList.contains('light')?'dark':'light');}
+(function(){const ver=localStorage.getItem(THEME_KEY+'_ver');const saved=(ver===THEME_VER)?(localStorage.getItem(THEME_KEY)||'light'):'light';applyTheme(saved);})();
+
+/* ===== 能力値定義 ===== */
+const AB=['str','con','pow','dex','app','siz','int_v','edu'];
+const ABLABEL={str:'STR',con:'CON',pow:'POW',dex:'DEX',app:'APP',siz:'SIZ',int_v:'INT',edu:'EDU'};
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function num(v){const n=parseInt(v);return isNaN(n)?null:n;}
+
+let chars=[];
+
+function parseRow(row){
+  let sheet={}; try{sheet=JSON.parse(row.data)||{};}catch(e){}
+  const inp=sheet.inputs||{};
+  const name=inp.pcname||row.char_name||'名無し';
+  const furigana=inp.furigana||'';
+  const ab={};
+  AB.forEach(a=>{ab[a]=num(inp[a]);}); // 「能力値」行の値
+  return {id:row.id,name,furigana,ab};
+}
+
+async function load(){
+  const msg=document.getElementById('msg');
+  try{
+    const {data:{user}}=await db.auth.getUser();
+    if(!user){msg.innerHTML='ログインが必要です。<br><a href="index.html">一覧ページ</a>でログインしてください。';return;}
+    const {data:list,error}=await db
+      .from('character_sheets')
+      .select('id,char_name,data,updated_at')
+      .eq('user_id',user.id)
+      .order('updated_at',{ascending:false});
+    if(error)throw error;
+    chars=(list||[]).map(parseRow);
+    if(chars.length===0){msg.textContent='保存されたキャラクターがありません。';return;}
+    msg.style.display='none';
+    document.getElementById('controls').style.display='block';
+    buildFilters();
+    render();
+  }catch(e){ msg.textContent='読込エラー: '+e.message; }
+}
+
+function buildFilters(){
+  const wrap=document.getElementById('filters');
+  wrap.innerHTML=AB.map(a=>(
+    `<div class="fcell">`+
+      `<span class="flab">${ABLABEL[a]}</span>`+
+      `<input class="fnum" id="mn_${a}" type="number" inputmode="numeric" placeholder="-" oninput="render()">`+
+      `<span class="ftil">〜</span>`+
+      `<input class="fnum" id="mx_${a}" type="number" inputmode="numeric" placeholder="-" oninput="render()">`+
+    `</div>`
+  )).join('');
+}
+
+function clearFilters(){
+  document.getElementById('search').value='';
+  AB.forEach(a=>{document.getElementById('mn_'+a).value='';document.getElementById('mx_'+a).value='';});
+  render();
+}
+
+function passes(c){
+  const q=document.getElementById('search').value.trim().toLowerCase();
+  if(q && !(c.name.toLowerCase().includes(q) || c.furigana.toLowerCase().includes(q))) return false;
+  for(const a of AB){
+    const mn=num(document.getElementById('mn_'+a).value);
+    const mx=num(document.getElementById('mx_'+a).value);
+    const v=c.ab[a];
+    if(mn!=null){ if(v==null || v<mn) return false; }
+    if(mx!=null){ if(v==null || v>mx) return false; }
+  }
+  return true;
+}
+
+function render(){
+  const rows=chars.filter(passes);
+  document.getElementById('count').textContent=`${rows.length}件 / 全${chars.length}件`;
+  const head='<thead><tr><th class="name">PC名</th>'+AB.map(a=>`<th>${ABLABEL[a]}</th>`).join('')+'</tr></thead>';
+  const body='<tbody>'+rows.map(c=>(
+    `<tr><td class="name" title="${esc(c.name)}">${esc(c.name)}</td>`+
+    AB.map(a=>{const v=c.ab[a];return v==null?`<td class="na">–</td>`:`<td>${v}</td>`;}).join('')+
+    `</tr>`
+  )).join('')+'</tbody>';
+  document.getElementById('tbl').innerHTML=head+(rows.length?body:'<tbody><tr><td class="na" colspan="9" style="padding:14px">該当なし</td></tr></tbody>');
+}
+
+load();
+</script>
+</body>
+</html>
