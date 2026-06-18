@@ -40,8 +40,12 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 #toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 #toolbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
 #new_btn{display:flex;align-items:center;gap:5px;padding:6px 16px;font-size:12px;cursor:pointer;background:#2a7a4a !important;color:#fff !important;border:none;border-radius:3px;font-family:inherit;font-weight:bold;white-space:nowrap}
-#counter_btn,#status_btn{padding:2px 10px;font-size:12px;cursor:pointer;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:3px;transition:all .2s}
-#counter_btn:hover,#status_btn:hover{border-color:var(--accent);color:var(--accent)}
+#counter_btn,#status_btn,#menu_btn{padding:2px 10px;font-size:12px;cursor:pointer;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:3px;transition:all .2s}
+#counter_btn:hover,#status_btn:hover,#menu_btn:hover{border-color:var(--accent);color:var(--accent)}
+#menu_btn{font-size:17px;line-height:1;padding:1px 9px}
+#index_menu{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:5px;box-shadow:0 4px 16px rgba(0,0,0,.35);min-width:150px;z-index:99999;overflow:hidden}
+#index_menu .menu-item{padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px}
+#index_menu .menu-item:hover{background:var(--surface2)}
 #new_btn:hover{background:#1a6a3a}
 #search_box{flex:1;min-width:180px;max-width:340px;border:1px solid #bbb;border-radius:3px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;background:#fff}
 #search_box:focus{border-color:#5588cc}
@@ -508,8 +512,11 @@ if (('standalone' in navigator) && navigator.standalone) {
     <button id="counter_btn" style="display:none" onclick="location.href='counter.html'" title="クリティカル/ファンブル管理">🎲</button>
     <button id="status_btn" style="display:none" onclick="location.href='status.html'" title="ステータス一覧">📊</button>
     <button id="theme_btn" onclick="applyTheme(document.body.classList.contains('light')?'dark':'light')">☀️</button>
-    <button id="logout_btn" class="hbtn" style="background:#666;display:none" onclick="doLogout()">ログアウト</button>
+    <button id="menu_btn" style="display:none" onclick="toggleMenu(event)" title="メニュー">≡</button>
   </div>
+</div>
+<div id="index_menu" style="display:none">
+  <div class="menu-item" onclick="doLogout();closeMenu()"><span>↩</span> ログアウト</div>
 </div>
 
 <div class="container">
@@ -570,7 +577,7 @@ db.auth.getSession().then(({data:{session}})=>{
 function onLoggedIn(user){
   document.getElementById('auth_box').style.display='none';
   document.getElementById('toolbar').style.display='flex';
-  document.getElementById('logout_btn').style.display='inline-block';
+  document.getElementById('menu_btn').style.display='inline-block';
   document.getElementById('counter_btn').style.display='inline-block';
   document.getElementById('status_btn').style.display='inline-block';
 }
@@ -607,6 +614,29 @@ async function doSignup(){
 async function doLogout(){
   await db.auth.signOut();location.reload();
 }
+
+/* ===== 右上メニュー（≡） ===== */
+function toggleMenu(e){
+  if(e)e.stopPropagation();
+  const m=document.getElementById('index_menu');
+  const btn=document.getElementById('menu_btn');
+  if(!m||!btn)return;
+  if(m.style.display==='none'||m.style.display===''){
+    const r=btn.getBoundingClientRect();
+    m.style.top=(r.bottom+4)+'px';
+    m.style.right=(window.innerWidth-r.right)+'px';
+    m.style.left='auto';
+    m.style.display='block';
+  } else {
+    m.style.display='none';
+  }
+}
+function closeMenu(){const m=document.getElementById('index_menu');if(m)m.style.display='none';}
+document.addEventListener('click',function(e){
+  const menu=document.getElementById('index_menu');
+  const btn=document.getElementById('menu_btn');
+  if(menu&&btn&&!menu.contains(e.target)&&e.target!==btn){menu.style.display='none';}
+});
 
 function goNew(){
   sessionStorage.setItem('coc_new_char','1');
