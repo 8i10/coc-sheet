@@ -2435,7 +2435,7 @@ function collectData(){
 
 function updateDocTitle(){
   const n=(document.getElementById('pcname')?.value||'').trim();
-  document.title=(n||'PC名')+'｜CSシート';
+  document.title=n||'CSシート';
 }
 function applyData(json){
   let data;try{data=JSON.parse(json);}catch(e){alert('データが壊れています');return;}
