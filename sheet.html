@@ -1007,7 +1007,7 @@ body.light td.hdr{
 .acc-arrow-btn{background:transparent;border:none;color:inherit;cursor:pointer;font-size:11px;padding:0 2px;flex:0 0 auto;line-height:1;font-family:inherit}
 /* アコーディオン間の区切り罫線 */
 .acc-divider{border:none;border-top:1px solid var(--border);margin:3px 2px}
-.acc-divider1{border:none;border-top:1px solid var(--border);margin:3px 2px}
+.acc-divider1{border:none;border-top:1px solid var(--border);margin:5px 2px}
 /* === 小アコーディオン見出しを薄い灰色に（最終上書き） === */
 html body:not(.light) .sub-acc-header,
 html body:not(.light) .sub2-acc-header,
@@ -1125,7 +1125,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       <tr><td class="hdr" style="font-size:8px;white-space:nowrap">ふりがな</td><td colspan="5"><input type="text" id="furigana" style="text-align:center !important"></td></tr>
       <tr>
         <td class="hdr" style="vertical-align:middle">PC名</td>
-        <td colspan="5"><input type="text" id="pcname" oninput="updateStickyHeader()" style="font-size:15px;font-weight:bold;height:52px;text-align:center;padding:2px 4px;display:block;width:100%"></td>
+        <td colspan="5"><input type="text" id="pcname" oninput="updateStickyHeader();updateDocTitle()" style="font-size:15px;font-weight:bold;height:52px;text-align:center;padding:2px 4px;display:block;width:100%"></td>
       </tr>
       <tr>
         <td class="hdr" style="font-size:9px">文字色</td>
@@ -2433,6 +2433,10 @@ function collectData(){
   return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,rels,hideDefault,accState,counters:_loadedCounters||undefined,ts:Date.now()});
 }
 
+function updateDocTitle(){
+  const n=(document.getElementById('pcname')?.value||'').trim();
+  document.title=(n||'PC名')+'｜CSシート';
+}
 function applyData(json){
   let data;try{data=JSON.parse(json);}catch(e){alert('データが壊れています');return;}
   if(data.counters)_loadedCounters=data.counters; // クリティカル/ファンブル数を保持
@@ -2442,6 +2446,7 @@ function applyData(json){
     const el=document.getElementById(id);if(!el)return;
     if(el.type==='checkbox')el.checked=val;else el.value=val;
   });
+  updateDocTitle();
 
   // 技能（freeValも復元）
   if(data.skills)data.skills.forEach(s=>{

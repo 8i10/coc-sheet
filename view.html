@@ -982,7 +982,7 @@ body.light .sk-base{ background:#f0f0f0 !important; }
 .acc-arrow-btn{background:transparent;border:none;color:inherit;cursor:pointer;font-size:11px;padding:0 2px;flex:0 0 auto;line-height:1;font-family:inherit}
 /* アコーディオン間の区切り罫線 */
 .acc-divider{border:none;border-top:1px solid var(--border);margin:3px 2px}
-.acc-divider1{border:none;border-top:1px solid var(--border);margin:3px 2px}
+.acc-divider1{border:none;border-top:1px solid var(--border);margin:5px 2px}
 /* === 小アコーディオン見出しを薄い灰色に（最終上書き） === */
 html body:not(.light) .sub-acc-header,
 html body:not(.light) .sub2-acc-header,
@@ -1703,12 +1703,17 @@ function collectData(){
   });
   return JSON.stringify({inputs,skills,ts:Date.now()});
 }
+function updateDocTitle(){
+  const n=(document.getElementById('pcname')?.value||'').trim();
+  document.title=(n||'PC名')+'｜CSシート';
+}
 function applyData(json){
   let data;try{data=JSON.parse(json);}catch(e){alert('データが壊れています');return;}
   if(data.inputs)Object.entries(data.inputs).forEach(([id,val])=>{const el=document.getElementById(id);if(!el)return;if(el.type==='checkbox')el.checked=val;else el.value=val;});
   if(data.skills)data.skills.forEach(s=>{const tr=document.querySelector(`[data-skill="${s.key}"]`)?.closest('tr');if(!tr)return;const chk=tr.querySelector('input[type=checkbox]');if(chk)chk.checked=s.chk;const ji=tr.querySelector('.job-inp');if(ji)ji.value=s.job;const ii=tr.querySelector('.int-inp');if(ii)ii.value=s.int;const gi=tr.querySelector('.grw-inp');if(gi)gi.value=s.grw;const oi=tr.querySelector('.oth-inp');if(oi)oi.value=s.oth;if(s.freeVal){const fi=tr.querySelector('.sk-name .free-inp-auto')||tr.querySelector('.sk-name input[type=text]');if(fi)fi.value=s.freeVal;}
   });
   calc();
+  updateDocTitle();
   setTimeout(autoResizeAll,100);
 }
 // 保存ボタン
