@@ -753,8 +753,12 @@ body:not(.light) select option{
 
 /* --- 技能表ヘッダー --- */
 /* ベースCSSのacc-headerを変数で上書き */
-.acc-header,.sub-acc-header,.sub2-acc-header{
+.acc-header{
   background:var(--hdr-bg) !important;
+  color:var(--hdr-text) !important;
+}
+.sub-acc-header,.sub2-acc-header,.secret-item-header{
+  background:linear-gradient(rgba(255,255,255,.22),rgba(255,255,255,.22)),var(--hdr-bg) !important;
   color:var(--hdr-text) !important;
 }
 .acc-header:hover,.sub-acc-header:hover,.sub2-acc-header:hover{
