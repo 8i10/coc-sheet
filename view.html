@@ -983,6 +983,13 @@ body.light .sk-base{ background:#f0f0f0 !important; }
 /* アコーディオン間の区切り罫線 */
 .acc-divider{border:none;border-top:1px solid var(--border);margin:3px 2px}
 .acc-divider1{border:none;border-top:1px solid var(--border);margin:3px 2px}
+/* === 小アコーディオン見出しを薄い灰色に（最終上書き） === */
+html body:not(.light) .sub-acc-header,
+html body:not(.light) .sub2-acc-header,
+html body:not(.light) .secret-item-header{ background:#3d3d50 !important; }
+html body.light .sub-acc-header,
+html body.light .sub2-acc-header,
+html body.light .secret-item-header{ background:#5e5e5e !important; }
 </style>
 
 <!-- PWA: Safari スタンドアロンモード維持 -->
