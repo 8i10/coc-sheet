@@ -1796,6 +1796,15 @@ async function initViewMode() {
 
   const sheet = JSON.parse(data.data);
 
+  // 閲覧URLトークン（再生成された場合、古いURLを無効化）
+  if (sheet.share_rev) {
+    const r = new URLSearchParams(window.location.search).get('r');
+    if (r !== sheet.share_rev) {
+      document.body.innerHTML = '<div style="padding:40px;text-align:center;line-height:1.8">このリンクは無効です。<br>閲覧URLが再生成された可能性があります。<br>最新のURLを共有者にご確認ください。</div>';
+      return;
+    }
+  }
+
   // inputs復元（アコーディオン系・job_tokki・job_ref_selは除外）
   const ACC_SKIP = new Set(['combat_acc','items_acc','memo_acc','scenario_outer','rel_acc','secret_outer','aftereffect_outer','job_tokki','job_ref_sel']);
   if (sheet.inputs) {

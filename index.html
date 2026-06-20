@@ -79,6 +79,24 @@ body.light .card-tokucho .meta-value{color:#555 !important}
 .s-missing{background:#fff3d4;color:#8a6000}
 .s-dead{background:#e8e8e8;color:#555}
 .s-insane{background:#f0e4ff;color:#6a1a9a}
+/* 並び替え・フィルタ・タグ・状態 */
+#ctrlbar{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px}
+#ctrlbar label{font-size:11px;color:var(--text-muted)}
+#ctrlbar select{font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text)}
+#sort_dir{font-size:12px;padding:3px 9px;cursor:pointer;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text)}
+#tag_filter{display:flex;flex-wrap:wrap;gap:5px;margin:3px 0 4px}
+.tagchip{font-size:11px;padding:2px 9px;border-radius:11px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);cursor:pointer;user-select:none}
+.tagchip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;align-items:center}
+.card-tag{font-size:10px;padding:1px 7px;border-radius:9px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)}
+.card-tag-edit{font-size:10px;padding:1px 7px;border-radius:9px;background:transparent;color:var(--accent2);border:1px dashed var(--border);cursor:pointer}
+.card-tags-foot{flex:1;margin-top:0;min-width:0}
+.badge{cursor:pointer}
+#status_pop{position:fixed;z-index:99999;background:var(--surface);border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.35);padding:4px;display:none}
+#status_pop button{display:block;width:100%;text-align:left;font-size:12px;padding:7px 14px;border:none;background:transparent;color:var(--text);cursor:pointer;border-radius:4px;white-space:nowrap}
+#status_pop button:hover{background:var(--surface2)}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;z-index:100000;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:.95}
 .card-foot{display:flex;align-items:center;padding:5px 10px;border-top:1px solid var(--border);background:var(--surface2);gap:6px}
 .card-date{font-size:10px;color:#bbb;flex:1}
 .cbtn{padding:2px 9px;font-size:11px;cursor:pointer;border:none;border-radius:2px;font-family:inherit}
@@ -553,6 +571,37 @@ if (('standalone' in navigator) && navigator.standalone) {
     </div>
   </div>
 
+  <!-- 並び替え・状態フィルタ -->
+  <div id="ctrlbar">
+    <label>並び替え</label>
+    <select id="sort_key" onchange="applyFilters()">
+      <option value="updated">更新日</option>
+      <option value="name">名前</option>
+      <option value="san">SAN</option>
+      <option value="status">状態</option>
+      <option value="str">STR</option>
+      <option value="con">CON</option>
+      <option value="pow">POW</option>
+      <option value="dex">DEX</option>
+      <option value="app">APP</option>
+      <option value="siz">SIZ</option>
+      <option value="int_v">INT</option>
+      <option value="edu">EDU</option>
+    </select>
+    <button id="sort_dir" onclick="toggleSortDir()">▼ 降順</button>
+    <label style="margin-left:4px">状態</label>
+    <select id="status_filter" onchange="applyFilters()">
+      <option value="">すべて</option>
+      <option value="alive">生存</option>
+      <option value="lost">ロスト</option>
+      <option value="retired">引退</option>
+      <option value="missing">行方不明</option>
+      <option value="dead">死亡</option>
+      <option value="insane">永久狂気</option>
+    </select>
+  </div>
+  <div id="tag_filter"></div>
+
   <!-- カードグリッド -->
   <div id="grid">
     <div id="loading">読込中...</div>
@@ -561,6 +610,9 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 
 </div>
+
+<div id="status_pop"></div>
+<div id="toast"></div>
 
 <script>
 const SUPABASE_URL='https://cicodhxebyqewfnngfwt.supabase.co/';
@@ -573,6 +625,159 @@ const S_CLS  ={alive:'s-alive',lost:'s-lost',retired:'s-retired',missing:'s-miss
 
 let allChars=[];
 
+/* ===== 並び替え・タグ・状態フィルタ ===== */
+let sortKey='updated', sortDir='desc';
+let activeTags=new Set();
+const AB_KEYS=['str','con','pow','dex','app','siz','int_v','edu'];
+const S_ORDER={alive:0,missing:1,insane:2,retired:3,lost:4,dead:5};
+
+function getSheet(char){
+  if(char._sheet)return char._sheet;
+  let s={};try{s=JSON.parse(char.data)||{};}catch(e){}
+  char._sheet=s;return s;
+}
+function charTags(char){const s=getSheet(char);return Array.isArray(s.tags)?s.tags:[];}
+function charStatus(char){return (getSheet(char).inputs||{}).pc_status||'alive';}
+function charSan(char){const inp=getSheet(char).inputs||{};const v=parseInt(inp.san_now);if(!isNaN(v))return v;const p=parseInt(inp.pow);return isNaN(p)?null:p*5;}
+
+function sortVal(char){
+  const inp=getSheet(char).inputs||{};
+  switch(sortKey){
+    case 'name':   return (inp.pcname||char.char_name||'');
+    case 'san':    return charSan(char);
+    case 'status': return (S_ORDER[charStatus(char)]??9);
+    case 'updated':return new Date(char.updated_at).getTime();
+    default:
+      if(AB_KEYS.includes(sortKey)){const n=parseInt(inp[sortKey]);return isNaN(n)?null:n;}
+      return 0;
+  }
+}
+
+function toggleSortDir(){
+  sortDir = (sortDir==='asc'?'desc':'asc');
+  document.getElementById('sort_dir').textContent = (sortDir==='asc'?'▲ 昇順':'▼ 降順');
+  applyFilters();
+}
+
+function applyFilters(){
+  sortKey=document.getElementById('sort_key').value;
+  const activeStatus=document.getElementById('status_filter').value;
+  const q=(document.getElementById('search_box').value||'').trim().toLowerCase();
+  let rows=allChars.filter(char=>{
+    if(activeStatus && charStatus(char)!==activeStatus)return false;
+    if(activeTags.size){const tg=charTags(char);if(![...activeTags].some(t=>tg.includes(t)))return false;}
+    if(q){
+      const s=getSheet(char);const inp=s.inputs||{};
+      const hay=[(inp.pcname||char.char_name||''),(inp.furigana||''),(inp.job||''),
+        tokuchoLabel(inp.t1_sel)+' '+(inp.t1_memo||''),tokuchoLabel(inp.t2_sel)+' '+(inp.t2_memo||''),
+        (s.scenarios||[]).join(' '),charTags(char).join(' ')].join(' ').toLowerCase();
+      if(!hay.includes(q))return false;
+    }
+    return true;
+  });
+  const dir=(sortDir==='asc'?1:-1);
+  rows.sort((a,b)=>{
+    const va=sortVal(a), vb=sortVal(b);
+    if(sortKey==='name')return String(va).localeCompare(String(vb),'ja')*dir;
+    const an=(va==null),bn=(vb==null);
+    if(an&&bn)return 0; if(an)return 1; if(bn)return -1;
+    return (va-vb)*dir;
+  });
+  renderCards(rows);
+}
+
+function buildTagFilter(){
+  const all=new Set();
+  allChars.forEach(c=>charTags(c).forEach(t=>all.add(t)));
+  [...activeTags].forEach(t=>{if(!all.has(t))activeTags.delete(t);});
+  const wrap=document.getElementById('tag_filter');
+  if(!wrap)return;
+  if(all.size===0){wrap.innerHTML='';return;}
+  wrap.innerHTML=[...all].sort((a,b)=>a.localeCompare(b,'ja')).map(t=>
+    `<span class="tagchip ${activeTags.has(t)?'on':''}" data-tag="${esc(t)}">${esc(t)}</span>`
+  ).join('');
+}
+
+/* タグ編集 */
+function editTags(id){
+  const char=allChars.find(c=>c.id===id); if(!char)return;
+  const cur=charTags(char).join(', ');
+  const input=prompt('タグをカンマ区切りで入力（例：卓A, 探索者, 継続）', cur);
+  if(input===null)return;
+  const tags=[...new Set(input.split(',').map(t=>t.trim().replace(/["'\\]/g,'')).filter(Boolean))].slice(0,20);
+  updateCharData(id, s=>{ s.tags=tags; }, 'タグを更新しました');
+}
+
+/* 状態ピッカー */
+function openStatusPicker(id, anchor){
+  const pop=document.getElementById('status_pop');
+  pop.innerHTML=Object.keys(S_LABEL).map(k=>`<button data-st="${k}">${S_LABEL[k]}</button>`).join('');
+  pop.querySelectorAll('button').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();setStatus(id,b.dataset.st);pop.style.display='none';});
+  const r=anchor.getBoundingClientRect();
+  pop.style.display='block';
+  pop.style.top=(r.bottom+4)+'px';
+  pop.style.left=Math.max(6,Math.min(r.left, window.innerWidth-150))+'px';
+}
+function setStatus(id, st){ updateCharData(id, s=>{ s.inputs=s.inputs||{}; s.inputs.pc_status=st; }, '状態を変更しました'); }
+
+/* 閲覧URLコピー */
+function copyViewUrl(id){
+  const url=new URL(viewUrlFor(id), location.href).href;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(()=>showToast('閲覧URLをコピーしました')).catch(()=>fallbackCopy(url));
+  }else fallbackCopy(url);
+}
+function fallbackCopy(url){
+  const ta=document.createElement('textarea');ta.value=url;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');showToast('閲覧URLをコピーしました');}catch(_){showToast('コピーできませんでした');}
+  ta.remove();
+}
+
+/* data更新（read-modify-write） */
+async function updateCharData(id, mutator, okMsg){
+  try{
+    const {data:row,error}=await db.from('character_sheets').select('data').eq('id',id).single();
+    if(error)throw error;
+    let s={};try{s=JSON.parse(row.data)||{};}catch(e){}
+    mutator(s);
+    const newData=JSON.stringify(s);
+    const {error:e2}=await db.from('character_sheets').update({data:newData}).eq('id',id);
+    if(e2)throw e2;
+    const char=allChars.find(c=>c.id===id);
+    if(char){char.data=newData;char._sheet=s;}
+    buildTagFilter();applyFilters();
+    showToast(okMsg||'更新しました');
+  }catch(e){showToast('更新エラー: '+e.message);}
+}
+
+let _toastT=null;
+function showToast(msg){
+  const t=document.getElementById('toast');if(!t)return;
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(_toastT);_toastT=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+/* デリゲート（タグチップ／カードのバッジ・タグ編集） */
+document.addEventListener('DOMContentLoaded',()=>{
+  const tf=document.getElementById('tag_filter');
+  if(tf)tf.addEventListener('click',e=>{
+    const chip=e.target.closest('.tagchip'); if(!chip)return;
+    const t=chip.dataset.tag; if(activeTags.has(t))activeTags.delete(t);else activeTags.add(t);
+    buildTagFilter();applyFilters();
+  });
+  const grid=document.getElementById('grid');
+  if(grid)grid.addEventListener('click',e=>{
+    const badge=e.target.closest('.badge[data-id]');
+    if(badge){e.stopPropagation();openStatusPicker(badge.dataset.id,badge);return;}
+    const te=e.target.closest('.card-tag-edit[data-id]');
+    if(te){editTags(te.dataset.id);return;}
+  });
+  document.addEventListener('click',e=>{
+    const pop=document.getElementById('status_pop');
+    if(pop&&pop.style.display==='block'&&!pop.contains(e.target)&&!e.target.closest('.badge[data-id]'))pop.style.display='none';
+  });
+});
+
 // 起動時ログイン確認
 db.auth.getSession().then(({data:{session}})=>{
   if(session){onLoggedIn(session.user);loadList();}
@@ -582,6 +787,7 @@ db.auth.getSession().then(({data:{session}})=>{
 function onLoggedIn(user){
   document.getElementById('auth_box').style.display='none';
   document.getElementById('toolbar').style.display='flex';
+  document.getElementById('ctrlbar').style.display='flex';
   document.getElementById('menu_btn').style.display='inline-block';
   document.getElementById('counter_btn').style.display='inline-block';
   document.getElementById('status_btn').style.display='inline-block';
@@ -667,7 +873,8 @@ async function loadList(){
 
     loadEl.style.display='none';
     allChars=list||[];
-    renderCards(allChars);
+    buildTagFilter();
+    applyFilters();
   }catch(e){
     loadEl.textContent='読込エラー: '+e.message;
   }
@@ -699,8 +906,7 @@ function renderCards(chars){
 
   // 件数表示
   const hint=document.getElementById('search_hint');
-  const q=document.getElementById('search_box').value.trim();
-  hint.textContent=q?`${chars.length}件 / ${allChars.length}件`:`${allChars.length}件`;
+  hint.textContent = (chars.length!==allChars.length)?`${chars.length}件 / ${allChars.length}件`:`${allChars.length}件`;
 }
 
 // 検索フィルター
@@ -712,27 +918,14 @@ function tokuchoLabel(v){
   return (Number.isInteger(i)&&tokuchoLabels[i])?tokuchoLabels[i]:"";
 }
 function filterCards(){
-  const q=document.getElementById('search_box').value.trim().toLowerCase();
-  if(!q){renderCards(allChars);return;}
-  const filtered=allChars.filter(char=>{
-    let sheet={};try{sheet=JSON.parse(char.data);}catch(e){}
-    const inputs=sheet.inputs||{};
-    const pcname  =(inputs.pcname   ||char.char_name||'').toLowerCase();
-    const furigana=(inputs.furigana ||'').toLowerCase();
-    const job     =(inputs.job      ||'').toLowerCase();
-    // 特徴表: 選択値は番号で保存されるため特徴名へ変換（メモも検索対象）
-    const t1=(tokuchoLabel(inputs.t1_sel)+' '+(inputs.t1_memo||'')).toLowerCase();
-    const t2=(tokuchoLabel(inputs.t2_sel)+' '+(inputs.t2_memo||'')).toLowerCase();
-    // 通過シナリオ
-    const scenarios=(sheet.scenarios||[]).join(' ').toLowerCase();
-    return pcname.includes(q)||furigana.includes(q)||job.includes(q)||t1.includes(q)||t2.includes(q)||scenarios.includes(q);
-  });
-  renderCards(filtered);
+  applyFilters();
 }
 
 function makeCard(char){
   let sheet={};try{sheet=JSON.parse(char.data);}catch(e){}
+  char._sheet=sheet;
   const inp=sheet.inputs||{};
+  const tags=Array.isArray(sheet.tags)?sheet.tags:[];
 
   const pcname  =inp.pcname   ||char.char_name||'名無し';
   const furigana=inp.furigana ||'';
@@ -783,7 +976,7 @@ function makeCard(char){
       <div class="card-info">
         <div class="card-tag-row">
           <span class="card-furigana">${esc(furigana)}</span>
-          <span class="badge ${S_CLS[status]||'s-alive'}">${S_LABEL[status]||status}</span>
+          <span class="badge ${S_CLS[status]||'s-alive'}" data-id="${char.id}" title="タップで状態変更">${S_LABEL[status]||status}</span>
         </div>
         <div class="card-pcname">${esc(pcname)}</div>
         ${job?`<div class="card-job">${esc(job)}</div>`:'<div class="card-job" style="color:#ccc">（職業未設定）</div>'}
@@ -792,10 +985,11 @@ function makeCard(char){
       </div>
     </div>
     <div class="card-foot">
-      <span class="card-date">更新 ${updDate}</span>
+      <div class="card-tags card-tags-foot">${tags.map(t=>`<span class="card-tag">${esc(t)}</span>`).join('')}<span class="card-tag-edit" data-id="${char.id}">🏷 タグ</span></div>
       <button class="cbtn" style="background:#2a7a4a;color:#fff" onclick="openEdit('${char.id}')">✏️ 編集</button>
       <button class="cbtn" style="background:#7755aa;color:#fff" onclick="openView('${char.id}')">👁 閲覧</button>
       <button class="cbtn" style="background:#553388;color:#fff" onclick="openCocoFromIndex('${char.id}')">🐔 駒出力</button>
+      <button class="cbtn" style="background:#2a6a8a;color:#fff" onclick="copyViewUrl('${char.id}')" title="閲覧URLをコピー">🔗</button>
     </div>`;
   return card;
 }
@@ -814,10 +1008,17 @@ function fixDropboxUrlIndex(url) {
 
 function openEdit(id){
   sessionStorage.setItem('coc_load_id',id);
-  location.href='sheet.html';
+  location.href='sheet.html?id='+id;
+}
+function viewUrlFor(id){
+  const char=allChars.find(c=>c.id===id);
+  const rev=char?getSheet(char).share_rev:'';
+  let u='view.html?id='+id;
+  if(rev)u+='&r='+encodeURIComponent(rev);
+  return u;
 }
 function openView(id){
-  location.href='view.html?id='+id;
+  location.href=viewUrlFor(id);
 }
 
 async function deleteChar(id,btn){

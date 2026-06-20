@@ -1040,6 +1040,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   <div onclick="exportJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>⬇</span> JSON出力</div>
   <div onclick="importJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>⬆</span> JSON読込</div>
   <div onclick="importSpreadsheetHTML();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>📥</span> スプシ取込</div>
+  <div onclick="regenShareUrl();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>🔄</span> 閲覧URL再生成</div>
   <div onclick="deleteCurrentCS();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;color:#ff6b6b;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#3a1f1f'" onmouseout="this.style.background=''"><span>🗑</span> 削除</div>
 </div>
 <div class="sheet">
@@ -2315,6 +2316,8 @@ function applyCharIconData(inputs) {
 // ===== /アイコン画像クロップ =====
 
 let _loadedCounters=null; // クリティカル/ファンブル数（counter.htmlで管理。保存時に保持）
+let _loadedTags=null;     // タグ（一覧で管理。保存時に保持）
+let _loadedShareRev=null; // 閲覧URLトークン（保存時に保持）
 function collectData(){
   // 初期値非表示状態を保存
   const hideDefault = allDefaultHidden;
@@ -2430,7 +2433,7 @@ function collectData(){
     const el=document.getElementById(id);
     if(el)accState[id]=el.classList.contains('open');
   });
-  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,rels,hideDefault,accState,counters:_loadedCounters||undefined,ts:Date.now()});
+  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,rels,hideDefault,accState,counters:_loadedCounters||undefined,tags:_loadedTags||undefined,share_rev:_loadedShareRev||undefined,ts:Date.now()});
 }
 
 function updateDocTitle(){
@@ -2440,6 +2443,8 @@ function updateDocTitle(){
 function applyData(json){
   let data;try{data=JSON.parse(json);}catch(e){alert('データが壊れています');return;}
   if(data.counters)_loadedCounters=data.counters; // クリティカル/ファンブル数を保持
+  if(data.tags)_loadedTags=data.tags;             // タグを保持
+  if(data.share_rev)_loadedShareRev=data.share_rev; // 閲覧URLトークンを保持
 
   // input・textarea・select（id付き）を復元
   if(data.inputs)Object.entries(data.inputs).forEach(([id,val])=>{
@@ -2648,6 +2653,24 @@ function applyData(json){
 // 保存ボタン
 let currentCharId = null;
 
+// 閲覧URLを再生成（以前のURLを無効化）
+async function regenShareUrl(){
+  if(!currentCharId){ alert('先に保存してから再生成してください。'); return; }
+  if(!confirm('閲覧URLを再生成しますか？\n以前に共有したURLは見られなくなります。')) return;
+  try{
+    const {data:row,error}=await db.from('character_sheets').select('data').eq('id',currentCharId).single();
+    if(error)throw error;
+    let s={};try{s=JSON.parse(row.data)||{};}catch(e){}
+    s.share_rev=Math.random().toString(36).slice(2,10);
+    const {error:e2}=await db.from('character_sheets').update({data:JSON.stringify(s)}).eq('id',currentCharId);
+    if(e2)throw e2;
+    _loadedShareRev=s.share_rev; // 以後のシート保存でも保持
+    const url=new URL('view.html?id='+currentCharId+'&r='+s.share_rev, location.href).href;
+    if(navigator.clipboard&&navigator.clipboard.writeText){ try{ await navigator.clipboard.writeText(url); }catch(_){} }
+    alert('閲覧URLを再生成しました（クリップボードにコピー済み）:\n'+url);
+  }catch(e){ alert('再生成エラー: '+e.message); }
+}
+
 // 現在開いているCSを削除（メニューからのみ）
 async function deleteCurrentCS(){
   if(!currentCharId){ alert('このキャラクターはまだ保存されていません。'); return; }
@@ -2709,6 +2732,7 @@ async function saveToStorage() {
         .single();
       if(insErr){alert('挿入エラー: '+insErr.message);return;}
       if (inserted) currentCharId = inserted.id;
+      if (currentCharId && history.replaceState) history.replaceState(null,'','sheet.html?id='+currentCharId);
       console.log('[SAVE] 新規挿入成功 id=',inserted?.id);
     }
     showSaveMsg();
@@ -3975,6 +3999,26 @@ addSecretItem('','');addRelGroup();addAERow('tbody_kouisho');addAERow('tbody_af'
 // ページリロード時・一覧からの遷移時にデータを保持
 const SHEET_KEY = 'coc_sheet_draft';
 (async () => {
+  // 0) URLに ?id= があれば最優先で読込（リロードでもIDを保持＝閲覧URLが変わらない）
+  const urlId = new URLSearchParams(location.search).get('id');
+  if (urlId) {
+    sessionStorage.removeItem('coc_load_id');
+    sessionStorage.removeItem('coc_new_char');
+    try {
+      const { data: { user } } = await db.auth.getUser();
+      if (user) {
+        const { data, error } = await db.from('character_sheets').select('data').eq('id', urlId).single();
+        if (!error && data) {
+          applyData(data.data);
+          currentCharId = urlId;
+          try { const o = JSON.parse(data.data); o._charId = urlId; sessionStorage.setItem(SHEET_KEY, JSON.stringify(o)); }
+          catch(_) { sessionStorage.setItem(SHEET_KEY, data.data); }
+          return;
+        }
+      }
+    } catch(e) { console.warn('load error (url id)', e); }
+  }
+
   // 1) 一覧からの「編集」遷移 → Supabaseから読込
   const loadId = sessionStorage.getItem('coc_load_id');
   if (loadId) {
@@ -3987,7 +4031,8 @@ const SHEET_KEY = 'coc_sheet_draft';
         if (!error && data) {
           applyData(data.data);
           currentCharId = loadId;
-          sessionStorage.setItem(SHEET_KEY, data.data); // ドラフトにも保存
+          try { const o = JSON.parse(data.data); o._charId = loadId; sessionStorage.setItem(SHEET_KEY, JSON.stringify(o)); }
+          catch(_) { sessionStorage.setItem(SHEET_KEY, data.data); }
           return;
         }
       }
@@ -4063,6 +4108,7 @@ async function autoSaveToSupabase() {
       const { data: ins } = await db.from('character_sheets')
         .insert({user_id: user.id, char_name: nm, data}).select('id').single();
       if (ins) currentCharId = ins.id;
+      if (currentCharId && history.replaceState) history.replaceState(null,'','sheet.html?id='+currentCharId);
     }
     // sessionStorageも更新
     try {
