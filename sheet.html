@@ -1008,6 +1008,20 @@ body.light td.hdr{
 /* アコーディオン間の区切り罫線 */
 .acc-divider{border:none;border-top:1px solid var(--border);margin:3px 2px}
 .acc-divider1{border:none;border-top:1px solid var(--border);margin:5px 2px}
+.roll-row{display:flex;align-items:flex-start;gap:5px;flex-wrap:wrap}
+.roll-all-btn2{width:118px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0 8px;cursor:pointer;border:1px solid var(--accent);border-radius:4px;background:var(--accent);color:#fff;white-space:nowrap;font-weight:bold;flex:0 0 auto}
+.roll-ind{display:flex;gap:4px;flex-wrap:wrap}
+.roll-col{display:flex;flex-direction:column;align-items:center;gap:1px}
+.mini-roll2{height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;padding:0 6px;cursor:pointer;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--text)}
+.mini-roll2:hover{border-color:var(--accent);color:var(--accent)}
+.roll-val{font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:500;color:var(--text);min-width:22px;text-align:center;line-height:1.1}
+.apply-roll-btn{width:118px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0 8px;cursor:pointer;border:1px solid var(--accent2);border-radius:4px;background:var(--surface);color:var(--accent2);white-space:nowrap;font-weight:bold;flex:0 0 auto}
+.roll-result{font-family:'Zen Kaku Gothic New',sans-serif;font-size:9px;color:var(--text-muted);white-space:nowrap;overflow-x:auto;min-width:0;align-self:center}
+@media(max-width:700px){
+  #char_image_ctrl{padding:3px 6px}
+  #char_image_ctrl > div{flex:1 1 100% !important}
+  #char_image_ctrl .roll-panel{border-left:none !important;padding-left:0 !important}
+}
 /* === 小アコーディオン見出しを薄い灰色に（最終上書き） === */
 html body:not(.light) .sub-acc-header,
 html body:not(.light) .sub2-acc-header,
@@ -1096,14 +1110,35 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 </div>
 
-<!-- アイコン画像URL/ズームバー（PC版） -->
-<div id="char_image_ctrl" style="display:flex;flex-direction:column;gap:3px;padding:3px 10px;border-bottom:1px solid var(--border);background:var(--surface2)">
-  <div style="display:flex;align-items:center;gap:6px">
-    <span style="font-size:9px;color:var(--text-muted);white-space:nowrap">アイコン画像URL</span>
-    <input type="text" id="char_image_url" placeholder="https://www.dropbox.com/..." style="flex:1;font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text)" oninput="previewCharImage(this.value)">
+<!-- アイコン画像URL/ズームバー（PC版）＋ 能力値ロール -->
+<div id="char_image_ctrl" style="display:flex;align-items:stretch;flex-wrap:wrap;gap:8px;padding:3px 1px;border-bottom:1px solid var(--border);background:var(--surface2)">
+  <div class="imgctrl-left" style="flex:0 0 calc(40% - 8px);min-width:0;display:flex;flex-direction:column;gap:3px;justify-content:center">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:9px;color:var(--text-muted);white-space:nowrap">アイコン画像URL</span>
+      <input type="text" id="char_image_url" placeholder="https://www.dropbox.com/..." style="flex:1;min-width:0;font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text)" oninput="previewCharImage(this.value)">
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <input type="range" id="char_image_zoom" min="50" max="300" value="130" style="flex:1;min-width:0" oninput="charImageZoomFromSlider(this.value)">
+    </div>
   </div>
-  <div style="display:flex;align-items:center;gap:6px">
-    <input type="range" id="char_image_zoom" min="50" max="300" value="130" style="flex:1" oninput="charImageZoomFromSlider(this.value)">
+  <div class="roll-panel" style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:center;border-left:1px solid var(--border);padding-left:8px">
+    <div class="roll-row">
+      <button type="button" class="roll-all-btn2" onclick="rollAllAbilities()">🎲 全体振り直し</button>
+      <span class="roll-ind">
+        <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('str')">STR</button><span class="roll-val" id="rv_str">–</span></span>
+        <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('con')">CON</button><span class="roll-val" id="rv_con">–</span></span>
+        <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('pow')">POW</button><span class="roll-val" id="rv_pow">–</span></span>
+        <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('dex')">DEX</button><span class="roll-val" id="rv_dex">–</span></span>
+        <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('app')">APP</button><span class="roll-val" id="rv_app">–</span></span>
+        <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('siz')">SIZ</button><span class="roll-val" id="rv_siz">–</span></span>
+        <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('int_v')">INT</button><span class="roll-val" id="rv_int_v">–</span></span>
+        <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('edu')">EDU</button><span class="roll-val" id="rv_edu">–</span></span>
+      </span>
+    </div>
+    <div class="roll-row">
+      <button type="button" class="apply-roll-btn" onclick="applyRolls()">能力値に反映</button>
+      <span id="roll_total" class="roll-result">合計 –</span>
+    </div>
   </div>
 </div>
 <!-- ===== 行1 ===== -->
@@ -2434,6 +2469,47 @@ function collectData(){
     if(el)accState[id]=el.classList.contains('open');
   });
   return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,rels,hideDefault,accState,counters:_loadedCounters||undefined,tags:_loadedTags||undefined,share_rev:_loadedShareRev||undefined,ts:Date.now()});
+}
+
+/* ===== 能力値ロール（CoC6版） ===== */
+const ROLL_KEYS=['str','con','pow','dex','app','siz','int_v','edu'];
+const ROLL_NAME={str:'STR',con:'CON',pow:'POW',dex:'DEX',app:'APP',siz:'SIZ',int_v:'INT',edu:'EDU'};
+let _rolled={}; // 振った結果（反映前の一時保持）
+function _d6(){return Math.floor(Math.random()*6)+1;}
+function rollAbilityValue(key){
+  switch(key){
+    case 'siz': case 'int_v': return _d6()+_d6()+6;   // 2D6+6
+    case 'edu': return _d6()+_d6()+_d6()+3;            // 3D6+3
+    default:    return _d6()+_d6()+_d6();              // 3D6（STR/CON/POW/DEX/APP）
+  }
+}
+function renderRollResult(){
+  ROLL_KEYS.forEach(k=>{
+    const el=document.getElementById('rv_'+k);
+    if(el)el.textContent=(_rolled[k]!=null)?_rolled[k]:'–';
+  });
+  const t=document.getElementById('roll_total');
+  if(t){
+    const rolledAny=ROLL_KEYS.some(k=>_rolled[k]!=null);
+    const sum=ROLL_KEYS.reduce((a,k)=>a+(_rolled[k]||0),0);
+    t.textContent=rolledAny?('合計 '+sum):'合計 –';
+  }
+}
+function rollAllAbilities(){
+  ROLL_KEYS.forEach(k=>{_rolled[k]=rollAbilityValue(k);});
+  renderRollResult();
+}
+function rollOne(key){
+  _rolled[key]=rollAbilityValue(key);
+  renderRollResult();
+}
+function applyRolls(){
+  if(!ROLL_KEYS.some(k=>_rolled[k]!=null)){ alert('先に「全体振り直し」または各能力で振ってください。'); return; }
+  const hasVal=ROLL_KEYS.some(k=>{const v=document.getElementById(k)?.value;return v!==''&&v!=null;});
+  if(hasVal && !confirm('振った結果を能力値に反映しますか？\n現在の能力値は上書きされます。'))return;
+  ROLL_KEYS.forEach(k=>{ if(_rolled[k]!=null){ const el=document.getElementById(k); if(el)el.value=_rolled[k]; } });
+  if(typeof calc==='function')calc();
+  if(typeof saveDraft==='function')saveDraft();
 }
 
 function updateDocTitle(){
