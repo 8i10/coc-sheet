@@ -97,6 +97,21 @@ body.light .card-tokucho .meta-value{color:#555 !important}
 #status_pop button:hover{background:var(--surface2)}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;z-index:100000;opacity:0;transition:opacity .2s;pointer-events:none}
 #toast.show{opacity:.95}
+/* 一括選択・見出し */
+.card{position:relative}
+.card-check{position:absolute;top:6px;left:6px;width:20px;height:20px;z-index:5;display:none;cursor:pointer}
+#grid.select-mode .card-check{display:block}
+#grid.select-mode .card{cursor:pointer}
+#grid.select-mode .card-foot{display:none}
+#grid.select-mode .card.sel{outline:2px solid var(--accent);outline-offset:-2px}
+.group-head{grid-column:1/-1;font-size:13px;font-weight:bold;color:var(--accent);border-bottom:2px solid var(--border);padding:6px 4px 3px;margin-top:4px}
+#select_toggle{font-size:12px;padding:3px 9px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer}
+#select_toggle.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+#bulkbar{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0;padding:8px 10px;background:var(--surface2);border:1px solid var(--accent);border-radius:6px}
+#bulkbar.on{display:flex}
+#bulkbar button{font-size:12px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}
+#bulkbar .bulk-danger{color:#fff;background:#e05555;border-color:#e05555}
+#bulk_count{font-size:12px;color:var(--text);font-weight:bold}
 .card-foot{display:flex;align-items:center;padding:5px 10px;border-top:1px solid var(--border);background:var(--surface2);gap:6px}
 .card-date{font-size:10px;color:#bbb;flex:1}
 .cbtn{padding:2px 9px;font-size:11px;cursor:pointer;border:none;border-radius:2px;font-family:inherit}
@@ -539,6 +554,8 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 </div>
 <div id="index_menu" style="display:none">
+  <div class="menu-item" onclick="exportJSON();closeMenu()"><span>⬇</span> JSONバックアップ</div>
+  <div class="menu-item" onclick="exportCSV();closeMenu()"><span>⬇</span> CSVエクスポート</div>
   <div class="menu-item" onclick="doLogout();closeMenu()"><span>↩</span> ログアウト</div>
 </div>
 
@@ -577,6 +594,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <select id="sort_key" onchange="applyFilters()">
       <option value="updated">更新日</option>
       <option value="name">名前</option>
+      <option value="furigana">ふりがな(50音)</option>
       <option value="san">SAN</option>
       <option value="status">状態</option>
       <option value="str">STR</option>
@@ -599,8 +617,16 @@ if (('standalone' in navigator) && navigator.standalone) {
       <option value="dead">死亡</option>
       <option value="insane">永久狂気</option>
     </select>
+    <button id="select_toggle" onclick="toggleSelectMode()">☑ 選択</button>
   </div>
   <div id="tag_filter"></div>
+  <div id="bulkbar">
+    <span id="bulk_count">0件選択</span>
+    <button onclick="bulkAddTags()">🏷 タグ付け</button>
+    <button onclick="bulkStatusPicker(this)">🏳 状態変更</button>
+    <button class="bulk-danger" onclick="bulkDelete()">🗑 削除</button>
+    <button onclick="clearSelection()">選択解除</button>
+  </div>
 
   <!-- カードグリッド -->
   <div id="grid">
@@ -644,6 +670,7 @@ function sortVal(char){
   const inp=getSheet(char).inputs||{};
   switch(sortKey){
     case 'name':   return (inp.pcname||char.char_name||'');
+    case 'furigana': return kanaNorm(inp.furigana);
     case 'san':    return charSan(char);
     case 'status': return (S_ORDER[charStatus(char)]??9);
     case 'updated':return new Date(char.updated_at).getTime();
@@ -678,7 +705,11 @@ function applyFilters(){
   const dir=(sortDir==='asc'?1:-1);
   rows.sort((a,b)=>{
     const va=sortVal(a), vb=sortVal(b);
-    if(sortKey==='name')return String(va).localeCompare(String(vb),'ja')*dir;
+    if(sortKey==='name'||sortKey==='furigana'){
+      const sa=String(va||''), sb=String(vb||'');
+      if(sortKey==='furigana'){ if(!sa&&!sb)return 0; if(!sa)return 1; if(!sb)return -1; }
+      return sa.localeCompare(sb,'ja')*dir;
+    }
     const an=(va==null),bn=(vb==null);
     if(an&&bn)return 0; if(an)return 1; if(bn)return -1;
     return (va-vb)*dir;
@@ -696,6 +727,133 @@ function buildTagFilter(){
   wrap.innerHTML=[...all].sort((a,b)=>a.localeCompare(b,'ja')).map(t=>
     `<span class="tagchip ${activeTags.has(t)?'on':''}" data-tag="${esc(t)}">${esc(t)}</span>`
   ).join('');
+}
+
+/* ===== ふりがな見出し ===== */
+function kanaNorm(furi){
+  if(!furi)return '';
+  let out='';
+  for(const ch of String(furi).trim()){
+    const code=ch.charCodeAt(0);
+    out+=(code>=0x30A1&&code<=0x30F6)?String.fromCharCode(code-0x60):ch; // カタカナ→ひらがな
+  }
+  return out;
+}
+function kanaHead(furi){
+  const n=kanaNorm(furi);
+  if(!n)return 'その他';
+  const c=n.charAt(0);
+  if('あいうえおぁぃぅぇぉ'.includes(c))return 'あ';
+  if('かきくけこがぎぐげごゕゖ'.includes(c))return 'か';
+  if('さしすせそざじずぜぞ'.includes(c))return 'さ';
+  if('たちつてとだぢづでどっ'.includes(c))return 'た';
+  if('なにぬねの'.includes(c))return 'な';
+  if('はひふへほばびぶべぼぱぴぷぺぽ'.includes(c))return 'は';
+  if('まみむめも'.includes(c))return 'ま';
+  if('やゆよゃゅょ'.includes(c))return 'や';
+  if('らりるれろ'.includes(c))return 'ら';
+  if('わをんゎ'.includes(c))return 'わ';
+  return 'その他';
+}
+
+/* ===== 一括選択・操作 ===== */
+let selectMode=false;
+let selectedIds=new Set();
+function toggleSelectMode(){
+  selectMode=!selectMode;
+  const grid=document.getElementById('grid');
+  const btn=document.getElementById('select_toggle');
+  grid.classList.toggle('select-mode',selectMode);
+  btn.classList.toggle('on',selectMode);
+  btn.textContent=selectMode?'✕ 選択終了':'☑ 選択';
+  if(!selectMode)selectedIds.clear();
+  updateBulkBar();
+  applyFilters();
+}
+function toggleSelect(id,card){
+  if(selectedIds.has(id)){selectedIds.delete(id);card.classList.remove('sel');}
+  else{selectedIds.add(id);card.classList.add('sel');}
+  const cb=card.querySelector('.card-check'); if(cb)cb.checked=selectedIds.has(id);
+  updateBulkBar();
+}
+function clearSelection(){ selectedIds.clear(); updateBulkBar(); applyFilters(); }
+function updateBulkBar(){
+  const bar=document.getElementById('bulkbar');
+  const cnt=document.getElementById('bulk_count');
+  if(cnt)cnt.textContent=selectedIds.size+'件選択';
+  if(bar)bar.classList.toggle('on',selectMode);
+}
+async function bulkApply(mutator, okMsg){
+  const ids=[...selectedIds];
+  if(ids.length===0){showToast('選択されていません');return;}
+  let okc=0;
+  for(const id of ids){
+    try{
+      const {data:row,error}=await db.from('character_sheets').select('data').eq('id',id).single();
+      if(error)throw error;
+      let s={};try{s=JSON.parse(row.data)||{};}catch(e){}
+      mutator(s);
+      const newData=JSON.stringify(s);
+      const {error:e2}=await db.from('character_sheets').update({data:newData}).eq('id',id);
+      if(e2)throw e2;
+      const char=allChars.find(c=>c.id===id); if(char){char.data=newData;char._sheet=s;}
+      okc++;
+    }catch(e){console.warn('bulk err',id,e);}
+  }
+  buildTagFilter(); applyFilters(); showToast(okMsg.replace('{n}',okc));
+}
+function bulkAddTags(){
+  if(selectedIds.size===0){showToast('選択されていません');return;}
+  const input=prompt('追加するタグをカンマ区切りで入力（例：卓A, 継続）','');
+  if(input===null)return;
+  const add=[...new Set(input.split(',').map(t=>t.trim().replace(/["'\\]/g,'')).filter(Boolean))];
+  if(add.length===0)return;
+  bulkApply(s=>{const cur=Array.isArray(s.tags)?s.tags:[];s.tags=[...new Set([...cur,...add])].slice(0,20);}, '{n}件にタグを追加しました');
+}
+function bulkStatusPicker(anchor){
+  if(selectedIds.size===0){showToast('選択されていません');return;}
+  const pop=document.getElementById('status_pop');
+  pop.innerHTML=Object.keys(S_LABEL).map(k=>`<button data-st="${k}">${S_LABEL[k]}</button>`).join('');
+  pop.querySelectorAll('button').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();const st=b.dataset.st;pop.style.display='none';bulkApply(s=>{s.inputs=s.inputs||{};s.inputs.pc_status=st;}, '{n}件の状態を変更しました');});
+  const r=anchor.getBoundingClientRect();
+  pop.style.display='block';
+  pop.style.top=(r.bottom+4)+'px';
+  pop.style.left=Math.max(6,Math.min(r.left,window.innerWidth-150))+'px';
+}
+async function bulkDelete(){
+  if(selectedIds.size===0){showToast('選択されていません');return;}
+  if(!confirm(selectedIds.size+'件のキャラクターを削除しますか？\n（この操作は元に戻せません）'))return;
+  const ids=[...selectedIds]; let okc=0;
+  for(const id of ids){ try{ const {error}=await db.from('character_sheets').delete().eq('id',id); if(error)throw error; okc++; }catch(e){console.warn(e);} }
+  allChars=allChars.filter(c=>!ids.includes(c.id));
+  selectedIds.clear(); updateBulkBar(); buildTagFilter(); applyFilters(); showToast(okc+'件削除しました');
+}
+
+/* ===== バックアップ出力 ===== */
+function _dateStamp(){const d=new Date();const p=n=>String(n).padStart(2,'0');return ''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate());}
+function _downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},150);}
+function _csvCell(v){v=String(v==null?'':v);if(/[",\r\n]/.test(v))v='"'+v.replace(/"/g,'""')+'"';return v;}
+function exportJSON(){
+  if(!allChars.length){showToast('データがありません');return;}
+  const rows=allChars.map(c=>({id:c.id,char_name:c.char_name,updated_at:c.updated_at,data:c.data}));
+  _downloadBlob(new Blob([JSON.stringify(rows,null,2)],{type:'application/json'}), 'coc_characters_'+_dateStamp()+'.json');
+  showToast(rows.length+'件をJSON出力しました');
+}
+function exportCSV(){
+  if(!allChars.length){showToast('データがありません');return;}
+  const AB=['str','con','pow','dex','app','siz','int_v','edu'];
+  const head=['PC名','ふりがな','職業','年齢','性別','状態','SAN','STR','CON','POW','DEX','APP','SIZ','INT','EDU','タグ'];
+  const lines=[head.join(',')];
+  allChars.forEach(c=>{
+    const s=getSheet(c); const inp=s.inputs||{};
+    const row=[inp.pcname||c.char_name||'',inp.furigana||'',inp.job||'',inp.age||'',inp.gender||'',
+      S_LABEL[inp.pc_status||'alive']||'',(charSan(c)==null?'':charSan(c)),
+      ...AB.map(k=>inp[k]==null?'':inp[k]),
+      (Array.isArray(s.tags)?s.tags.join(' '):'')];
+    lines.push(row.map(_csvCell).join(','));
+  });
+  _downloadBlob(new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv'}), 'coc_characters_'+_dateStamp()+'.csv');
+  showToast(allChars.length+'件をCSV出力しました');
 }
 
 /* タグ編集 */
@@ -767,6 +925,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   const grid=document.getElementById('grid');
   if(grid)grid.addEventListener('click',e=>{
+    if(grid.classList.contains('select-mode')){
+      const card=e.target.closest('.card');
+      if(card&&card.dataset.id)toggleSelect(card.dataset.id,card);
+      return;
+    }
     const badge=e.target.closest('.badge[data-id]');
     if(badge){e.stopPropagation();openStatusPicker(badge.dataset.id,badge);return;}
     const te=e.target.closest('.card-tag-edit[data-id]');
@@ -882,8 +1045,8 @@ async function loadList(){
 
 function renderCards(chars){
   const grid=document.getElementById('grid');
-  // 既存カードを削除（loading/empty/no_result以外）
-  [...grid.querySelectorAll('.card')].forEach(el=>el.remove());
+  // 既存カード・見出しを削除（loading/empty/no_result以外）
+  [...grid.querySelectorAll('.card, .group-head')].forEach(el=>el.remove());
 
   document.getElementById('empty').style.display='none';
   document.getElementById('no_result').style.display='none';
@@ -893,7 +1056,17 @@ function renderCards(chars){
     document.getElementById(allChars.length===0?'empty':'no_result').style.display='block';
     return;
   }
-  chars.forEach(char=>grid.appendChild(makeCard(char)));
+  let lastHead=null;
+  chars.forEach(char=>{
+    if(sortKey==='furigana'){
+      const hd=kanaHead((getSheet(char).inputs||{}).furigana);
+      if(hd!==lastHead){
+        const h=document.createElement('div');h.className='group-head';h.textContent=hd;
+        grid.appendChild(h);lastHead=hd;
+      }
+    }
+    grid.appendChild(makeCard(char));
+  });
 
   // カードの高さに合わせて画像を正方形にする
   requestAnimationFrame(()=>{
@@ -967,9 +1140,10 @@ function makeCard(char){
     : `<div class="card-icon" style="background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted)">${esc(pcname.charAt(0)||'?')}</div>`;
 
   const card=document.createElement('div');
-  card.className='card';
+  card.className='card'+(selectedIds.has(char.id)?' sel':'');
   card.dataset.id=char.id;
   card.innerHTML=`
+    <input type="checkbox" class="card-check" ${selectedIds.has(char.id)?'checked':''}>`+`
     <div class="card-top">
       <div class="card-bar" style="background:${esc(color)}"></div>
       ${iconHtml}
