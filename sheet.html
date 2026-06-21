@@ -1009,13 +1009,13 @@ body.light td.hdr{
 .acc-divider{border:none;border-top:1px solid var(--border);margin:3px 2px}
 .acc-divider1{border:none;border-top:1px solid var(--border);margin:5px 2px}
 .roll-row{display:flex;align-items:flex-start;gap:5px;flex-wrap:wrap}
-.roll-all-btn2{width:118px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0 8px;cursor:pointer;border:1px solid var(--accent);border-radius:4px;background:var(--accent);color:#fff;white-space:nowrap;font-weight:bold;flex:0 0 auto}
-.roll-ind{display:flex;gap:4px;flex-wrap:wrap}
+.roll-all-btn2{width:54px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0;cursor:pointer;border:1px solid var(--accent);border-radius:4px;background:var(--accent);color:#fff;white-space:nowrap;font-weight:bold;flex:0 0 auto}
+.roll-ind{display:flex;gap:3px;flex-wrap:wrap}
 .roll-col{display:flex;flex-direction:column;align-items:center;gap:1px}
-.mini-roll2{height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;padding:0 6px;cursor:pointer;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--text)}
+.mini-roll2{height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;padding:0 5px;cursor:pointer;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--text)}
 .mini-roll2:hover{border-color:var(--accent);color:var(--accent)}
 .roll-val{font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:500;color:var(--text);min-width:22px;text-align:center;line-height:1.1}
-.apply-roll-btn{width:118px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0 8px;cursor:pointer;border:1px solid var(--accent2);border-radius:4px;background:var(--surface);color:var(--accent2);white-space:nowrap;font-weight:bold;flex:0 0 auto}
+.apply-roll-btn{width:54px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0;cursor:pointer;border:1px solid var(--accent2);border-radius:4px;background:var(--surface);color:var(--accent2);white-space:nowrap;font-weight:bold;flex:0 0 auto}
 .roll-result{font-family:'Zen Kaku Gothic New',sans-serif;font-size:9px;color:var(--text-muted);white-space:nowrap;overflow-x:auto;min-width:0;align-self:center}
 @media(max-width:700px){
   #char_image_ctrl{padding:3px 6px}
@@ -1123,7 +1123,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
   <div class="roll-panel" style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:center;border-left:1px solid var(--border);padding-left:8px">
     <div class="roll-row">
-      <button type="button" class="roll-all-btn2" onclick="rollAllAbilities()">🎲 全体振り直し</button>
+      <button type="button" class="roll-all-btn2" onclick="rollAllAbilities()">🎲全体</button>
       <span class="roll-ind">
         <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('str')">STR</button><span class="roll-val" id="rv_str">–</span></span>
         <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('con')">CON</button><span class="roll-val" id="rv_con">–</span></span>
@@ -1136,7 +1136,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       </span>
     </div>
     <div class="roll-row">
-      <button type="button" class="apply-roll-btn" onclick="applyRolls()">能力値に反映</button>
+      <button type="button" class="apply-roll-btn" onclick="applyRolls()">反映</button>
       <span id="roll_total" class="roll-result">合計 –</span>
     </div>
   </div>
