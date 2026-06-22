@@ -1017,6 +1017,9 @@ body.light td.hdr{
 .roll-val{font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:500;color:var(--text);min-width:22px;text-align:center;line-height:1.1}
 .apply-roll-btn{width:54px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0;cursor:pointer;border:1px solid var(--accent2);border-radius:4px;background:var(--surface);color:var(--accent2);white-space:nowrap;font-weight:bold;flex:0 0 auto}
 .roll-result{font-family:'Zen Kaku Gothic New',sans-serif;font-size:9px;color:var(--text-muted);white-space:nowrap;overflow-x:auto;min-width:0;align-self:center}
+.ver-toggle{display:inline-flex;border:1px solid rgba(255,255,255,.55);border-radius:4px;overflow:hidden}
+.ver-btn{font-size:10px;padding:1px 8px;cursor:pointer;border:none;background:transparent;color:var(--hdr-text);font-family:inherit;line-height:1.6}
+.ver-btn.on{background:#fff;color:#333;font-weight:bold}
 @media(max-width:700px){
   #char_image_ctrl{padding:3px 6px}
   #char_image_ctrl > div{flex:1 1 100% !important}
@@ -1268,7 +1271,14 @@ if (('standalone' in navigator) && navigator.standalone) {
 <div id="row2_flex" style="display:flex">
   <!-- 職業特記 378px固定 -->
   <div id="row2_job" style="flex:0 0 40%;min-width:0;border-right:1px solid var(--border);padding:3px">
-    <div class="hdr" style="margin-bottom:4px">職業特記</div>
+    <div class="hdr" style="margin-bottom:4px;display:flex;align-items:center;justify-content:space-between">
+      <span>職業特記</span>
+      <span class="ver-toggle">
+        <button type="button" id="ver6_btn" class="ver-btn on" onclick="setCocVersion('6')">6版</button>
+        <button type="button" id="ver7_btn" class="ver-btn" onclick="setCocVersion('7')">7版</button>
+      </span>
+    </div>
+    <input type="hidden" id="coc_version" value="6">
     <!-- 職業選択 6.5 : 計算式 3.5 -->
     <div style="display:flex;gap:0;margin-bottom:4px;border:1px solid var(--border);border-radius:3px;overflow:hidden">
       <select id="job_ref_sel" onchange="onJobRefChange()" style="flex:65;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);min-width:0"></select>
@@ -1849,16 +1859,57 @@ const jobData=[
 {name:'軍士官',formula:'EDU*20',tokki:'-'},
 {name:'兵士',formula:'EDU*20',tokki:'-'},
 ];
-function populateJobs(){
+const JOB7=[
+  {header:'-7版ルルブ・プレイングガイド-'},
+  ...'アスリート,医師,エンジニア,エンターテイナー,外交官／役員,科学者,学生／インターン,芸術家,カルト指導者,教授,警官,兵士,刑事,古物研究家,作家,士官,司書,ジャーナリスト,書籍商,私立探偵,心理学者／精神分析学者,スタントマン,聖職者,ダイバー,超心理学者,ディレッタント,伝道者,登山家,トライブ・メンバー,農夫,パイロット,ハッカー,犯罪者,犯罪者-暗殺者,犯罪者-一匹狼の犯罪者,犯罪者-押し込み強盗,犯罪者-偽造犯／偽金造り,犯罪者-銀行強盗,犯罪者-故買人,犯罪者-詐欺師,犯罪者-酒密売人／ギャング,犯罪者-女性犯罪者,犯罪者-ストリート・パンク,犯罪者-密輸人,秘書,編集者,法律家,放浪者,ボクサー／レスラー,ミュージシャン,狂気ハンター,労働者-木こり,労働者-鉱山労働者,労働者-未熟練労働者'.split(','),
+  {header:'-2020・2026-'},
+  ...'アイドル,音楽タレント,アスリート-DEX系,アスリート-STR系,アスリート-CON系,アナウンサー,アニマルセラピスト,海女・海士,eスポーツ・プレイヤー,医師,遺体衛生保全士,一般船員,イラストレーター／マンガ家,Webライター,占い師／スピリチュアリスト／霊能師,駅務員,園芸家／造園家,エンジニア,エンターテイナー,オカルティスト,介護事業従事者,害獣・害虫駆除業者,海上保安官,科学捜査研究員,鍵師,歌手,家庭教師,カメラマン,看護師,監察医,気象予報士,キャビンアテンダント,ギャンブラー,救命救急士,教師,教授,金属化学工場エンジニア,クラッカー、ネット犯罪者,経営コンサルタント,警察官,刑事,警備員,ケースワーカー,外科医、歯科医,検察官,建築家,建築エンジニア,建築デザイナー,航空管制官,耕作農家,工匠,公選職,ゴーストライター,古物研究家,古物ディーラー,コメディアン,コメンテーター,コンピューター技術者,サイバーセキュリティーエンジニア,作家,サラリーマン,山岳救助隊員,自衛官-陸上自衛隊員,自衛官-海上自衛隊員,自衛官-航空パイロット（海・空）,自衛官-自衛隊幹部,司書,学芸員,施設園芸農家,自宅警備員,執事／メイド,シナリオライター,ジャーナリスト,獣医師,重機オペレーター,彫金家,樹木医,超心理学者,商店主／店員,消防士,情報通信エンジニア,私立探偵,ストリート・パンク,スポーツタレント,精神科医,清掃・廃棄物処理業,声優,船舶職員,退職代行,探検家（冒険家教授）,ダンサー,画家・彫刻家,通訳,デイトレーダー,ディレッタント,デザイナー,鉄道運転士,動画配信者,動物使い／飼育員,東洋医,土木エンジニア,ドライバー,トレーナー,ドローン操縦士,入国審査官／税関職員,人間山脈／ボディーガード,ネットタレント,農夫,配送員,俳優,パイロット,パパラッチ,犯罪者,陸上競技者,ビジネスマン,ビデオ・ジャーナリスト,評論家,ファッション・デザイナー,フォト・ジャーナリスト,プロデューサー,プロモーター,プロレスラー,ヘアアーティスト,法律家,暴力団組員,保健調査員,ホスト、ホステス,水先人,ミュージシャン,民間軍事会社メンバー,民泊運営者,メカニック,メッセンジャー,メンタルセラピスト,モデル,薬剤師,闇医者,闇金融業者,養蜂家,理学療法士,漁師,猟師,料理人,旅行ガイド,林業従事者,レーサー,労働基準監督官,陰陽師,怪盗,殺し屋,怪物,賞金稼ぎ,スパイ,掃除屋,道化師,マッドサイエンティスト,夜逃げ屋'.split(',')
+];
+function populateJobsFor(version){
   const sel=document.getElementById('job_ref_sel');
+  if(!sel)return;
+  const prev=sel.value;
+  sel.innerHTML='';
   const o0=document.createElement('option');o0.value='';o0.textContent='-- 職業参照 --';sel.appendChild(o0);
   const oSc=document.createElement('option');oSc.value='シナリオ指定';oSc.textContent='シナリオ指定';sel.appendChild(oSc);
-  jobData.forEach(j=>{const op=document.createElement('option');op.value=j.name;op.textContent=j.name;sel.appendChild(op);});
+  if(version==='7'){
+    JOB7.forEach(item=>{
+      const op=document.createElement('option');
+      if(item&&item.header){op.textContent=item.header;op.value='';op.disabled=true;op.style.fontWeight='bold';op.style.background='var(--surface2)';op.style.color='var(--accent)';}
+      else{op.value=item;op.textContent=item;}
+      sel.appendChild(op);
+    });
+  }else{
+    jobData.forEach(j=>{const op=document.createElement('option');op.value=j.name;op.textContent=j.name;sel.appendChild(op);});
+  }
+  sel.value=prev;
+}
+function populateJobs(){
+  populateJobsFor(document.getElementById('coc_version')?.value||'6');
+}
+function setCocVersion(v){
+  const hid=document.getElementById('coc_version'); if(hid)hid.value=v;
+  const b6=document.getElementById('ver6_btn'),b7=document.getElementById('ver7_btn');
+  if(b6)b6.classList.toggle('on',v==='6');
+  if(b7)b7.classList.toggle('on',v==='7');
+  populateJobsFor(v);
+  if(typeof saveDraft==='function')saveDraft();
+}
+function applyCocVersionFromData(inputs){
+  const v=(inputs&&inputs.coc_version)||'6';
+  const hid=document.getElementById('coc_version'); if(hid)hid.value=v;
+  const b6=document.getElementById('ver6_btn'),b7=document.getElementById('ver7_btn');
+  if(b6)b6.classList.toggle('on',v==='6');
+  if(b7)b7.classList.toggle('on',v==='7');
+  populateJobsFor(v);
+  const sel=document.getElementById('job_ref_sel');
+  if(sel)sel.value=(inputs&&inputs.job_ref_sel)||'';
 }
 function onJobRefChange(){
   const name=document.getElementById('job_ref_sel').value;
   const tokkiDiv=document.getElementById('job_tokki');
-  const j=jobData.find(x=>x.name===name);
+  const ver=document.getElementById('coc_version')?.value||'6';
+  const j=(ver==='6')?jobData.find(x=>x.name===name):null; // 7版では6版データを参照しない
 
   // シナリオ指定の場合は入力可能なtextareaに切り替え
   if(name==='シナリオ指定'){
@@ -1885,11 +1936,15 @@ function onJobRefChange(){
     curEl.replaceWith(div);
   }
 
-  if(!j){tx('job_tokki','職業参照を選択してください');return;}
+  if(!j){
+    if(name && name!=='シナリオ指定'){
+      tx('job_tokki','-');
+    } else {
+      tx('job_tokki','職業参照を選択してください');
+    }
+    return;
+  }
   tx('job_tokki',j.tokki);
-  // 職業名を自動入力
-  const jobEl=document.getElementById('job');
-  if(jobEl&&!jobEl.value)jobEl.value=name;
   // 技能P計算式を自動選択（まだ初期値EDU*20のままの場合のみ）
   const fs=document.getElementById('job_formula_sel');
   if(fs&&fs.value==='EDU*20'){
@@ -2528,6 +2583,7 @@ function applyData(json){
     if(el.type==='checkbox')el.checked=val;else el.value=val;
   });
   updateDocTitle();
+  applyCocVersionFromData(data.inputs); // 6/7版を復元し職業参照を再構築
 
   // 技能（freeValも復元）
   if(data.skills)data.skills.forEach(s=>{
