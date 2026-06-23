@@ -656,7 +656,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 <div id="status_pop"></div>
 <div id="tag_editor_overlay">
   <div id="tag_editor">
-    <div class="te-title">タグを編集</div>
+    <div class="te-title" id="te_title">タグを編集</div>
     <div class="te-sub">タップで選択／解除。下の欄から新規追加もできます。</div>
     <div id="te_chips"></div>
     <div class="te-add">
@@ -835,11 +835,12 @@ async function bulkApply(mutator, okMsg){
 }
 function bulkAddTags(){
   if(selectedIds.size===0){showToast('選択されていません');return;}
-  const input=prompt('追加するタグをカンマ区切りで入力（例：卓A, 継続）','');
-  if(input===null)return;
-  const add=[...new Set(input.split(',').map(t=>t.trim().replace(/["'\\]/g,'')).filter(Boolean))];
-  if(add.length===0)return;
-  bulkApply(s=>{const cur=Array.isArray(s.tags)?s.tags:[];s.tags=[...new Set([...cur,...add])].slice(0,20);}, '{n}件にタグを追加しました');
+  _teBulk=true; _teId=null; _teSelected=new Set();
+  const t=document.getElementById('te_title'); if(t)t.textContent=selectedIds.size+'件にタグを追加';
+  const inp=document.getElementById('te_new'); if(inp)inp.value='';
+  renderTeChips();
+  document.getElementById('tag_editor_overlay').classList.add('on');
+  if(inp)setTimeout(()=>inp.focus(),50);
 }
 function bulkStatusPicker(anchor){
   if(selectedIds.size===0){showToast('選択されていません');return;}
@@ -866,7 +867,7 @@ function _downloadBlob(blob,name){const a=document.createElement('a');a.href=URL
 function _csvCell(v){v=String(v==null?'':v);if(/[",\r\n]/.test(v))v='"'+v.replace(/"/g,'""')+'"';return v;}
 function exportJSON(){
   if(!allChars.length){showToast('データがありません');return;}
-  const rows=allChars.map(c=>({id:c.id,char_name:c.char_name,updated_at:c.updated_at,data:c.data}));
+  const rows=allChars.map(c=>({id:c.id,char_name:c.char_name,updated_at:c.updated_at,tags:charTags(c),data:c.data}));
   _downloadBlob(new Blob([JSON.stringify(rows,null,2)],{type:'application/json'}), 'coc_characters_'+_dateStamp()+'.json');
   showToast(rows.length+'件をJSON出力しました');
 }
@@ -888,11 +889,12 @@ function exportCSV(){
 }
 
 /* タグ編集（既存タグからも選択可能なモーダル） */
-let _teId=null, _teSelected=new Set();
+let _teId=null, _teSelected=new Set(), _teBulk=false;
 function allTagsUnion(){const s=new Set();allChars.forEach(c=>charTags(c).forEach(t=>s.add(t)));return s;}
 function editTags(id){
   const char=allChars.find(c=>c.id===id); if(!char)return;
-  _teId=id; _teSelected=new Set(charTags(char));
+  _teBulk=false; _teId=id; _teSelected=new Set(charTags(char));
+  const t=document.getElementById('te_title'); if(t)t.textContent='タグを編集';
   const inp=document.getElementById('te_new'); if(inp)inp.value='';
   renderTeChips();
   document.getElementById('tag_editor_overlay').classList.add('on');
@@ -912,9 +914,15 @@ function teAddNew(){
   inp.value=''; renderTeChips(); inp.focus();
 }
 function teSave(){
+  const tags=[..._teSelected];
+  if(_teBulk){
+    if(tags.length>0){
+      bulkApply(s=>{const cur=Array.isArray(s.tags)?s.tags:[];s.tags=[...new Set([...cur,...tags])].slice(0,20);}, '{n}件にタグを追加しました');
+    }
+    teClose(); return;
+  }
   if(_teId==null)return;
-  const tags=[..._teSelected].slice(0,20);
-  updateCharData(_teId, s=>{ s.tags=tags; }, 'タグを更新しました');
+  updateCharData(_teId, s=>{ s.tags=tags.slice(0,20); }, 'タグを更新しました');
   teClose();
 }
 function teClose(){ document.getElementById('tag_editor_overlay').classList.remove('on'); _teId=null; }

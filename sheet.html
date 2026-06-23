@@ -1599,6 +1599,49 @@ function recalcAllSkills(){
   });
   const mythosTotal=parseInt(document.querySelector('[data-skill="mythos"]')?.closest('tr')?.querySelector('.sk-total')?.textContent)||0;
   tx('max_san',99-mythosTotal);updatePointBar();
+  syncWeaponSkills();
+}
+
+// ===== 武器名 ↔ 技能表 連動 =====
+function _weaponInputs(tr){return [...tr.querySelectorAll('input:not([type=checkbox])')];}
+function skillNameOfRow(tr){
+  const nd=tr.querySelector('.sk-name'); if(!nd)return '';
+  let label='';
+  nd.childNodes.forEach(n=>{ if(n.nodeType===3) label+=n.textContent; });
+  label=label.trim();
+  if(!label){ const inp=nd.querySelector('input[type=text]'); if(inp)label=(inp.value||'').trim(); }
+  return label;
+}
+function findSkillTotalByName(name){
+  name=(name||'').trim(); if(!name)return null;
+  let res=null;
+  document.querySelectorAll('.skill-table tbody tr').forEach(tr=>{
+    if(res!==null)return;
+    if(skillNameOfRow(tr)===name){
+      const v=parseInt(tr.querySelector('.sk-total')?.textContent);
+      if(!isNaN(v))res=v;
+    }
+  });
+  return res;
+}
+function _setWeaponPct(pct,tot){
+  if(tot!==null){ pct.value=tot; pct.dataset.autoskill='1'; pct.readOnly=true; pct.title='技能表と連動（武器名一致）'; }
+  else if(pct.dataset.autoskill){ pct.value=''; delete pct.dataset.autoskill; pct.readOnly=false; pct.title=''; }
+}
+function onWeaponNameInput(inp){
+  const tr=inp.closest('tr'); if(!tr)return;
+  const ins=_weaponInputs(tr); const pct=ins[1]; if(!pct)return;
+  _setWeaponPct(pct, findSkillTotalByName(inp.value));
+  if(typeof saveDraft==='function')saveDraft();
+}
+function syncWeaponSkills(){
+  document.querySelectorAll('#weapon_rows tr').forEach(tr=>{
+    const ins=_weaponInputs(tr); const name=ins[0], pct=ins[1];
+    if(!name||!pct)return;
+    const tot=findSkillTotalByName(name.value);
+    if(tot!==null){ pct.value=tot; pct.dataset.autoskill='1'; pct.readOnly=true; pct.title='技能表と連動（武器名一致）'; }
+    else if(pct.dataset.autoskill){ delete pct.dataset.autoskill; pct.readOnly=false; pct.title=''; }
+  });
 }
 
 // 自由入力欄の自動幅伸縮（display:none内でも動作するよう文字幅で計算）
@@ -1642,6 +1685,7 @@ function skillChanged(inp){
   const t=tr?.querySelector('.sk-total');if(t)t.textContent=base+j+i+g+o;
   if(key==='mythos')tx('max_san',99-(base+j+i+g+o));
   updatePointBar();
+  syncWeaponSkills();
 }
 
 // FIX1: makeSkillRow — isDefault=true のみ skill-default-row を付与
@@ -2107,7 +2151,7 @@ function toggleSub2Acc(id){const body=document.getElementById(id);const arr=docu
 
 function makeWeaponTr(){
   const tr=document.createElement('tr');
-  tr.innerHTML='<td><input type="text" style="text-align:left;background:#fff"></td><td><input type="number" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td style="text-align:center;padding:0"><input type="checkbox" class="weapon-db-chk" title="DB込"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="number" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="text-align:left;background:#fff"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>';
+  tr.innerHTML='<td><input type="text" style="text-align:left;background:#fff" oninput="onWeaponNameInput(this)"></td><td><input type="number" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td style="text-align:center;padding:0"><input type="checkbox" class="weapon-db-chk" title="DB込"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="number" style="background:#fff"></td><td><input type="text" style="background:#fff"></td><td><input type="text" style="text-align:left;background:#fff"></td><td style="width:16px;border:none;text-align:center"><button class="del-btn" onclick="delRow(this)">✕</button></td>';
   return tr;
 }
 function initWeaponRows(){const tbody=document.getElementById('weapon_rows');for(let i=0;i<6;i++)tbody.appendChild(makeWeaponTr());}
@@ -2626,6 +2670,7 @@ function applyData(json){
       const chk=tr.querySelector('.weapon-db-chk');if(chk)chk.checked=dbChk;
     });
   }
+  setTimeout(syncWeaponSkills,150); // 読込後、技能合計が揃ってから武器%を同期
 
   // 所持品テーブル
   if(data.items&&data.items.length){
@@ -2852,6 +2897,13 @@ async function saveToStorage() {
 
     // currentCharId があればそのCSを更新、なければ新規作成（PC名での上書きはしない）
     if (currentCharId) {
+      // シートがタグ未読込（古いセッション）の場合、一覧で付けたタグを保存で消さないようサーバー値を保持
+      if(_loadedTags===null){
+        try{
+          const srv=await _serverExtras();
+          if(srv&&srv.tags){ const o=JSON.parse(data); o.tags=srv.tags; data=JSON.stringify(o); _loadedTags=srv.tags; }
+        }catch(e){}
+      }
       const {error: upErr} = await db.from('character_sheets')
         .update({ char_name: name, data: data, updated_at: new Date() })
         .eq('id', currentCharId)
@@ -3311,9 +3363,30 @@ function doCocofolicaCopy(){
 }
 /* ===== コマコピーここまで ===== */
 
-function exportJSON(){
-  const data=collectData();const pcname=document.getElementById('pcname')?.value||'character';
-  const blob=new Blob([data],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=pcname+'.json';a.click();
+async function _serverExtras(){
+  // 現在のキャラのサーバー保存値から最新の tags / counters / share_rev を取得
+  try{
+    if(!currentCharId) return null;
+    const {data,error}=await db.from('character_sheets').select('data').eq('id',currentCharId).single();
+    if(error||!data) return null;
+    return JSON.parse(data.data);
+  }catch(e){ return null; }
+}
+async function exportJSON(){
+  let str=collectData();
+  // 一覧で付けたタグなどが開きっぱなしのシートに無い場合に備え、サーバーの最新値を反映
+  const srv=await _serverExtras();
+  if(srv){
+    try{
+      const o=JSON.parse(str);
+      if(srv.tags){o.tags=srv.tags;_loadedTags=srv.tags;}
+      if(srv.counters&&!o.counters){o.counters=srv.counters;_loadedCounters=srv.counters;}
+      if(srv.share_rev&&!o.share_rev){o.share_rev=srv.share_rev;_loadedShareRev=srv.share_rev;}
+      str=JSON.stringify(o);
+    }catch(e){}
+  }
+  const pcname=document.getElementById('pcname')?.value||'character';
+  const blob=new Blob([str],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=pcname+'.json';a.click();
 }
 function importJSON(){
   const input=document.createElement('input');input.type='file';input.accept='.json';
