@@ -1246,6 +1246,36 @@ function recalcAllSkills(){
   const mythosTotal=parseInt(document.querySelector('[data-skill="mythos"]')?.closest('tr')?.querySelector('.sk-total')?.textContent)||0;
   tx('max_san',99-mythosTotal);updatePointBar();
 }
+// 武器名 ↔ 技能表 連動（閲覧用：表示のみ）
+function skillNameOfRow(tr){
+  const nd=tr.querySelector('.sk-name'); if(!nd)return '';
+  let label='';
+  nd.childNodes.forEach(n=>{ if(n.nodeType===3) label+=n.textContent; });
+  label=label.trim();
+  if(!label){ const inp=nd.querySelector('input[type=text]'); if(inp)label=(inp.value||'').trim(); }
+  return label;
+}
+function findSkillTotalByName(name){
+  name=(name||'').trim(); if(!name)return null;
+  let res=null;
+  document.querySelectorAll('.skill-table tbody tr').forEach(tr=>{
+    if(res!==null)return;
+    if(skillNameOfRow(tr)===name){
+      const v=parseInt(tr.querySelector('.sk-total')?.textContent);
+      if(!isNaN(v))res=v;
+    }
+  });
+  return res;
+}
+function syncWeaponSkills(){
+  document.querySelectorAll('#weapon_rows tr').forEach(tr=>{
+    const ins=[...tr.querySelectorAll('input:not([type=checkbox])')];
+    const name=ins[0], pct=ins[1];
+    if(!name||!pct)return;
+    const tot=findSkillTotalByName(name.value);
+    if(tot!==null){ pct.value=tot; pct.title='技能表と連動（武器名一致）'; }
+  });
+}
 function skillChanged(inp){
   inp.dataset.manual='1';
   const tr=inp.closest('tr');
@@ -1872,6 +1902,7 @@ async function initViewMode() {
       const chk = tr.querySelector('.weapon-db-chk'); if(chk) chk.checked = dbChk;
     });
   }
+  setTimeout(syncWeaponSkills,150); // 技能合計が揃ってから武器%を技能表に同期
 
   // 所持品復元
   console.log('[VIEW] items:', sheet.items?.length, 'memos:', sheet.memos?.length);
