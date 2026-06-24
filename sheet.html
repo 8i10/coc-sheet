@@ -1667,8 +1667,14 @@ function autoResizeAll(){
   document.querySelectorAll('.free-inp-auto').forEach(autoResize);
   // 表示中のauto-hテキストエリアを全て再計算
   document.querySelectorAll('textarea.auto-h').forEach(ta=>{
-    ta.style.height='36px';
-    ta.style.height=ta.scrollHeight+'px';
+    if(ta.classList.contains('item-note')){
+      // 所持品の備考は1行(22px)基準。折り返し/改行がある時だけ伸ばす
+      ta.style.height='22px';
+      if(ta.scrollHeight>24)ta.style.height=ta.scrollHeight+'px';
+    } else {
+      ta.style.height='36px';
+      ta.style.height=ta.scrollHeight+'px';
+    }
   });
 }
 function skillChanged(inp){
@@ -2256,7 +2262,12 @@ function addScenarioRow(){
 
 function delRow(btn){
   const target=btn.closest('tr')||btn.closest('div[style]')||btn.parentElement;
+  const wasSkill = !!(target && target.querySelector && target.querySelector('[data-skill]'));
   target.remove();
+  // 技能行を削除したらポイント使用量・合計・武器%をリアルタイム再計算
+  if(wasSkill){ if(typeof recalcAllSkills==='function')recalcAllSkills(); }
+  else { if(typeof updatePointBar==='function')updatePointBar(); if(typeof syncWeaponSkills==='function')syncWeaponSkills(); }
+  if(typeof saveDraft==='function')saveDraft();
 }
 
 let secretCounter=0;

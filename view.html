@@ -1308,7 +1308,15 @@ function autoResizeTA(ta){
 }
 function autoResizeAll(){
   document.querySelectorAll('.free-inp-auto').forEach(autoResize);
-  document.querySelectorAll('textarea.auto-h').forEach(ta=>{ta.style.height='36px';ta.style.height=ta.scrollHeight+'px';
+  document.querySelectorAll('textarea.auto-h').forEach(ta=>{
+    if(ta.classList.contains('item-note')){
+      // 所持品の備考は1行(22px)基準。折り返し/改行がある時だけ伸ばす
+      ta.style.height='22px';
+      if(ta.scrollHeight>24)ta.style.height=ta.scrollHeight+'px';
+    } else {
+      ta.style.height='36px';
+      ta.style.height=ta.scrollHeight+'px';
+    }
   });
 }
 
