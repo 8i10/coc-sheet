@@ -107,10 +107,11 @@ body.light .card-tokucho .meta-value{color:#555 !important}
 .group-head{grid-column:1/-1;font-size:13px;font-weight:bold;color:var(--accent);border-bottom:2px solid var(--border);padding:6px 4px 3px;margin-top:4px}
 #select_toggle{font-size:12px;padding:3px 9px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer}
 #select_toggle.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-#bulkbar{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0;padding:8px 10px;background:var(--surface2);border:1px solid var(--accent);border-radius:6px}
-#bulkbar.on{display:flex}
+#bulkbar{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0;padding:6px 10px;background:var(--surface2);border:1px solid var(--accent);border-radius:6px;position:sticky;top:44px;z-index:50}
+#bulkbar.shown{display:flex}
+#bulkbar:not(.on) .bulk-only{display:none}
 #bulkbar button{font-size:12px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}
-#bulkbar .bulk-danger{color:#fff;background:#e05555;border-color:#e05555}
+#bulkbar .bulk-danger{margin-left:auto;color:#fff;background:#e05555;border-color:#e05555}
 #bulk_count{font-size:12px;color:var(--text);font-weight:bold}
 /* タグ編集モーダル */
 #tag_editor_overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100001;display:none;align-items:center;justify-content:center;padding:20px}
@@ -128,6 +129,17 @@ body.light .card-tokucho .meta-value{color:#555 !important}
 .te-actions{display:flex;justify-content:flex-end;gap:8px}
 .te-actions button{font-size:13px;padding:6px 16px;border-radius:5px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text)}
 .te-actions .te-save{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* タグ管理モーダル */
+#tag_manage_overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100001;display:none;align-items:center;justify-content:center;padding:20px}
+#tag_manage_overlay.on{display:flex}
+#tag_manage{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;width:100%;max-width:360px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+#tm_list{display:flex;flex-direction:column;gap:6px;margin:10px 0 14px}
+.tm-row{display:flex;align-items:center;gap:5px;border:1px solid var(--border);border-radius:5px;padding:4px 6px;background:var(--surface2)}
+.tm-name{flex:1;min-width:0;font-size:13px;color:var(--text);border:1px solid transparent;background:transparent;padding:3px 5px;border-radius:3px}
+.tm-name:focus{background:var(--surface);outline:none;border-color:var(--accent)}
+.tm-btn{font-size:11px;padding:2px 7px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer}
+.tm-btn:disabled{opacity:.35;cursor:default}
+.tm-del{color:#e05555;border-color:#e0a0a0}
 .card-foot{display:flex;align-items:center;padding:5px 10px;border-top:1px solid var(--border);background:var(--surface2);gap:6px}
 .card-date{font-size:10px;color:#bbb;flex:1}
 .cbtn{padding:2px 9px;font-size:11px;cursor:pointer;border:none;border-radius:2px;font-family:inherit}
@@ -570,8 +582,10 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 </div>
 <div id="index_menu" style="display:none">
+  <div class="menu-item" onclick="openTagManage();closeMenu()"><span>🏷</span> タグの編集・並べ替え</div>
   <div class="menu-item" onclick="exportJSON();closeMenu()"><span>⬇</span> JSONバックアップ</div>
   <div class="menu-item" onclick="exportCSV();closeMenu()"><span>⬇</span> CSVエクスポート</div>
+  <div class="menu-item" onclick="bulkImportSpreadsheets();closeMenu()"><span>📥</span> スプシ一括取込</div>
   <div class="menu-item" onclick="doLogout();closeMenu()"><span>↩</span> ログアウト</div>
 </div>
 
@@ -633,16 +647,16 @@ if (('standalone' in navigator) && navigator.standalone) {
       <option value="dead">死亡</option>
       <option value="insane">永久狂気</option>
     </select>
+  </div>
+  <div id="bulkbar">
     <button id="select_toggle" onclick="toggleSelectMode()">☑ 選択</button>
+    <span id="bulk_count" class="bulk-only">0件選択</span>
+    <button class="bulk-only" onclick="bulkAddTags()">🏷 タグ付け</button>
+    <button class="bulk-only" onclick="bulkStatusPicker(this)">🏳 状態変更</button>
+    <button class="bulk-only" onclick="clearSelection()">選択解除</button>
+    <button class="bulk-only bulk-danger" onclick="bulkDelete()">🗑 削除</button>
   </div>
   <div id="tag_filter"></div>
-  <div id="bulkbar">
-    <span id="bulk_count">0件選択</span>
-    <button onclick="bulkAddTags()">🏷 タグ付け</button>
-    <button onclick="bulkStatusPicker(this)">🏳 状態変更</button>
-    <button class="bulk-danger" onclick="bulkDelete()">🗑 削除</button>
-    <button onclick="clearSelection()">選択解除</button>
-  </div>
 
   <!-- カードグリッド -->
   <div id="grid">
@@ -670,6 +684,14 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 </div>
 <div id="toast"></div>
+<div id="tag_manage_overlay">
+  <div id="tag_manage">
+    <div class="te-title">タグの編集・並べ替え</div>
+    <div class="te-sub">▲▼で並べ替え、名前をタップで変更、✕で削除（全キャラに反映）</div>
+    <div id="tm_list"></div>
+    <div class="te-actions"><button onclick="tmClose()">閉じる</button></div>
+  </div>
+</div>
 
 <script>
 const SUPABASE_URL='https://cicodhxebyqewfnngfwt.supabase.co/';
@@ -755,9 +777,24 @@ function buildTagFilter(){
   const wrap=document.getElementById('tag_filter');
   if(!wrap)return;
   if(all.size===0){wrap.innerHTML='';return;}
-  wrap.innerHTML=[...all].sort((a,b)=>a.localeCompare(b,'ja')).map(t=>
+  wrap.innerHTML=orderedTags().map(t=>
     `<span class="tagchip ${activeTags.has(t)?'on':''}" data-tag="${esc(t)}">${esc(t)}</span>`
   ).join('');
+}
+/* タグ並び順（localStorageに保存） */
+function getTagOrder(){ try{return JSON.parse(localStorage.getItem('coc_tag_order')||'[]');}catch(e){return [];} }
+function setTagOrder(arr){ try{localStorage.setItem('coc_tag_order',JSON.stringify(arr));}catch(e){} }
+function orderedTags(){
+  const order=getTagOrder();
+  const all=[...allTagsUnion()];
+  all.sort((a,b)=>{
+    const ia=order.indexOf(a), ib=order.indexOf(b);
+    if(ia!==-1&&ib!==-1)return ia-ib;
+    if(ia!==-1)return -1;
+    if(ib!==-1)return 1;
+    return a.localeCompare(b,'ja');
+  });
+  return all;
 }
 
 /* ===== ふりがな見出し ===== */
@@ -796,7 +833,7 @@ function toggleSelectMode(){
   const btn=document.getElementById('select_toggle');
   grid.classList.toggle('select-mode',selectMode);
   btn.classList.toggle('on',selectMode);
-  btn.textContent=selectMode?'✕ 選択終了':'☑ 選択';
+  btn.textContent=selectMode?'✕ 終了':'☑ 選択';
   if(!selectMode)selectedIds.clear();
   updateBulkBar();
   applyFilters();
@@ -902,9 +939,16 @@ function editTags(id){
 }
 function renderTeChips(){
   const wrap=document.getElementById('te_chips'); if(!wrap)return;
-  const all=new Set([...allTagsUnion(), ..._teSelected]);
-  if(all.size===0){wrap.innerHTML='<span class="te-empty">既存のタグはありません。下の欄から追加してください。</span>';return;}
-  wrap.innerHTML=[...all].sort((a,b)=>a.localeCompare(b,'ja')).map(t=>
+  const set=new Set([...allTagsUnion(), ..._teSelected]);
+  if(set.size===0){wrap.innerHTML='<span class="te-empty">既存のタグはありません。下の欄から追加してください。</span>';return;}
+  const order=getTagOrder();
+  const all=[...set].sort((a,b)=>{
+    const ia=order.indexOf(a), ib=order.indexOf(b);
+    if(ia!==-1&&ib!==-1)return ia-ib;
+    if(ia!==-1)return -1; if(ib!==-1)return 1;
+    return a.localeCompare(b,'ja');
+  });
+  wrap.innerHTML=all.map(t=>
     `<span class="te-chip ${_teSelected.has(t)?'on':''}" data-tag="${esc(t)}">${esc(t)}</span>`
   ).join('');
 }
@@ -926,6 +970,61 @@ function teSave(){
   teClose();
 }
 function teClose(){ document.getElementById('tag_editor_overlay').classList.remove('on'); _teId=null; }
+
+/* ===== タグの編集・並べ替え（全キャラ反映） ===== */
+function openTagManage(){ renderTmList(); document.getElementById('tag_manage_overlay').classList.add('on'); }
+function tmClose(){ document.getElementById('tag_manage_overlay').classList.remove('on'); }
+function renderTmList(){
+  const wrap=document.getElementById('tm_list'); if(!wrap)return;
+  const tags=orderedTags();
+  if(tags.length===0){ wrap.innerHTML='<span class="te-empty">タグはまだありません。</span>'; return; }
+  wrap.innerHTML=tags.map((t,i)=>
+    `<div class="tm-row">
+       <button class="tm-btn" onclick="tmMove('${esc(t)}',-1)" ${i===0?'disabled':''}>▲</button>
+       <button class="tm-btn" onclick="tmMove('${esc(t)}',1)" ${i===tags.length-1?'disabled':''}>▼</button>
+       <input class="tm-name" value="${esc(t)}" data-orig="${esc(t)}" onchange="tmRename(this)">
+       <button class="tm-btn tm-del" onclick="tmDelete('${esc(t)}')">✕</button>
+     </div>`
+  ).join('');
+}
+function tmMove(tag,dir){
+  const tags=orderedTags();
+  const i=tags.indexOf(tag); if(i<0)return;
+  const j=i+dir; if(j<0||j>=tags.length)return;
+  [tags[i],tags[j]]=[tags[j],tags[i]];
+  setTagOrder(tags);
+  renderTmList(); buildTagFilter();
+}
+async function _tagApplyAll(mutator){
+  for(const c of allChars){
+    try{
+      const {data:row,error}=await db.from('character_sheets').select('data').eq('id',c.id).single();
+      if(error)continue;
+      let s={};try{s=JSON.parse(row.data)||{};}catch(e){}
+      const before=JSON.stringify(s.tags||[]);
+      mutator(s);
+      if(JSON.stringify(s.tags||[])===before)continue; // 変化なしはスキップ
+      const nd=JSON.stringify(s);
+      await db.from('character_sheets').update({data:nd}).eq('id',c.id);
+      c.data=nd; c._sheet=s;
+    }catch(e){console.warn('tag apply err',c.id,e);}
+  }
+  applyFilters();
+}
+async function tmRename(inp){
+  const orig=inp.dataset.orig;
+  const next=(inp.value||'').trim().replace(/["'\\]/g,'');
+  if(!next||next===orig){ inp.value=orig; return; }
+  await _tagApplyAll(s=>{ if(Array.isArray(s.tags)) s.tags=[...new Set(s.tags.map(t=>t===orig?next:t))]; });
+  setTagOrder([...new Set(getTagOrder().map(t=>t===orig?next:t))]);
+  buildTagFilter(); renderTmList(); showToast('タグ名を変更しました');
+}
+async function tmDelete(tag){
+  if(!confirm('タグ「'+tag+'」を全キャラから削除しますか？'))return;
+  await _tagApplyAll(s=>{ if(Array.isArray(s.tags)) s.tags=s.tags.filter(t=>t!==tag); });
+  setTagOrder(getTagOrder().filter(t=>t!==tag));
+  buildTagFilter(); renderTmList(); showToast('タグを削除しました');
+}
 
 /* 状態ピッカー */
 function openStatusPicker(id, anchor){
@@ -1011,6 +1110,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(teNew)teNew.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();teAddNew();}});
   const teOv=document.getElementById('tag_editor_overlay');
   if(teOv)teOv.addEventListener('click',e=>{if(e.target===teOv)teClose();});
+  const tmOv=document.getElementById('tag_manage_overlay');
+  if(tmOv)tmOv.addEventListener('click',e=>{if(e.target===tmOv)tmClose();});
 });
 
 // 起動時ログイン確認
@@ -1023,6 +1124,7 @@ function onLoggedIn(user){
   document.getElementById('auth_box').style.display='none';
   document.getElementById('toolbar').style.display='flex';
   document.getElementById('ctrlbar').style.display='flex';
+  document.getElementById('bulkbar').classList.add('shown');
   document.getElementById('menu_btn').style.display='inline-block';
   document.getElementById('counter_btn').style.display='inline-block';
   document.getElementById('status_btn').style.display='inline-block';
@@ -1113,6 +1215,57 @@ async function loadList(){
   }catch(e){
     loadEl.textContent='読込エラー: '+e.message;
   }
+}
+
+/* ===== スプレッドシートHTML 一括取込（新規キャラとして追加） ===== */
+function bulkImportSpreadsheets(){
+  const input=document.createElement('input');
+  input.type='file'; input.accept='.html,.htm'; input.multiple=true;
+  input.onchange=async e=>{
+    const files=[...e.target.files]; if(!files.length)return;
+    if(!confirm(files.length+'件のHTMLを新規キャラとして取り込みます。よろしいですか？'))return;
+    showToast('取込中... (0/'+files.length+')');
+    let okc=0, errc=0;
+    const iframe=document.createElement('iframe');
+    iframe.style.cssText='position:fixed;width:1200px;height:900px;left:-3000px;top:0;border:0;visibility:hidden';
+    document.body.appendChild(iframe);
+    const loadIframe=()=>new Promise(res=>{ iframe.onload=()=>res(); iframe.src='sheet.html?bulkimport=1&_='+Date.now()+Math.random(); });
+    const waitReady=()=>new Promise(res=>{
+      const t0=Date.now();
+      const chk=()=>{
+        try{ const w=iframe.contentWindow; if(w&&w.__bulkReady&&w.parseSpreadsheetHTML&&w.collectData)return res(true);}catch(_){}
+        if(Date.now()-t0>20000)return res(false);
+        setTimeout(chk,80);
+      };
+      chk();
+    });
+    try{
+      const {data:{user}}=await db.auth.getUser();
+      if(!user){showToast('ログインが必要です');iframe.remove();return;}
+      for(let i=0;i<files.length;i++){
+        const f=files[i];
+        let text=''; try{ text=await f.text(); }catch(_){ errc++; continue; }
+        await loadIframe();                 // ファイルごとに再読込してキャリーオーバー防止
+        const ready=await waitReady();
+        if(!ready){ errc++; continue; }
+        try{
+          iframe.contentWindow.alert=()=>{};            // 取込完了アラートを抑制
+          iframe.contentWindow.parseSpreadsheetHTML(text);
+          await new Promise(r=>setTimeout(r,120));        // 行追加等の反映待ち
+          const dataStr=iframe.contentWindow.collectData();
+          let pcname='名無し';
+          try{ pcname=(JSON.parse(dataStr).inputs||{}).pcname||'名無し'; }catch(_){}
+          const {error}=await db.from('character_sheets').insert({user_id:user.id,char_name:pcname,data:dataStr});
+          if(error){ errc++; console.warn('insert err',f.name,error); } else okc++;
+        }catch(err){ errc++; console.warn('parse err',f.name,err); }
+        showToast('取込中... ('+(i+1)+'/'+files.length+')');
+      }
+    }catch(e){ console.warn(e); }
+    iframe.remove();
+    await loadList();
+    showToast('取込完了：成功'+okc+'件'+(errc?('／失敗'+errc+'件'):''));
+  };
+  input.click();
 }
 
 function renderCards(chars){
@@ -1388,6 +1541,8 @@ function _buildChatPalette(sheet) {
   const skills = sheet.skills || [];
   const stats = _getCocoStats(inp);
   const weapons = sheet.weapons || [];
+  const weaponNames = new Set();
+  weapons.forEach(w => { const v=Array.isArray(w)?w:(w.vals||[]); const n=(v[0]||'').trim(); if(n) weaponNames.add(n); });
   const lines = [];
 
   lines.push('〇');
@@ -1430,6 +1585,7 @@ function _buildChatPalette(sheet) {
 
       const sk = skills.find(x => x.key === key);
       const label = (sk && sk.freeVal) ? def.n + '(' + sk.freeVal + ')' : def.n;
+      if (weaponNames.has(label)) return; // 武器と重複する技能表の技能は出さない（武器側を優先）
       const isGun = _GUN_KEYS.includes(key);
       const isMelee = key in _MELEE;
       const isMa = key === 'ma';
@@ -1463,6 +1619,7 @@ function _buildChatPalette(sheet) {
     if (!s.key || !s.key.startsWith('custom_')) return;
     const name = (s.freeVal || '').trim();
     if (!name) return; // 名前未入力はスキップ
+    if (weaponNames.has(name)) return; // 武器と重複する技能は出さない
     const base = parseInt(s.base) || 0;
     const total = base + (parseInt(s.job)||0) + (parseInt(s.int)||0) + (parseInt(s.grw)||0) + (parseInt(s.oth)||0);
     if (total <= base) return; // 初期値超えのみ出力

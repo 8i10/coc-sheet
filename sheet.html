@@ -2888,6 +2888,7 @@ async function duplicateCS() {
 }
 
 async function saveToStorage() {
+  if(new URLSearchParams(location.search).get('bulkimport'))return; // 一括取込用の非表示シートでは保存しない
   let data;
   try { data = collectData(); } catch(e) { alert('データ収集エラー: ' + e.message + '\n' + e.stack); return; }
   const name = document.getElementById('pcname').value || '名無し';
@@ -3130,6 +3131,13 @@ function buildChatPalette(c) {
   // 回避・応急手当は必ず出力（初期値以上であれば）
   const alwaysKeys = new Set(['kaihi', 'firstaid']);
 
+  // 武器名一覧（技能表と重複する技能はスキップするため）
+  const weaponNames = new Set();
+  document.querySelectorAll('#weapon_rows tr').forEach(wtr=>{
+    const n=(wtr.querySelector('input:not([type=checkbox])')?.value||'').trim();
+    if(n) weaponNames.add(n);
+  });
+
   allSections.forEach(secId => {
     // null = 武器テーブル挿入ポイント
     if (secId === null) {
@@ -3155,6 +3163,7 @@ function buildChatPalette(c) {
       const label = getSkillDisplayName(tr, key);
       // カスタム技能で名前未入力ならスキップ
       if (key.startsWith('custom_') && label === 'カスタム技能') return;
+      if (weaponNames.has(label)) return; // 武器と重複する技能表の技能はスキップ（武器側を優先）
       const isGun = GUN_KEYS.includes(key);
       const isMelee = key in MELEE_DAMAGE;
       const isMa = key === 'ma';
@@ -4204,6 +4213,8 @@ addSecretItem('','');addRelGroup();addAERow('tbody_kouisho');addAERow('tbody_af'
 // ページリロード時・一覧からの遷移時にデータを保持
 const SHEET_KEY = 'coc_sheet_draft';
 (async () => {
+  // 一括取込モード：読込せず空フォームのまま準備完了を通知（index側がパーサを呼ぶ）
+  if (new URLSearchParams(location.search).get('bulkimport')) { window.__bulkReady = true; return; }
   // 0) URLに ?id= があれば最優先で読込（リロードでもIDを保持＝閲覧URLが変わらない）
   const urlId = new URLSearchParams(location.search).get('id');
   if (urlId) {

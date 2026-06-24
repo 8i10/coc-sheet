@@ -2238,6 +2238,13 @@ function buildChatPalette(c) {
   const comboAlreadyAdded = new Set();
   const allSections = ['tbody_combat',null,'tbody_search','tbody_action','tbody_talk','tbody_know'];
 
+  // 武器名一覧（技能表と重複する技能はスキップするため）
+  const weaponNames = new Set();
+  document.querySelectorAll('#weapon_rows tr').forEach(wtr=>{
+    const n=(wtr.querySelector('input:not([type=checkbox])')?.value||'').trim();
+    if(n) weaponNames.add(n);
+  });
+
   allSections.forEach(secId => {
     // null = 武器テーブル挿入ポイント
     if (secId === null) {
@@ -2262,6 +2269,7 @@ function buildChatPalette(c) {
       const total = getSkillTotal_coco(tr);
       const label = getSkillDisplayName(tr, key);
       if (key.startsWith('custom_') && label === '(カスタム技能)') return;
+      if (weaponNames.has(label)) return; // 武器と重複する技能表の技能はスキップ（武器側を優先）
       const isGun = GUN_KEYS.includes(key);
       const isMelee = key in MELEE_DAMAGE;
       const isMa = key === 'ma';
