@@ -1026,7 +1026,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
   <div style="display:flex;align-items:center;gap:6px">
     <span style="font-size:9px;color:var(--text-muted);white-space:nowrap">ズーム</span>
-    <input type="range" id="char_image_zoom" min="50" max="300" value="130" style="flex:1">
+    <input type="range" id="char_image_zoom" min="50" max="600" value="130" style="flex:1">
   </div>
 </div>
 <!-- ===== 行1 ===== -->
@@ -1039,7 +1039,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   <!-- スマホ版URL/ズーム（クロップの直後） -->
   <div id="char_image_ctrl_sp" style="display:none">
     <input type="text" id="char_image_url_sp" placeholder="https://www.dropbox.com/..." style="font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text);width:100%" oninput="document.getElementById('char_image_url').value=this.value;previewCharImage(this.value)">
-    <input type="range" id="char_image_zoom_sp" min="50" max="300" value="130" style="width:100%" oninput="document.getElementById('char_image_zoom').value=this.value;charImageZoomFromSlider(this.value)">
+    <input type="range" id="char_image_zoom_sp" min="50" max="600" value="130" style="width:100%" oninput="document.getElementById('char_image_zoom').value=this.value;charImageZoomFromSlider(this.value)">
   </div>
   <!-- パーソナルデータ -->
   <div style="flex:0 0 calc(40% - 70px);min-width:200px;border-right:1px solid var(--border)" class="personal-data">

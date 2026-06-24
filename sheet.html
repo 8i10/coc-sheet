@@ -1121,7 +1121,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       <input type="text" id="char_image_url" placeholder="https://www.dropbox.com/..." style="flex:1;min-width:0;font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text)" oninput="previewCharImage(this.value)">
     </div>
     <div style="display:flex;align-items:center;gap:6px">
-      <input type="range" id="char_image_zoom" min="50" max="300" value="130" style="flex:1;min-width:0" oninput="charImageZoomFromSlider(this.value)">
+      <input type="range" id="char_image_zoom" min="50" max="600" value="130" style="flex:1;min-width:0" oninput="charImageZoomFromSlider(this.value)">
     </div>
   </div>
   <div class="roll-panel" style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:center;border-left:1px solid var(--border);padding-left:8px">
@@ -1154,7 +1154,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   <!-- スマホ版URL/ズーム（クロップの直後） -->
   <div id="char_image_ctrl_sp" style="display:none;flex-direction:column;gap:3px;padding:3px 6px;background:var(--surface2)">
     <input type="text" id="char_image_url_sp" placeholder="https://www.dropbox.com/..." style="font-size:10px;border:1px solid var(--border);padding:2px 4px;background:var(--surface);color:var(--text);width:100%" oninput="document.getElementById('char_image_url').value=this.value;previewCharImage(this.value)">
-    <input type="range" id="char_image_zoom_sp" min="50" max="300" value="130" style="width:100%" oninput="document.getElementById('char_image_zoom').value=this.value;charImageZoomFromSlider(this.value)">
+    <input type="range" id="char_image_zoom_sp" min="50" max="600" value="130" style="width:100%" oninput="document.getElementById('char_image_zoom').value=this.value;charImageZoomFromSlider(this.value)">
   </div>
   <!-- パーソナルデータ -->
   <div style="flex:0 0 calc(40% - 70px);min-width:200px;border-right:1px solid var(--border)" class="personal-data">
@@ -2418,7 +2418,7 @@ function _iconCropDragMove(ex,ey) {
   _iconCropClamp(); _iconCropApply(); _iconCropSavePos();
 }
 function _iconCropSetScale(s) {
-  s=Math.max(0.5,Math.min(3.0,s));
+  s=Math.max(0.5,Math.min(6.0,s));
   const cx=_iconCrop.wrapW/2, cy=_iconCrop.wrapH/2, ratio=s/_iconCrop.scale;
   _iconCrop.imgX=cx+(_iconCrop.imgX-cx)*ratio; _iconCrop.imgY=cy+(_iconCrop.imgY-cy)*ratio;
   _iconCrop.scale=s; _iconCrop.imgW=_iconCrop.baseW*s; _iconCrop.imgH=_iconCrop.baseH*s;
@@ -3663,9 +3663,11 @@ function parseSpreadsheetHTML(html){
       if(v==='(D)ボーナス'||v==='Dボーナス'||v==='Dボーナス(興味Pに加算)'){
         // 同じ行・次行も含めて数値を探す（「D:名称」「1d6→N [NP]」形式に対応）
         const scanRows=[row, rows[ri+1]].filter(Boolean);
-        scanRows.forEach(scanRow=>{
+        scanRows.forEach((scanRow,sri)=>{
           scanRow.forEach((sc,si)=>{
-            if(si===ci&&scanRow===row)return; // 自セルスキップ
+            // (D)ボーナス・ラベル列の近傍のみを見る（行内の無関係な技能ポイント値を誤検出しない）
+            if(sri===0){ if(si<=ci||si>ci+6)return; }
+            else { if(si<ci-1||si>ci+6)return; }
             const t=(sc.text||'').trim();
             if(!t||t==='-')return;
             // 「[NP]」「NP」「+NP」「N」形式から数値抽出
@@ -3810,13 +3812,14 @@ function parseSpreadsheetHTML(html){
         break;
       }
     }
-    // 右列: 知識（全行）
-    for(const ki of [21,22,23]){
+    // 右列: 知識（全行）。見出し行(＜探索技能＞等のcolspan)で列がずれて index7 に来る知識技能(法律など)も拾う
+    for(const ki of [7,21,22,23]){
       const kc=row[ki];
       if(!kc||!kc.text||kc.text==='')continue;
       const isKnown=skillNameToKey[kc.text]!==undefined||freeInputSkills.has(kc.text);
+      if(ki===7){ if(isKnown){ extractSkill(row,7,'know'); break; } continue; }
       const looksLikeName=/[ぁ-んァ-ヶー一-龠a-zA-Z]/.test(kc.text)&&!/[／()（）]/.test(kc.text)&&!/^(追加P|不定|迄|参照|興味P|職業P)/.test(kc.text);
-      const hasNum=/^\d+$/.test(row[ki+2]?.text||'');
+      const hasNum=[2,3,4,5].some(d=>/^-?\d+$/.test((row[ki+d]?.text||'').trim()));
       const prevGrowth=(row[ki-1]?.text||'')==='';
       if(isKnown||(looksLikeName&&hasNum&&prevGrowth&&kc.colspan>=3&&ri>=13)){
         extractSkill(row,ki,'know');
