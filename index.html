@@ -137,8 +137,10 @@ body.light .card-tokucho .meta-value{color:#555 !important}
 .tm-row{display:flex;align-items:center;gap:5px;border:1px solid var(--border);border-radius:5px;padding:4px 6px;background:var(--surface2)}
 .tm-name{flex:1;min-width:0;font-size:13px;color:var(--text);border:1px solid transparent;background:transparent;padding:3px 5px;border-radius:3px}
 .tm-name:focus{background:var(--surface);outline:none;border-color:var(--accent)}
+.tm-handle{cursor:grab;font-size:15px;line-height:1;color:var(--text-muted);user-select:none;padding:2px 5px;touch-action:none}
+.tm-handle:active{cursor:grabbing}
+.tm-row.dragging{opacity:.6;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .tm-btn{font-size:11px;padding:2px 7px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer}
-.tm-btn:disabled{opacity:.35;cursor:default}
 .tm-del{color:#e05555;border-color:#e0a0a0}
 .card-foot{display:flex;align-items:center;padding:5px 10px;border-top:1px solid var(--border);background:var(--surface2);gap:6px}
 .card-date{font-size:10px;color:#bbb;flex:1}
@@ -649,7 +651,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     </select>
   </div>
   <div id="bulkbar">
-    <button id="select_toggle" onclick="toggleSelectMode()">☑ 選択</button>
+    <button id="select_toggle" onclick="toggleSelectMode()">☑ 一括選択</button>
     <span id="bulk_count" class="bulk-only">0件選択</span>
     <button class="bulk-only" onclick="bulkAddTags()">🏷 タグ付け</button>
     <button class="bulk-only" onclick="bulkStatusPicker(this)">🏳 状態変更</button>
@@ -687,7 +689,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 <div id="tag_manage_overlay">
   <div id="tag_manage">
     <div class="te-title">タグの編集・並べ替え</div>
-    <div class="te-sub">▲▼で並べ替え、名前をタップで変更、✕で削除（全キャラに反映）</div>
+    <div class="te-sub">⠿ をドラッグで並べ替え、名前をタップで変更、✕で削除（全キャラに反映）</div>
     <div id="tm_list"></div>
     <div class="te-actions"><button onclick="tmClose()">閉じる</button></div>
   </div>
@@ -833,7 +835,7 @@ function toggleSelectMode(){
   const btn=document.getElementById('select_toggle');
   grid.classList.toggle('select-mode',selectMode);
   btn.classList.toggle('on',selectMode);
-  btn.textContent=selectMode?'✕ 終了':'☑ 選択';
+  btn.textContent=selectMode?'✕ 選択終了':'☑ 一括選択';
   if(!selectMode)selectedIds.clear();
   updateBulkBar();
   applyFilters();
@@ -978,22 +980,39 @@ function renderTmList(){
   const wrap=document.getElementById('tm_list'); if(!wrap)return;
   const tags=orderedTags();
   if(tags.length===0){ wrap.innerHTML='<span class="te-empty">タグはまだありません。</span>'; return; }
-  wrap.innerHTML=tags.map((t,i)=>
-    `<div class="tm-row">
-       <button class="tm-btn" onclick="tmMove('${esc(t)}',-1)" ${i===0?'disabled':''}>▲</button>
-       <button class="tm-btn" onclick="tmMove('${esc(t)}',1)" ${i===tags.length-1?'disabled':''}>▼</button>
+  wrap.innerHTML=tags.map(t=>
+    `<div class="tm-row" data-tag="${esc(t)}">
+       <span class="tm-handle" onpointerdown="tmPointerDown(event,'${esc(t)}')" title="ドラッグで並べ替え">⠿</span>
        <input class="tm-name" value="${esc(t)}" data-orig="${esc(t)}" onchange="tmRename(this)">
        <button class="tm-btn tm-del" onclick="tmDelete('${esc(t)}')">✕</button>
      </div>`
   ).join('');
 }
-function tmMove(tag,dir){
-  const tags=orderedTags();
-  const i=tags.indexOf(tag); if(i<0)return;
-  const j=i+dir; if(j<0||j>=tags.length)return;
-  [tags[i],tags[j]]=[tags[j],tags[i]];
-  setTagOrder(tags);
-  renderTmList(); buildTagFilter();
+let _tmDragEl=null;
+function tmPointerDown(e,tag){
+  e.preventDefault();
+  _tmDragEl=e.target.closest('.tm-row');
+  if(!_tmDragEl)return;
+  _tmDragEl.classList.add('dragging');
+  try{ e.target.setPointerCapture(e.pointerId); }catch(_){}
+  window.addEventListener('pointermove',tmPointerMove);
+  window.addEventListener('pointerup',tmPointerUp,{once:true});
+}
+function tmPointerMove(e){
+  const list=document.getElementById('tm_list'); if(!list||!_tmDragEl)return;
+  const rows=[...list.querySelectorAll('.tm-row')];
+  const y=e.clientY;
+  let target=null;
+  for(const r of rows){ if(r===_tmDragEl)continue; const rect=r.getBoundingClientRect(); if(y<rect.top+rect.height/2){ target=r; break; } }
+  if(target){ if(target!==_tmDragEl.nextSibling) list.insertBefore(_tmDragEl,target); }
+  else { list.appendChild(_tmDragEl); }
+}
+function tmPointerUp(){
+  window.removeEventListener('pointermove',tmPointerMove);
+  if(_tmDragEl)_tmDragEl.classList.remove('dragging');
+  const list=document.getElementById('tm_list');
+  if(list){ const order=[...list.querySelectorAll('.tm-row')].map(r=>r.dataset.tag); setTagOrder(order); buildTagFilter(); }
+  _tmDragEl=null;
 }
 async function _tagApplyAll(mutator){
   for(const c of allChars){
