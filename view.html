@@ -1225,6 +1225,7 @@ function calc(){
   updateSanLine();
   const ss=c.str+c.siz;
   tx('db',ss<=12?'-1D6':ss<=16?'-1D4':ss<=24?'0':ss<=32?'+1D4':ss<=40?'+1D6':'+2D6');
+  if(typeof applyHaganeDB==='function')applyHaganeDB();
   let tot=0;['str','con','pow','dex','app','siz','int_v','edu'].forEach(k=>tot+=c[k]||0);
   tx('stat_total_disp',tot);
   calcJobPts();updateDynBases(c);updatePointBar();
@@ -1599,6 +1600,31 @@ function populateTokucho(){
 function showTokucho(n){
   const idx=document.getElementById('t'+n+'_sel').value;
   document.getElementById('t'+n+'_desc').textContent=idx!==''?(tokuchoList[parseInt(idx)]?.desc||''):'';
+  if(typeof applyHaganeDB==='function')applyHaganeDB();
+}
+function applyHaganeDB(){
+  // 特徴に「鋼の筋力」があるか
+  let hasHagane=false;
+  [1,2].forEach(n=>{
+    const idx=document.getElementById('t'+n+'_sel')?.value;
+    if(idx!==undefined&&idx!==''){
+      const t=tokuchoList[parseInt(idx)];
+      if(t&&t.label.includes('鋼の筋力'))hasHagane=true;
+    }
+  });
+  const c=getCur();
+  const ss=c.str+c.siz;
+  const dbSteps=['-1D6','-1D4','0','+1D4','+1D6','+2D6','+3D6'];
+  let baseDb=ss<=12?0:ss<=16?1:ss<=24?2:ss<=32?3:ss<=40?4:5;
+  if(hasHagane){
+    if(baseDb<4)baseDb++;  // -1D6/-1D4/0/+1D4 は1段階向上
+    else{
+      // 1D6以上は1段階向上せず +1（例：1d6+1、2d6+1）
+      const dbEl=document.getElementById('db');
+      if(dbEl){ dbEl.textContent=dbSteps[baseDb]+'+1'; return; }
+    }
+  }
+  tx('db',dbSteps[baseDb]||'+2D6');
 }
 
 function _resizeInEl(el){el.querySelectorAll('textarea').forEach(ta=>{if(ta.classList.contains('auto-h'))autoResizeTA(ta);else{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}});}

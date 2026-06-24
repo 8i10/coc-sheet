@@ -2136,9 +2136,9 @@ function applyHaganeDB(){
   const dbSteps=['-1D6','-1D4','0','+1D4','+1D6','+2D6','+3D6'];
   let baseDb=ss<=12?0:ss<=16?1:ss<=24?2:ss<=32?3:ss<=40?4:5;
   if(hasHagane){
-    if(baseDb<5)baseDb++;
+    if(baseDb<4)baseDb++;  // -1D6/-1D4/0/+1D4 は1段階向上
     else{
-      // 1d6以上の場合は+1
+      // 1D6以上は1段階向上せず、ダメージ・ボーナスに+1（例：1d6+1、2d6+1）
       const dbEl=document.getElementById('db');
       if(dbEl){
         const cur=dbSteps[baseDb];
