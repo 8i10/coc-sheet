@@ -798,6 +798,15 @@ function orderedTags(){
   });
   return all;
 }
+function sortTagsByOrder(arr){
+  const order=getTagOrder();
+  return [...(arr||[])].sort((a,b)=>{
+    const ia=order.indexOf(a), ib=order.indexOf(b);
+    if(ia!==-1&&ib!==-1)return ia-ib;
+    if(ia!==-1)return -1; if(ib!==-1)return 1;
+    return a.localeCompare(b,'ja');
+  });
+}
 
 /* ===== ふりがな見出し ===== */
 function kanaNorm(furi){
@@ -1342,7 +1351,7 @@ function makeCard(char){
   let sheet={};try{sheet=JSON.parse(char.data);}catch(e){}
   char._sheet=sheet;
   const inp=sheet.inputs||{};
-  const tags=Array.isArray(sheet.tags)?sheet.tags:[];
+  const tags=sortTagsByOrder(Array.isArray(sheet.tags)?sheet.tags:[]);
 
   const pcname  =inp.pcname   ||char.char_name||'名無し';
   const furigana=inp.furigana ||'';
