@@ -102,13 +102,15 @@ body.light .card-tokucho .meta-value{color:#555 !important}
 .card-check{position:absolute;top:6px;left:6px;width:20px;height:20px;z-index:5;display:none;cursor:pointer}
 #grid.select-mode .card-check{display:block}
 #grid.select-mode .card{cursor:pointer}
-#grid.select-mode .card-foot{display:none}
+#grid.select-mode .card-foot .cbtn{display:none}
+#grid.select-mode .card-tag-edit{display:none}
 #grid.select-mode .card.sel{outline:2px solid var(--accent);outline-offset:-2px}
 .group-head{grid-column:1/-1;font-size:13px;font-weight:bold;color:var(--accent);border-bottom:2px solid var(--border);padding:6px 4px 3px;margin-top:4px}
 #select_toggle{font-size:12px;padding:3px 9px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer}
 #select_toggle.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-#bulkbar{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0;padding:6px 10px;background:var(--surface2);border:1px solid var(--accent);border-radius:6px;position:sticky;top:44px;z-index:50}
+#bulkbar{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0;padding:6px 10px;background:var(--surface2);border:1px solid var(--accent);border-radius:6px}
 #bulkbar.shown{display:flex}
+#bulkbar.on{position:sticky;top:44px;z-index:50}
 #bulkbar:not(.on) .bulk-only{display:none}
 #bulkbar button{font-size:12px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}
 #bulkbar .bulk-danger{margin-left:auto;color:#fff;background:#e05555;border-color:#e05555}
