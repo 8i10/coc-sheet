@@ -3405,6 +3405,14 @@ async function exportJSON(){
       str=JSON.stringify(o);
     }catch(e){}
   }
+  // 特徴ラベルを付与（indexのPC毎ZIPと形式を揃える）
+  try{
+    const o=JSON.parse(str);
+    const lab=id=>{const s=document.getElementById(id);const op=s&&s.selectedOptions&&s.selectedOptions[0];const t=(op?op.text:'').trim();return (t&&!/^(なし|[-−—–]|＜|選択)/.test(t))?t:'';};
+    const feats=[lab('t1_sel'),lab('t2_sel')].filter(Boolean);
+    if(feats.length)o.feature_labels=feats; else delete o.feature_labels;
+    str=JSON.stringify(o);
+  }catch(e){}
   const pcname=document.getElementById('pcname')?.value||'character';
   const blob=new Blob([str],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=pcname+'.json';a.click();
 }
