@@ -12,6 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#333333">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <title>キャラクター一覧 - CoC6版</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
@@ -587,7 +588,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 </div>
 <div id="index_menu" style="display:none">
   <div class="menu-item" onclick="openTagManage();closeMenu()"><span>🏷</span> タグの編集・並べ替え</div>
-  <div class="menu-item" onclick="exportJSON();closeMenu()"><span>⬇</span> JSONバックアップ</div>
+  <div class="menu-item" onclick="exportJSON();closeMenu()"><span>⬇</span> JSONバックアップ(PC毎ZIP)</div>
   <div class="menu-item" onclick="exportCSV();closeMenu()"><span>⬇</span> CSVエクスポート</div>
   <div class="menu-item" onclick="bulkImportSpreadsheets();closeMenu()"><span>📥</span> スプシ一括取込</div>
   <div class="menu-item" onclick="doLogout();closeMenu()"><span>↩</span> ログアウト</div>
@@ -915,11 +916,31 @@ async function bulkDelete(){
 function _dateStamp(){const d=new Date();const p=n=>String(n).padStart(2,'0');return ''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate());}
 function _downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},150);}
 function _csvCell(v){v=String(v==null?'':v);if(/[",\r\n]/.test(v))v='"'+v.replace(/"/g,'""')+'"';return v;}
-function exportJSON(){
+async function exportJSON(){
   if(!allChars.length){showToast('データがありません');return;}
-  const rows=allChars.map(c=>({id:c.id,char_name:c.char_name,updated_at:c.updated_at,tags:charTags(c),data:c.data}));
-  _downloadBlob(new Blob([JSON.stringify(rows,null,2)],{type:'application/json'}), 'coc_characters_'+_dateStamp()+'.json');
-  showToast(rows.length+'件をJSON出力しました');
+  if(typeof JSZip==='undefined'){showToast('ZIPライブラリを読み込めませんでした');return;}
+  const zip=new JSZip();
+  const used={};
+  allChars.forEach(c=>{
+    let obj={};
+    try{obj=JSON.parse(c.data)||{};}catch(e){obj={};}
+    const inp=obj.inputs||{};
+    // タグを最新化
+    const tags=charTags(c); if(tags.length)obj.tags=tags;
+    // 特徴表を読みやすく明示（t1_sel/t2_sel は元データにも保持）
+    const feats=[tokuchoLabel(inp.t1_sel),tokuchoLabel(inp.t2_sel)].filter(Boolean);
+    if(feats.length)obj.feature_labels=feats;
+    // ファイル名（PC名、使用不可文字を除去・重複回避）
+    let name=((c.char_name||inp.pcname||'character')+'').trim()||'character';
+    name=name.replace(/[\\/:*?"<>|\n\r\t]/g,'_');
+    let fn=name, i=2; while(used[fn]){fn=name+'_'+i;i++;} used[fn]=1;
+    zip.file(fn+'.json', JSON.stringify(obj,null,2));
+  });
+  try{
+    const blob=await zip.generateAsync({type:'blob'});
+    _downloadBlob(blob, 'coc_characters_'+_dateStamp()+'.zip');
+    showToast(allChars.length+'件をZIP出力しました');
+  }catch(e){ showToast('ZIP生成に失敗しました'); console.warn(e); }
 }
 function exportCSV(){
   if(!allChars.length){showToast('データがありません');return;}
