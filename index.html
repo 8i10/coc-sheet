@@ -1454,6 +1454,22 @@ function fixDropboxUrlIndex(url) {
   }
   return url;
 }
+// いあきゃら(iaproject.app)のURLは画像直リンク形式 https://image.iaproject.app/<uuid> に変換（ココフォリアで画像表示できるように）
+function toIaprojectImageUrl(url){
+  if(!url) return url;
+  if(/iaproject\.app/i.test(url)){
+    const m=url.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+    if(m) return 'https://image.iaproject.app/'+m[0];
+  }
+  return url;
+}
+// ココフォリアはcanvas描画にCORS対応URLが必要。DropboxはCORSヘッダーを返さないため、CORS対応プロキシ経由にして画像を表示できるようにする
+function wrapCorsProxyIndex(url){
+  if(url && /dropbox(usercontent)?\.com/i.test(url)){
+    return 'https://images.weserv.nl/?url='+encodeURIComponent(url);
+  }
+  return url;
+}
 
 function openEdit(id){
   sessionStorage.setItem('coc_load_id',id);
@@ -1698,7 +1714,7 @@ function _buildCocoJSON(sheet) {
   const max_san = san_now; // コマ出力は現在SAN＝最大SAN
   const hp = Math.ceil((stats.con + stats.siz) / 2);
   const mp = stats.pow;
-  const iconUrl = inp.charImage ? fixDropboxUrlIndex(inp.charImage) : '';
+  const iconUrl = inp.charImage ? wrapCorsProxyIndex(toIaprojectImageUrl(fixDropboxUrlIndex(inp.charImage))) : '';
 
   return {
     kind: 'character',

@@ -2406,6 +2406,10 @@ function doCocofolicaCopy() {
     _iconUrl=_iconUrl.replace(/([?&])dl=[01]/,'$1raw=1');
     if(!/[?&]raw=1/.test(_iconUrl))_iconUrl+=(_iconUrl.includes('?')?'&':'?')+'raw=1';
   }
+  // いあきゃら(iaproject.app)は画像直リンク形式 https://image.iaproject.app/<uuid> に変換
+  if(_iconUrl&&/iaproject\.app/i.test(_iconUrl)){const _m=_iconUrl.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);if(_m)_iconUrl='https://image.iaproject.app/'+_m[0];}
+  // ココフォリアはcanvas描画にCORS対応URLが必要。DropboxはCORSヘッダーを返さないため、CORS対応プロキシ経由にする
+  if(_iconUrl&&/dropbox(usercontent)?\.com/i.test(_iconUrl)){_iconUrl='https://images.weserv.nl/?url='+encodeURIComponent(_iconUrl);}
   const cocoJSON = {kind: 'character',data: {  name: pcname,  initiative: c.dex,  externalUrl: '',  iconUrl: _iconUrl,  status: [    { label:'HP',  value: hpMax,  max: hpMax  },    { label:'MP',  value: mpMax,  max: mpMax  },    { label:'SAN', value: sanNow, max: sanMax },  ],  params: params,  commands: palette,  secret: document.getElementById('coco_secret_check')?.checked || false,  invisible: false,  hideStatus: false,  color: color,}
   };
 

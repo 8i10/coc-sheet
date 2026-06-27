@@ -3342,7 +3342,11 @@ function doCocofolicaCopy(){
 
   // コマ画像URL（Dropbox等は直リンクに変換）
   const rawImgUrl = document.getElementById('char_image_url')?.value || '';
-  const iconUrl = rawImgUrl ? fixDropboxUrl(rawImgUrl) : '';
+  let iconUrl = rawImgUrl ? fixDropboxUrl(rawImgUrl) : '';
+  // いあきゃら(iaproject.app)は画像直リンク形式 https://image.iaproject.app/<uuid> に変換
+  if(iconUrl&&/iaproject\.app/i.test(iconUrl)){const _m=iconUrl.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);if(_m)iconUrl='https://image.iaproject.app/'+_m[0];}
+  // ココフォリアはcanvas描画にCORS対応URLが必要。DropboxはCORSヘッダーを返さないため、CORS対応プロキシ経由にする
+  if(iconUrl&&/dropbox(usercontent)?\.com/i.test(iconUrl)){iconUrl='https://images.weserv.nl/?url='+encodeURIComponent(iconUrl);}
 
   const cocoJSON = {
     kind: 'character',
