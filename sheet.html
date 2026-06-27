@@ -1018,7 +1018,7 @@ body.light td.hdr{
 .apply-roll-btn{width:54px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0;cursor:pointer;border:1px solid var(--accent2);border-radius:4px;background:var(--surface);color:var(--accent2);white-space:nowrap;font-weight:bold;flex:0 0 auto}
 .roll-result{font-family:'Zen Kaku Gothic New',sans-serif;font-size:9px;color:var(--text-muted);white-space:nowrap;overflow-x:auto;min-width:0;align-self:center}
 .ver-toggle{display:inline-flex;border:1px solid rgba(255,255,255,.55);border-radius:4px;overflow:hidden}
-.tk-roll-btn{height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0 8px;cursor:pointer;border:1px solid var(--accent);border-radius:4px;background:var(--surface);color:var(--accent);white-space:nowrap;font-weight:bold}
+.tk-roll-btn{box-sizing:border-box;height:22px;min-height:22px;line-height:1;flex:0 0 auto;align-self:center;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0 8px;cursor:pointer;border:1px solid var(--accent);border-radius:4px;background:var(--surface);color:var(--accent);white-space:nowrap;font-weight:bold}
 .tk-roll-btn:hover{background:var(--accent);color:#fff}
 .tk-roll-btn.rolled{background:var(--accent);color:#fff}
 .ver-btn{font-size:10px;padding:1px 8px;cursor:pointer;border:none;background:transparent;color:var(--hdr-text);font-family:inherit;line-height:1.6}
@@ -1148,13 +1148,14 @@ if (('standalone' in navigator) && navigator.standalone) {
     </div>
     </div>
     <!-- 特徴表ダイス -->
-    <div class="tk-dice" style="display:flex;flex-direction:column;gap:4px;justify-content:center;border-left:1px solid var(--border);padding-left:8px">
-      <div style="display:flex;gap:4px">
+    <div class="tk-dice" style="display:flex;flex-direction:column;gap:4px;justify-content:center;align-self:center;border-left:1px solid var(--border);padding-left:8px">
+      <div style="display:flex;gap:4px;align-items:center">
         <button type="button" class="tk-roll-btn" onclick="rollTokucho(1,this)">特徴表①</button>
         <button type="button" class="tk-roll-btn" onclick="rollTokucho(2,this)">特徴表②</button>
       </div>
-      <div style="display:flex">
+      <div style="display:flex;gap:5px;align-items:center">
         <button type="button" class="apply-roll-btn" onclick="applyTokuchoRolls()">反映</button>
+        <span id="tk_roll_ind" class="roll-result" style="font-size:9px;max-width:120px;overflow-x:auto"></span>
       </div>
     </div>
   </div>
@@ -2140,11 +2141,22 @@ function showTokucho(n){
 }
 // 特徴表ダイス: 1d6(縦)・1d10(横) で（X-Y）を決定。能力値ダイス同様に「反映」で確定する
 let _tkRoll={};
+function _updateTkInd(){
+  const el=document.getElementById('tk_roll_ind'); if(!el)return;
+  const parts=[];
+  [1,2].forEach(n=>{
+    if(_tkRoll[n]==null)return;
+    const t=tokuchoList[_tkRoll[n]];
+    parts.push((n===1?'①':'②')+(t?t.label.replace(/^（[^）]*）/,''):''));
+  });
+  el.textContent=parts.join(' / ');
+}
 function rollTokucho(n,btn){
   const x=1+Math.floor(Math.random()*6);   // 1d6
   const y=1+Math.floor(Math.random()*10);  // 1d10
   _tkRoll[n]=(x-1)*10+(y-1);                // tokuchoListは(1-1)〜(6-10)の順
   if(btn)btn.classList.add('rolled');
+  _updateTkInd();
 }
 function applyTokuchoRolls(){
   let any=false;
@@ -2155,6 +2167,7 @@ function applyTokuchoRolls(){
   });
   _tkRoll={};
   document.querySelectorAll('.tk-roll-btn.rolled').forEach(b=>b.classList.remove('rolled'));
+  const el=document.getElementById('tk_roll_ind'); if(el)el.textContent='';
   if(any&&typeof saveDraft==='function') saveDraft();
 }
 function applyHaganeDB(){
