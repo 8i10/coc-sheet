@@ -1148,10 +1148,14 @@ if (('standalone' in navigator) && navigator.standalone) {
     </div>
     </div>
     <!-- 特徴表ダイス -->
-    <div class="tk-dice" style="display:grid;grid-template-columns:auto auto;gap:4px 6px;align-content:center;border-left:1px solid var(--border);padding-left:8px">
-      <button type="button" class="tk-roll-btn" onclick="rollTokucho(1,this)">特徴表①</button>
-      <button type="button" class="tk-roll-btn" onclick="rollTokucho(2,this)">特徴表②</button>
-      <button type="button" class="apply-roll-btn" onclick="applyTokuchoRolls()">反映</button>
+    <div class="tk-dice" style="display:flex;flex-direction:column;gap:4px;justify-content:center;border-left:1px solid var(--border);padding-left:8px">
+      <div style="display:flex;gap:4px">
+        <button type="button" class="tk-roll-btn" onclick="rollTokucho(1,this)">特徴表①</button>
+        <button type="button" class="tk-roll-btn" onclick="rollTokucho(2,this)">特徴表②</button>
+      </div>
+      <div style="display:flex">
+        <button type="button" class="apply-roll-btn" onclick="applyTokuchoRolls()">反映</button>
+      </div>
     </div>
   </div>
 </div>
