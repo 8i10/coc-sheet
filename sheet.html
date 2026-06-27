@@ -1018,10 +1018,9 @@ body.light td.hdr{
 .apply-roll-btn{width:54px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0;cursor:pointer;border:1px solid var(--accent2);border-radius:4px;background:var(--surface);color:var(--accent2);white-space:nowrap;font-weight:bold;flex:0 0 auto}
 .roll-result{font-family:'Zen Kaku Gothic New',sans-serif;font-size:9px;color:var(--text-muted);white-space:nowrap;overflow-x:auto;min-width:0;align-self:center}
 .ver-toggle{display:inline-flex;border:1px solid rgba(255,255,255,.55);border-radius:4px;overflow:hidden}
-.tk-col{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:54px}
 .tk-roll-btn{height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0 8px;cursor:pointer;border:1px solid var(--accent);border-radius:4px;background:var(--surface);color:var(--accent);white-space:nowrap;font-weight:bold}
 .tk-roll-btn:hover{background:var(--accent);color:#fff}
-.tk-roll{font-size:9px;color:var(--text);line-height:1.25;text-align:center;max-width:96px;word-break:break-all;white-space:pre-line}
+.tk-roll-btn.rolled{background:var(--accent);color:#fff}
 .ver-btn{font-size:10px;padding:1px 8px;cursor:pointer;border:none;background:transparent;color:var(--hdr-text);font-family:inherit;line-height:1.6}
 .ver-btn.on{background:#fff;color:#333;font-weight:bold}
 @media(max-width:700px){
@@ -1149,9 +1148,10 @@ if (('standalone' in navigator) && navigator.standalone) {
     </div>
     </div>
     <!-- 特徴表ダイス -->
-    <div class="tk-dice" style="display:flex;gap:6px;align-items:stretch;border-left:1px solid var(--border);padding-left:8px">
-      <div class="tk-col"><button type="button" class="tk-roll-btn" onclick="rollTokucho(1)">特徴表①</button><div id="t1_roll" class="tk-roll">–</div></div>
-      <div class="tk-col"><button type="button" class="tk-roll-btn" onclick="rollTokucho(2)">特徴表②</button><div id="t2_roll" class="tk-roll">–</div></div>
+    <div class="tk-dice" style="display:grid;grid-template-columns:auto auto;gap:4px 6px;align-content:center;border-left:1px solid var(--border);padding-left:8px">
+      <button type="button" class="tk-roll-btn" onclick="rollTokucho(1,this)">特徴表①</button>
+      <button type="button" class="tk-roll-btn" onclick="rollTokucho(2,this)">特徴表②</button>
+      <button type="button" class="apply-roll-btn" onclick="applyTokuchoRolls()">反映</button>
     </div>
   </div>
 </div>
@@ -1327,7 +1327,7 @@ if (('standalone' in navigator) && navigator.standalone) {
         </select>
       </div>
       <div id="t1_desc" style="font-size:11px;color:var(--text);min-height:28px;background:var(--surface2);padding:3px 4px;line-height:1.6"></div>
-      <input type="text" id="t1_memo" placeholder="メモ..." style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:var(--surface);color:var(--text)">
+      <textarea id="t1_memo" placeholder="メモ..." rows="1" class="auto-h tk-memo" oninput="autoResizeTA(this)" style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:var(--surface);color:var(--text);resize:none;overflow:hidden;height:22px;line-height:1.5;font-family:inherit;box-sizing:border-box;display:block"></textarea>
     </div>
 
     <!-- 特徴表② -->
@@ -1340,7 +1340,7 @@ if (('standalone' in navigator) && navigator.standalone) {
         </select>
       </div>
       <div id="t2_desc" style="font-size:11px;color:var(--text);min-height:28px;background:var(--surface2);padding:3px 4px;line-height:1.6"></div>
-      <input type="text" id="t2_memo" placeholder="メモ..." style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:var(--surface);color:var(--text)">
+      <textarea id="t2_memo" placeholder="メモ..." rows="1" class="auto-h tk-memo" oninput="autoResizeTA(this)" style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:var(--surface);color:var(--text);resize:none;overflow:hidden;height:22px;line-height:1.5;font-family:inherit;box-sizing:border-box;display:block"></textarea>
     </div>
   </div>
 </div>
@@ -1665,7 +1665,7 @@ function autoResize(inp){
 }
 function autoResizeTA(ta){
   if(!ta||ta.offsetParent===null&&!ta.closest('.acc-body.open')&&!ta.closest('.sub-acc-body.open')&&!ta.closest('.secret-item-body.open')&&!ta.closest('[style*="display:block"]'))return;
-  if(ta.classList.contains('item-note')){
+  if(ta.classList.contains('item-note')||ta.classList.contains('tk-memo')){
     // 1行に収まる場合は22px固定、折り返し/改行時のみ伸ばす
     ta.style.height='22px';
     if(ta.scrollHeight>24)ta.style.height=ta.scrollHeight+'px';
@@ -1678,7 +1678,7 @@ function autoResizeAll(){
   document.querySelectorAll('.free-inp-auto').forEach(autoResize);
   // 表示中のauto-hテキストエリアを全て再計算
   document.querySelectorAll('textarea.auto-h').forEach(ta=>{
-    if(ta.classList.contains('item-note')){
+    if(ta.classList.contains('item-note')||ta.classList.contains('tk-memo')){
       // 所持品の備考は1行(22px)基準。折り返し/改行がある時だけ伸ばす
       ta.style.height='22px';
       if(ta.scrollHeight>24)ta.style.height=ta.scrollHeight+'px';
@@ -2114,34 +2114,44 @@ function populateTokucho(){
   });
 }
 function showTokucho(n){
-  const idx=document.getElementById('t'+n+'_sel').value;
-  if(idx==='ng'){document.getElementById('t'+n+'_desc').textContent='（採用不可）';return;}
-  const t=idx!==''?tokuchoList[parseInt(idx)]:null;
-  document.getElementById('t'+n+'_desc').textContent=t?(t.desc||''):'';
-  // Dボーナス自動設定
-  if(t&&t.dbonus!==undefined){
-    const bonusSel=document.getElementById('t'+n+'_bonus');
-    if(bonusSel){
-      for(let i=0;i<bonusSel.options.length;i++){
-        if(parseInt(bonusSel.options[i].value)===t.dbonus){bonusSel.selectedIndex=i;break;}
-      }
-    }
+  const sel=document.getElementById('t'+n+'_sel');
+  const idx=sel?sel.value:'';
+  const descEl=document.getElementById('t'+n+'_desc');
+  let isD=false;
+  if(idx==='ng'){ if(descEl)descEl.textContent='（採用不可）'; }
+  else {
+    const t=idx!==''?tokuchoList[parseInt(idx)]:null;
+    if(descEl)descEl.textContent=t?(t.desc||''):'';
+    isD = !!(t && /[(（]\s*D\s*[)）]/.test(t.label));
+  }
+  // Dボーナスは(D)特徴のときだけ選択可。(D)以外（未選択・採用不可含む）はDなし固定で選択不可
+  const bonusSel=document.getElementById('t'+n+'_bonus');
+  if(bonusSel){
+    if(isD){ bonusSel.disabled=false; }
+    else { bonusSel.value='0'; bonusSel.disabled=true; }
   }
   // 鋼の筋力: DBを1段階アップ
   applyHaganeDB();
   calcJobPts();
 }
-// 特徴表ダイス: 1d6(縦)・1d10(横) で特徴表（X-Y）を決定し、特徴表①②に反映
-function rollTokucho(n){
+// 特徴表ダイス: 1d6(縦)・1d10(横) で（X-Y）を決定。能力値ダイス同様に「反映」で確定する
+let _tkRoll={};
+function rollTokucho(n,btn){
   const x=1+Math.floor(Math.random()*6);   // 1d6
   const y=1+Math.floor(Math.random()*10);  // 1d10
-  const idx=(x-1)*10+(y-1);                 // tokuchoListは(1-1)〜(6-10)の順
-  const sel=document.getElementById('t'+n+'_sel');
-  const t=tokuchoList[idx];
-  if(sel){ sel.value=String(idx); showTokucho(n); }
-  const disp=document.getElementById('t'+n+'_roll');
-  if(disp){ disp.textContent='🎲'+x+'-'+y+(t?'\n'+t.label:''); }
-  if(typeof saveDraft==='function') saveDraft();
+  _tkRoll[n]=(x-1)*10+(y-1);                // tokuchoListは(1-1)〜(6-10)の順
+  if(btn)btn.classList.add('rolled');
+}
+function applyTokuchoRolls(){
+  let any=false;
+  [1,2].forEach(n=>{
+    if(_tkRoll[n]==null)return;
+    const sel=document.getElementById('t'+n+'_sel');
+    if(sel){ sel.value=String(_tkRoll[n]); showTokucho(n); any=true; }
+  });
+  _tkRoll={};
+  document.querySelectorAll('.tk-roll-btn.rolled').forEach(b=>b.classList.remove('rolled'));
+  if(any&&typeof saveDraft==='function') saveDraft();
 }
 function applyHaganeDB(){
   // 両特徴を確認して鋼の筋力があるか
@@ -4078,22 +4088,26 @@ function parseSpreadsheetHTML(html){
     sv('sel_skill'+(i+1),sk);
   });
 
-  // Dボーナスを特徴表①②に自動選択
-  if(dBonus1Set){
-    const sel=document.getElementById('t1_bonus');
-    if(sel){
-      const target=String(dBonus1);
-      for(let i=0;i<sel.options.length;i++){if(sel.options[i].value===target){sel.selectedIndex=i;break;}}
-      calcJobPts();
-    }
-  }
-  if(dBonus2Set){
-    const sel=document.getElementById('t2_bonus');
-    if(sel){
-      const target=String(dBonus2);
-      for(let i=0;i<sel.options.length;i++){if(sel.options[i].value===target){sel.selectedIndex=i;break;}}
-      calcJobPts();
-    }
+  // Dボーナスを「(D)特徴がある側」に自動セット（(D)以外の特徴にはセットしない）
+  {
+    const isDSlot=(n)=>{
+      const v=document.getElementById('t'+n+'_sel')?.value;
+      if(v==null||v===''||v==='ng')return false;
+      const t=tokuchoList[parseInt(v)];
+      return !!(t && /[(（]\s*D\s*[)）]/.test(t.label));
+    };
+    const bonuses=[];
+    if(dBonus1Set)bonuses.push(dBonus1);
+    if(dBonus2Set)bonuses.push(dBonus2);
+    [1,2].forEach(n=>{
+      if(!isDSlot(n))return;
+      const val=bonuses.shift();
+      if(val===undefined)return;
+      const sel=document.getElementById('t'+n+'_bonus');
+      if(sel){ sel.disabled=false; const target=String(val);
+        for(let i=0;i<sel.options.length;i++){if(sel.options[i].value===target){sel.selectedIndex=i;break;}} }
+    });
+    calcJobPts();
   }
 
   // その他特記を自動入力（memo_rowsの最初のtextareaへ、なければ追加）
