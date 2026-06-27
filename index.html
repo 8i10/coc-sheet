@@ -145,6 +145,10 @@ body.light .card-tokucho .meta-value{color:#555 !important}
 .tm-row.dragging{opacity:.6;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .tm-btn{font-size:11px;padding:2px 7px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer}
 .tm-del{color:#e05555;border-color:#e0a0a0}
+.tm-add{display:flex;gap:5px;margin-bottom:8px}
+.tm-add input{flex:1;min-width:0;font-size:13px;color:var(--text);border:1px solid var(--border);background:var(--surface);padding:5px 7px;border-radius:5px}
+.tm-add input:focus{outline:none;border-color:var(--accent)}
+.tm-add button{font-size:12px;padding:4px 12px;border:1px solid var(--accent);border-radius:5px;background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap}
 .card-foot{display:flex;align-items:center;padding:5px 10px;border-top:1px solid var(--border);background:var(--surface2);gap:6px}
 .card-date{font-size:10px;color:#bbb;flex:1}
 .cbtn{padding:2px 9px;font-size:11px;cursor:pointer;border:none;border-radius:2px;font-family:inherit}
@@ -693,6 +697,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   <div id="tag_manage">
     <div class="te-title">タグの編集・並べ替え</div>
     <div class="te-sub">⠿ をドラッグで並べ替え、名前をタップで変更、✕で削除（全キャラに反映）</div>
+    <div class="tm-add"><input id="tm_new" type="text" placeholder="新しいタグ名を追加…" onkeydown="if(event.key==='Enter'){event.preventDefault();tmAdd();}"><button onclick="tmAdd()">＋追加</button></div>
     <div id="tm_list"></div>
     <div class="te-actions"><button onclick="tmClose()">閉じる</button></div>
   </div>
@@ -973,7 +978,7 @@ function editTags(id){
 }
 function renderTeChips(){
   const wrap=document.getElementById('te_chips'); if(!wrap)return;
-  const set=new Set([...allTagsUnion(), ..._teSelected]);
+  const set=new Set([...allTagsUnion(), ...getTagOrder(), ..._teSelected]);
   if(set.size===0){wrap.innerHTML='<span class="te-empty">既存のタグはありません。下の欄から追加してください。</span>';return;}
   const order=getTagOrder();
   const all=[...set].sort((a,b)=>{
@@ -1010,7 +1015,14 @@ function openTagManage(){ renderTmList(); document.getElementById('tag_manage_ov
 function tmClose(){ document.getElementById('tag_manage_overlay').classList.remove('on'); }
 function renderTmList(){
   const wrap=document.getElementById('tm_list'); if(!wrap)return;
-  const tags=orderedTags();
+  const order=getTagOrder();
+  const set=new Set([...allTagsUnion(), ...order]);
+  const tags=[...set].sort((a,b)=>{
+    const ia=order.indexOf(a), ib=order.indexOf(b);
+    if(ia!==-1&&ib!==-1)return ia-ib;
+    if(ia!==-1)return -1; if(ib!==-1)return 1;
+    return a.localeCompare(b,'ja');
+  });
   if(tags.length===0){ wrap.innerHTML='<span class="te-empty">タグはまだありません。</span>'; return; }
   wrap.innerHTML=tags.map(t=>
     `<div class="tm-row" data-tag="${esc(t)}">
@@ -1019,6 +1031,18 @@ function renderTmList(){
        <button class="tm-btn tm-del" onclick="tmDelete('${esc(t)}')">✕</button>
      </div>`
   ).join('');
+}
+function tmAdd(){
+  const inp=document.getElementById('tm_new'); if(!inp)return;
+  const name=(inp.value||'').trim().replace(/["'\\]/g,'');
+  if(!name){ inp.focus(); return; }
+  const order=getTagOrder();
+  if(new Set([...allTagsUnion(), ...order]).has(name)){ showToast('そのタグは既にあります'); inp.value=''; inp.focus(); return; }
+  setTagOrder([...order, name]);
+  inp.value='';
+  renderTmList(); buildTagFilter();
+  showToast('タグ「'+name+'」を追加しました');
+  inp.focus();
 }
 let _tmDragEl=null;
 function tmPointerDown(e,tag){
@@ -1463,13 +1487,6 @@ function toIaprojectImageUrl(url){
   }
   return url;
 }
-// ココフォリアはcanvas描画にCORS対応URLが必要。DropboxはCORSヘッダーを返さないため、CORS対応プロキシ経由にして画像を表示できるようにする
-function wrapCorsProxyIndex(url){
-  if(url && /dropbox(usercontent)?\.com/i.test(url)){
-    return 'https://images.weserv.nl/?url='+encodeURIComponent(url);
-  }
-  return url;
-}
 
 function openEdit(id){
   sessionStorage.setItem('coc_load_id',id);
@@ -1525,22 +1542,6 @@ function applyTheme(mode){
 
 /* ===== 一覧からのコマ出力 ===== */
 let _cocoSheet = null;
-let _cocoIconPromise = null;
-// Dropbox画像はココフォリアのcanvas描画でCORSが必要だが、Dropboxは非対応。
-// そこでweserv(CORS対応プロキシ)経由で取得し、画像をdata URI(base64)化して駒に直接埋め込む。
-// data URIは同一オリジン扱いでCORS不要のため、ココフォリアで確実に表示できる。
-async function _imgToDataUri(url){
-  if(!url || /^data:/.test(url)) return url;
-  if(!/dropbox(usercontent)?\.com/i.test(url)) return url; // Dropbox以外(iaproject等)は直リンクで表示可
-  try{
-    const prox='https://images.weserv.nl/?url='+encodeURIComponent(url)+'&w=512';
-    const r=await fetch(prox);
-    if(!r.ok) return url;
-    const b=await r.blob();
-    if(!/^image\//.test(b.type)) return url;
-    return await new Promise(res=>{const fr=new FileReader();fr.onerror=()=>res(url);fr.onload=()=>res(fr.result);fr.readAsDataURL(b);});
-  }catch(e){return url;}
-}
 
 const _SKILLS_DEF = {
   combat:[
@@ -1764,10 +1765,6 @@ async function openCocoFromIndex(id) {
   const { data, error } = await db.from('character_sheets').select('data').eq('id', id).single();
   if (error || !data) { alert('データが見つかりません'); return; }
   _cocoSheet = JSON.parse(data.data);
-  // Dropboxアイコンを先読みでdata URI化（コピー時に確実に埋め込むため）
-  _cocoIconPromise = null;
-  const _rawIcon = _cocoSheet.inputs?.charImage ? toIaprojectImageUrl(fixDropboxUrlIndex(_cocoSheet.inputs.charImage)) : '';
-  if(_rawIcon) _cocoIconPromise = _imgToDataUri(_rawIcon);
 
   const palette = _buildChatPalette(_cocoSheet);
   const old = document.getElementById('cocofolia_modal');
@@ -1797,13 +1794,12 @@ async function openCocoFromIndex(id) {
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 }
 
-async function _doCocoCopy() {
+function _doCocoCopy() {
   if (!_cocoSheet) return;
   const palette = document.getElementById('coco_palette_preview')?.value || _buildChatPalette(_cocoSheet);
   const json = _buildCocoJSON(_cocoSheet);
   json.data.commands = palette;
   json.data.secret = document.getElementById('coco_secret_check')?.checked || false;
-  try{ if(_cocoIconPromise){ const d=await _cocoIconPromise; if(d) json.data.iconUrl=d; } }catch(e){}
   navigator.clipboard.writeText(JSON.stringify(json, null, 2)).then(() => {
     const msg=document.getElementById('coco_copy_msg');
     if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);}

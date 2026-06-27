@@ -1018,6 +1018,10 @@ body.light td.hdr{
 .apply-roll-btn{width:54px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0;cursor:pointer;border:1px solid var(--accent2);border-radius:4px;background:var(--surface);color:var(--accent2);white-space:nowrap;font-weight:bold;flex:0 0 auto}
 .roll-result{font-family:'Zen Kaku Gothic New',sans-serif;font-size:9px;color:var(--text-muted);white-space:nowrap;overflow-x:auto;min-width:0;align-self:center}
 .ver-toggle{display:inline-flex;border:1px solid rgba(255,255,255,.55);border-radius:4px;overflow:hidden}
+.tk-col{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:54px}
+.tk-roll-btn{height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0 8px;cursor:pointer;border:1px solid var(--accent);border-radius:4px;background:var(--surface);color:var(--accent);white-space:nowrap;font-weight:bold}
+.tk-roll-btn:hover{background:var(--accent);color:#fff}
+.tk-roll{font-size:9px;color:var(--text);line-height:1.25;text-align:center;max-width:96px;word-break:break-all;white-space:pre-line}
 .ver-btn{font-size:10px;padding:1px 8px;cursor:pointer;border:none;background:transparent;color:var(--hdr-text);font-family:inherit;line-height:1.6}
 .ver-btn.on{background:#fff;color:#333;font-weight:bold}
 @media(max-width:700px){
@@ -1124,7 +1128,8 @@ if (('standalone' in navigator) && navigator.standalone) {
       <input type="range" id="char_image_zoom" min="50" max="600" value="130" style="flex:1;min-width:0" oninput="charImageZoomFromSlider(this.value)">
     </div>
   </div>
-  <div class="roll-panel" style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:center;border-left:1px solid var(--border);padding-left:8px">
+  <div class="roll-panel" style="flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;justify-content:flex-start;border-left:1px solid var(--border);padding-left:8px">
+    <div style="display:flex;flex-direction:column;gap:4px;justify-content:center;min-width:0">
     <div class="roll-row">
       <button type="button" class="roll-all-btn2" onclick="rollAllAbilities()">🎲全体</button>
       <span class="roll-ind">
@@ -1141,6 +1146,12 @@ if (('standalone' in navigator) && navigator.standalone) {
     <div class="roll-row">
       <button type="button" class="apply-roll-btn" onclick="applyRolls()">反映</button>
       <span id="roll_total" class="roll-result">合計 –</span>
+    </div>
+    </div>
+    <!-- 特徴表ダイス -->
+    <div class="tk-dice" style="display:flex;gap:6px;align-items:stretch;border-left:1px solid var(--border);padding-left:8px">
+      <div class="tk-col"><button type="button" class="tk-roll-btn" onclick="rollTokucho(1)">特徴表①</button><div id="t1_roll" class="tk-roll">–</div></div>
+      <div class="tk-col"><button type="button" class="tk-roll-btn" onclick="rollTokucho(2)">特徴表②</button><div id="t2_roll" class="tk-roll">–</div></div>
     </div>
   </div>
 </div>
@@ -2119,6 +2130,18 @@ function showTokucho(n){
   // 鋼の筋力: DBを1段階アップ
   applyHaganeDB();
   calcJobPts();
+}
+// 特徴表ダイス: 1d6(縦)・1d10(横) で特徴表（X-Y）を決定し、特徴表①②に反映
+function rollTokucho(n){
+  const x=1+Math.floor(Math.random()*6);   // 1d6
+  const y=1+Math.floor(Math.random()*10);  // 1d10
+  const idx=(x-1)*10+(y-1);                 // tokuchoListは(1-1)〜(6-10)の順
+  const sel=document.getElementById('t'+n+'_sel');
+  const t=tokuchoList[idx];
+  if(sel){ sel.value=String(idx); showTokucho(n); }
+  const disp=document.getElementById('t'+n+'_roll');
+  if(disp){ disp.textContent='🎲'+x+'-'+y+(t?'\n'+t.label:''); }
+  if(typeof saveDraft==='function') saveDraft();
 }
 function applyHaganeDB(){
   // 両特徴を確認して鋼の筋力があるか
@@ -3318,21 +3341,7 @@ function openCocofoliaCopyDialog(){
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
 }
 
-// Dropbox画像はCORS非対応でココフォリアのcanvasに描画できない。weserv(CORS対応プロキシ)経由で取得し
-// data URI(base64)化して駒に直接埋め込む（data URIは同一オリジン扱いでCORS不要＝確実に表示）。
-async function _imgToDataUri(url){
-  if(!url || /^data:/.test(url)) return url;
-  if(!/dropbox(usercontent)?\.com/i.test(url)) return url; // Dropbox以外(iaproject等)は直リンクで表示可
-  try{
-    const prox='https://images.weserv.nl/?url='+encodeURIComponent(url)+'&w=512';
-    const r=await fetch(prox);
-    if(!r.ok) return url;
-    const b=await r.blob();
-    if(!/^image\//.test(b.type)) return url;
-    return await new Promise(res=>{const fr=new FileReader();fr.onerror=()=>res(url);fr.onload=()=>res(fr.result);fr.readAsDataURL(b);});
-  }catch(e){return url;}
-}
-async function doCocofolicaCopy(){
+function doCocofolicaCopy(){
   const c = getCur();
   const pcname  = document.getElementById('pcname')?.value || 'キャラクター';
   const color   = document.getElementById('txtcolor')?.value || '#000000';
@@ -3359,8 +3368,6 @@ async function doCocofolicaCopy(){
   let iconUrl = rawImgUrl ? fixDropboxUrl(rawImgUrl) : '';
   // いあきゃら(iaproject.app)は画像直リンク形式 https://image.iaproject.app/<uuid> に変換
   if(iconUrl&&/iaproject\.app/i.test(iconUrl)){const _m=iconUrl.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);if(_m)iconUrl='https://image.iaproject.app/'+_m[0];}
-  // Dropbox画像はdata URI化して駒に直接埋め込む（ココフォリアで確実に表示するため）
-  iconUrl = await _imgToDataUri(iconUrl);
 
   const cocoJSON = {
     kind: 'character',
