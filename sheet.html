@@ -3318,7 +3318,21 @@ function openCocofoliaCopyDialog(){
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
 }
 
-function doCocofolicaCopy(){
+// Dropbox画像はCORS非対応でココフォリアのcanvasに描画できない。weserv(CORS対応プロキシ)経由で取得し
+// data URI(base64)化して駒に直接埋め込む（data URIは同一オリジン扱いでCORS不要＝確実に表示）。
+async function _imgToDataUri(url){
+  if(!url || /^data:/.test(url)) return url;
+  if(!/dropbox(usercontent)?\.com/i.test(url)) return url; // Dropbox以外(iaproject等)は直リンクで表示可
+  try{
+    const prox='https://images.weserv.nl/?url='+encodeURIComponent(url)+'&w=512';
+    const r=await fetch(prox);
+    if(!r.ok) return url;
+    const b=await r.blob();
+    if(!/^image\//.test(b.type)) return url;
+    return await new Promise(res=>{const fr=new FileReader();fr.onerror=()=>res(url);fr.onload=()=>res(fr.result);fr.readAsDataURL(b);});
+  }catch(e){return url;}
+}
+async function doCocofolicaCopy(){
   const c = getCur();
   const pcname  = document.getElementById('pcname')?.value || 'キャラクター';
   const color   = document.getElementById('txtcolor')?.value || '#000000';
@@ -3345,8 +3359,8 @@ function doCocofolicaCopy(){
   let iconUrl = rawImgUrl ? fixDropboxUrl(rawImgUrl) : '';
   // いあきゃら(iaproject.app)は画像直リンク形式 https://image.iaproject.app/<uuid> に変換
   if(iconUrl&&/iaproject\.app/i.test(iconUrl)){const _m=iconUrl.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);if(_m)iconUrl='https://image.iaproject.app/'+_m[0];}
-  // ココフォリアはcanvas描画にCORS対応URLが必要。DropboxはCORSヘッダーを返さないため、CORS対応プロキシ経由にする
-  if(iconUrl&&/dropbox(usercontent)?\.com/i.test(iconUrl)){iconUrl='https://images.weserv.nl/?url='+encodeURIComponent(iconUrl);}
+  // Dropbox画像はdata URI化して駒に直接埋め込む（ココフォリアで確実に表示するため）
+  iconUrl = await _imgToDataUri(iconUrl);
 
   const cocoJSON = {
     kind: 'character',

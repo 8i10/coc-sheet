@@ -1525,6 +1525,22 @@ function applyTheme(mode){
 
 /* ===== 一覧からのコマ出力 ===== */
 let _cocoSheet = null;
+let _cocoIconPromise = null;
+// Dropbox画像はココフォリアのcanvas描画でCORSが必要だが、Dropboxは非対応。
+// そこでweserv(CORS対応プロキシ)経由で取得し、画像をdata URI(base64)化して駒に直接埋め込む。
+// data URIは同一オリジン扱いでCORS不要のため、ココフォリアで確実に表示できる。
+async function _imgToDataUri(url){
+  if(!url || /^data:/.test(url)) return url;
+  if(!/dropbox(usercontent)?\.com/i.test(url)) return url; // Dropbox以外(iaproject等)は直リンクで表示可
+  try{
+    const prox='https://images.weserv.nl/?url='+encodeURIComponent(url)+'&w=512';
+    const r=await fetch(prox);
+    if(!r.ok) return url;
+    const b=await r.blob();
+    if(!/^image\//.test(b.type)) return url;
+    return await new Promise(res=>{const fr=new FileReader();fr.onerror=()=>res(url);fr.onload=()=>res(fr.result);fr.readAsDataURL(b);});
+  }catch(e){return url;}
+}
 
 const _SKILLS_DEF = {
   combat:[
@@ -1714,7 +1730,7 @@ function _buildCocoJSON(sheet) {
   const max_san = san_now; // コマ出力は現在SAN＝最大SAN
   const hp = Math.ceil((stats.con + stats.siz) / 2);
   const mp = stats.pow;
-  const iconUrl = inp.charImage ? wrapCorsProxyIndex(toIaprojectImageUrl(fixDropboxUrlIndex(inp.charImage))) : '';
+  const iconUrl = inp.charImage ? toIaprojectImageUrl(fixDropboxUrlIndex(inp.charImage)) : '';
 
   return {
     kind: 'character',
@@ -1748,6 +1764,10 @@ async function openCocoFromIndex(id) {
   const { data, error } = await db.from('character_sheets').select('data').eq('id', id).single();
   if (error || !data) { alert('データが見つかりません'); return; }
   _cocoSheet = JSON.parse(data.data);
+  // Dropboxアイコンを先読みでdata URI化（コピー時に確実に埋め込むため）
+  _cocoIconPromise = null;
+  const _rawIcon = _cocoSheet.inputs?.charImage ? toIaprojectImageUrl(fixDropboxUrlIndex(_cocoSheet.inputs.charImage)) : '';
+  if(_rawIcon) _cocoIconPromise = _imgToDataUri(_rawIcon);
 
   const palette = _buildChatPalette(_cocoSheet);
   const old = document.getElementById('cocofolia_modal');
@@ -1777,12 +1797,13 @@ async function openCocoFromIndex(id) {
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 }
 
-function _doCocoCopy() {
+async function _doCocoCopy() {
   if (!_cocoSheet) return;
   const palette = document.getElementById('coco_palette_preview')?.value || _buildChatPalette(_cocoSheet);
   const json = _buildCocoJSON(_cocoSheet);
   json.data.commands = palette;
   json.data.secret = document.getElementById('coco_secret_check')?.checked || false;
+  try{ if(_cocoIconPromise){ const d=await _cocoIconPromise; if(d) json.data.iconUrl=d; } }catch(e){}
   navigator.clipboard.writeText(JSON.stringify(json, null, 2)).then(() => {
     const msg=document.getElementById('coco_copy_msg');
     if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);}
