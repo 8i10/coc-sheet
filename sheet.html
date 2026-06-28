@@ -1364,7 +1364,7 @@ if (('standalone' in navigator) && navigator.standalone) {
         </select>
       </div>
       <div id="t1_desc" style="font-size:11px;color:var(--text);min-height:28px;background:var(--surface2);padding:3px 4px;line-height:1.6"></div>
-      <textarea id="t1_memo" placeholder="メモ..." rows="1" class="auto-h tk-memo" oninput="autoResizeTA(this)" style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:var(--surface);color:var(--text);resize:none;overflow:hidden;height:22px;line-height:1.5;font-family:inherit;box-sizing:border-box;display:block"></textarea>
+      <textarea id="t1_memo" placeholder="メモ..." rows="1" class="auto-h tk-memo" oninput="autoResizeTA(this)" style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:var(--surface);color:var(--text);resize:none;overflow:hidden;height:22px;min-height:22px;line-height:1.5;font-family:inherit;box-sizing:border-box;display:block"></textarea>
     </div>
 
     <!-- 特徴表② -->
@@ -1378,7 +1378,7 @@ if (('standalone' in navigator) && navigator.standalone) {
         </select>
       </div>
       <div id="t2_desc" style="font-size:11px;color:var(--text);min-height:28px;background:var(--surface2);padding:3px 4px;line-height:1.6"></div>
-      <textarea id="t2_memo" placeholder="メモ..." rows="1" class="auto-h tk-memo" oninput="autoResizeTA(this)" style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:var(--surface);color:var(--text);resize:none;overflow:hidden;height:22px;line-height:1.5;font-family:inherit;box-sizing:border-box;display:block"></textarea>
+      <textarea id="t2_memo" placeholder="メモ..." rows="1" class="auto-h tk-memo" oninput="autoResizeTA(this)" style="border:none;border-top:1px solid var(--border);font-size:11px;text-align:left;padding:2px 4px;width:100%;background:var(--surface);color:var(--text);resize:none;overflow:hidden;height:22px;min-height:22px;line-height:1.5;font-family:inherit;box-sizing:border-box;display:block"></textarea>
     </div>
   </div>
 </div>
@@ -2512,23 +2512,31 @@ function _iconCropSetScale(s) {
   _iconCrop.scale=s; _iconCrop.imgW=_iconCrop.baseW*s; _iconCrop.imgH=_iconCrop.baseH*s;
   _iconCropClamp(); _iconCropApply();
   const sl=document.getElementById('char_image_zoom'); if(sl)sl.value=Math.round(s*100);
+  const slSp=document.getElementById('char_image_zoom_sp'); if(slSp)slSp.value=Math.round(s*100);
   _iconCropSavePos();
 }
 function charImageZoomFromSlider(val) { _iconCropSetScale(parseFloat(val)/100); }
 function _iconCropSavePos() {
-  const ox=_iconCrop.imgW>_iconCrop.wrapW?((-_iconCrop.imgX)/(_iconCrop.imgW-_iconCrop.wrapW))*100:50;
-  const oy=_iconCrop.imgH>_iconCrop.wrapH?((-_iconCrop.imgY)/(_iconCrop.imgH-_iconCrop.wrapH))*100:50;
-  const inp = document.getElementById('char_image_url');
-  if(inp){ inp.dataset.ox=Math.round(ox); inp.dataset.oy=Math.round(oy); }
+  // 画像が初期化済み（baseW>0）のときだけ位置を再計算して保存。
+  // 未初期化（読込前/失敗）のときは保存済みの dataset.ox/oy を温存する。
+  if (_iconCrop.baseW > 0 && _iconCrop.imgW > 0) {
+    const ox=_iconCrop.imgW>_iconCrop.wrapW?((-_iconCrop.imgX)/(_iconCrop.imgW-_iconCrop.wrapW))*100:50;
+    const oy=_iconCrop.imgH>_iconCrop.wrapH?((-_iconCrop.imgY)/(_iconCrop.imgH-_iconCrop.wrapH))*100:50;
+    const inp = document.getElementById('char_image_url');
+    if(inp){ inp.dataset.ox=Math.round(ox); inp.dataset.oy=Math.round(oy); }
+  }
   saveDraft();
 }
 // collectData内でアイコン情報を収集するためのヘルパー
 function getCharIconData() {
-  const url = document.getElementById('char_image_url')?.value||'';
   const inp = document.getElementById('char_image_url');
+  const url = inp?.value||'';
   const ox = inp?.dataset.ox||'50';
   const oy = inp?.dataset.oy||'30';
-  const scale = _iconCrop.scale||1.3;
+  // スケールは常に同期されるスライダー値を正とする（画像読込前・読込失敗時でも保存値を保持）
+  const sl = document.getElementById('char_image_zoom');
+  const slv = sl ? parseFloat(sl.value) : NaN;
+  const scale = !isNaN(slv) ? (slv/100) : (_iconCrop.scale||1.3);
   return { charImage: url, charImagePos: ox+'% '+oy+'%', charImageScale: scale };
 }
 // applyDataでアイコン情報を復元するヘルパー
@@ -2543,7 +2551,11 @@ function applyCharIconData(inputs) {
     inp.dataset.oy = parseFloat(pos[1]||pos[0])||30;
   }
   const sl = document.getElementById('char_image_zoom');
-  if (sl) sl.value = Math.round((inputs.charImageScale||1.3)*100);
+  const slSp = document.getElementById('char_image_zoom_sp');
+  const scaleVal = Math.round((parseFloat(inputs.charImageScale)||1.3)*100);
+  if (sl) sl.value = scaleVal;
+  if (slSp) slSp.value = scaleVal;
+  _iconCrop.scale = (parseFloat(inputs.charImageScale)||1.3); // 画像読込前でもスケールを保持
   if (url) previewCharImage(url);
 }
 // ===== /アイコン画像クロップ =====
@@ -3920,6 +3932,8 @@ function parseSpreadsheetHTML(html){
     }
   }
 
+  // 既知の知識技能名セット（列ズレに強い検出用）
+  const knowNameSet=new Set((SKILLS.know||[]).map(s=>s.n));
   rows.forEach((row,ri)=>{
     if(!row[0]?.text||row[0].text==='A')return;
     // 左列: 戦闘（row13〜29）・探索（row30〜44）技能
@@ -3948,8 +3962,20 @@ function parseSpreadsheetHTML(html){
         break;
       }
     }
-    // 右列: 知識（全行）。見出し行(＜探索技能＞等のcolspan)で列がずれて index7 に来る知識技能(法律など)も拾う
-    for(const ki of [7,21,22,23]){
+    // 右列: 知識（全行）。
+    // (a) 既知の知識技能は列ズレ（見出し行のcolspan等で index が 7/21/22/23 以外になる）に強く、
+    //     行全体を名前一致でスキャンして検出する（物理学・法律など）。
+    let knowDone=false;
+    for(let idx=4; idx<row.length; idx++){
+      const kc=row[idx];
+      if(kc && kc.text && knowNameSet.has(kc.text)){
+        extractSkill(row, idx, 'know');
+        knowDone=true;
+        break;
+      }
+    }
+    // (b) 既知でないカスタム知識技能（深潭観察など）は従来の位置ベース判定で拾う
+    if(!knowDone) for(const ki of [7,21,22,23]){
       const kc=row[ki];
       if(!kc||!kc.text||kc.text==='')continue;
       const isKnown=skillNameToKey[kc.text]!==undefined||freeInputSkills.has(kc.text);
