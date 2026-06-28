@@ -1068,6 +1068,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   <div id="menu_coco" onclick="openCocofoliaCopyDialog();closeMenu()" style="display:none;padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#333;display:none;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"">🐔 駒出力</div>
   <div onclick="applyTheme(document.body.classList.contains('light')?'dark':'light');closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#333'" onmouseout="this.style.background=''">🌙 テーマ切替</div>
   <div onclick="exportJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>⬇</span> JSON出力</div>
+  <div onclick="exportSheetPDF();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>📄</span> PDF出力(閲覧画面)</div>
   <div onclick="importJSON();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>⬆</span> JSON読込</div>
   <div onclick="importSpreadsheetHTML();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>📥</span> スプシ取込</div>
   <div onclick="regenShareUrl();closeMenu()" style="padding:9px 16px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:#eee;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=''"><span>🔄</span> 閲覧URL再生成</div>
@@ -3036,6 +3037,31 @@ async function duplicateCS() {
   }
 }
 
+// このキャラクターの「閲覧モード画面」を個別PDFでダウンロード
+async function exportSheetPDF(){
+  try{ await saveToStorage(); }catch(e){}        // 最新内容を保存してから閲覧画面を生成
+  if(!currentCharId){ alert('保存できていないためPDFを生成できません。先に保存してください。'); return; }
+  const rev=_loadedShareRev;
+  const base='view.html?id='+currentCharId+(rev?('&r='+encodeURIComponent(rev)):'');
+  const iframe=document.createElement('iframe');
+  iframe.style.cssText='position:fixed;width:900px;height:1400px;left:-4000px;top:0;border:0;visibility:hidden';
+  document.body.appendChild(iframe);
+  try{ if(typeof showSaveMsg==='function') showSaveMsg('📄 PDF生成中…'); }catch(_){}
+  const waitReady=()=>new Promise(res=>{ const t0=Date.now(); const chk=()=>{ try{const w=iframe.contentWindow; if(w&&w.__viewReady&&w.__makePDFBlob)return res(true);}catch(_){ } if(Date.now()-t0>30000)return res(false); setTimeout(chk,100); }; chk(); });
+  try{
+    await new Promise(res=>{ iframe.onload=()=>res(); iframe.src=base+'&_='+Date.now(); });
+    const ready=await waitReady();
+    if(!ready){ alert('閲覧画面の生成に失敗しました'); return; }
+    await new Promise(r=>setTimeout(r,450));       // 画像読込・レイアウト安定待ち
+    const {blob,name}=await iframe.contentWindow.__makePDFBlob();
+    const nm=((name||document.getElementById('pcname').value||'character')+'').trim().replace(/[\\/:*?"<>|\n\r\t]/g,'_')||'character';
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nm+'.pdf';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),8000);
+    try{ if(typeof showSaveMsg==='function') showSaveMsg('✓ PDFを出力しました'); }catch(_){}
+  }catch(e){ alert('PDF生成エラー: '+(e&&e.message||e)); }
+  finally{ iframe.remove(); }
+}
 async function saveToStorage() {
   if(new URLSearchParams(location.search).get('bulkimport'))return; // 一括取込用の非表示シートでは保存しない
   let data;

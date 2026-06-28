@@ -593,6 +593,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 <div id="index_menu" style="display:none">
   <div class="menu-item" onclick="openTagManage();closeMenu()"><span>🏷</span> タグの編集・並べ替え</div>
   <div class="menu-item" onclick="exportJSON();closeMenu()"><span>⬇</span> JSONバックアップ(PC毎ZIP)</div>
+  <div class="menu-item" onclick="exportAllPDF();closeMenu()"><span>📄</span> PDF一括ダウンロード(ZIP)</div>
   <div class="menu-item" onclick="exportCSV();closeMenu()"><span>⬇</span> CSVエクスポート</div>
   <div class="menu-item" onclick="bulkImportSpreadsheets();closeMenu()"><span>📥</span> スプシ一括取込</div>
   <div class="menu-item" onclick="doLogout();closeMenu()"><span>↩</span> ログアウト</div>
@@ -945,6 +946,41 @@ async function exportJSON(){
     const blob=await zip.generateAsync({type:'blob'});
     _downloadBlob(blob, 'coc_characters_'+_dateStamp()+'.zip');
     showToast(allChars.length+'件をZIP出力しました');
+  }catch(e){ showToast('ZIP生成に失敗しました'); console.warn(e); }
+}
+// 全PCを閲覧モード画面のPDFにして一括ZIPダウンロード
+async function exportAllPDF(){
+  if(!allChars.length){showToast('データがありません');return;}
+  if(typeof JSZip==='undefined'){showToast('ZIPライブラリを読み込めませんでした');return;}
+  const zip=new JSZip();
+  const used={};
+  const iframe=document.createElement('iframe');
+  iframe.style.cssText='position:fixed;width:900px;height:1400px;left:-4000px;top:0;border:0;visibility:hidden';
+  document.body.appendChild(iframe);
+  const loadView=(url)=>new Promise(res=>{ iframe.onload=()=>res(); iframe.src=url+'&_='+Date.now()+Math.random(); });
+  const waitReady=()=>new Promise(res=>{ const t0=Date.now(); const chk=()=>{ try{const w=iframe.contentWindow; if(w&&w.__viewReady&&w.__makePDFBlob)return res(true);}catch(_){ } if(Date.now()-t0>30000)return res(false); setTimeout(chk,100); }; chk(); });
+  let okc=0,errc=0;
+  showToast('PDF生成中... (0/'+allChars.length+')');
+  for(let i=0;i<allChars.length;i++){
+    const c=allChars[i];
+    try{
+      await loadView(viewUrlFor(c.id));
+      const ready=await waitReady();
+      if(!ready){ errc++; showToast('PDF生成中... ('+(i+1)+'/'+allChars.length+')'); continue; }
+      await new Promise(r=>setTimeout(r,450));        // 画像読込・レイアウト安定待ち
+      const {blob,name}=await iframe.contentWindow.__makePDFBlob();
+      let nm=((name||c.char_name||'character')+'').trim().replace(/[\\/:*?"<>|\n\r\t]/g,'_')||'character';
+      let fn=nm,k=2; while(used[fn]){fn=nm+'_'+k;k++;} used[fn]=1;
+      zip.file(fn+'.pdf', blob);
+      okc++;
+    }catch(e){ errc++; console.warn('pdf err',c.id,e); }
+    showToast('PDF生成中... ('+(i+1)+'/'+allChars.length+')');
+  }
+  iframe.remove();
+  try{
+    const blob=await zip.generateAsync({type:'blob'});
+    _downloadBlob(blob,'coc_pdf_'+_dateStamp()+'.zip');
+    showToast('PDF一括出力：成功'+okc+'件'+(errc?('／失敗'+errc+'件'):''));
   }catch(e){ showToast('ZIP生成に失敗しました'); console.warn(e); }
 }
 function exportCSV(){
