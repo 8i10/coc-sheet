@@ -1009,18 +1009,28 @@ body.light td.hdr{
 .acc-divider{border:none;border-top:1px solid var(--border);margin:3px 2px}
 .acc-divider1{border:none;border-top:1px solid var(--border);margin:5px 2px}
 .roll-row{display:flex;align-items:flex-start;gap:5px;flex-wrap:wrap}
-.roll-all-btn2{width:54px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0;cursor:pointer;border:1px solid var(--accent);border-radius:4px;background:var(--accent);color:#fff;white-space:nowrap;font-weight:bold;flex:0 0 auto}
+.roll-all-btn2{width:54px;height:21px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0;cursor:pointer;border:1px solid var(--accent);border-radius:4px;background:var(--accent);color:#fff;white-space:nowrap;font-weight:bold;flex:0 0 auto}
 .roll-ind{display:flex;gap:3px;flex-wrap:wrap}
 .roll-col{display:flex;flex-direction:column;align-items:center;gap:1px}
-.mini-roll2{height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;padding:0 5px;cursor:pointer;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--text)}
+.mini-roll2{height:21px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;padding:0 5px;cursor:pointer;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--text)}
 .mini-roll2:hover{border-color:var(--accent);color:var(--accent)}
 .roll-val{font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:500;color:var(--text);min-width:22px;text-align:center;line-height:1.1}
-.apply-roll-btn{width:54px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0;cursor:pointer;border:1px solid var(--accent2);border-radius:4px;background:var(--surface);color:var(--accent2);white-space:nowrap;font-weight:bold;flex:0 0 auto}
+.apply-roll-btn{width:54px;height:21px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0;cursor:pointer;border:1px solid var(--accent2);border-radius:4px;background:var(--surface);color:var(--accent2);white-space:nowrap;font-weight:bold;flex:0 0 auto}
 .roll-result{font-family:'Zen Kaku Gothic New',sans-serif;font-size:9px;color:var(--text-muted);white-space:nowrap;overflow-x:auto;min-width:0;align-self:center}
 .ver-toggle{display:inline-flex;border:1px solid rgba(255,255,255,.55);border-radius:4px;overflow:hidden}
-.tk-roll-btn{box-sizing:border-box;height:22px;min-height:22px;line-height:1;flex:0 0 auto;align-self:center;display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:0 8px;cursor:pointer;border:1px solid var(--accent);border-radius:4px;background:var(--surface);color:var(--accent);white-space:nowrap;font-weight:bold}
-.tk-roll-btn:hover{background:var(--accent);color:#fff}
-.tk-roll-btn.rolled{background:var(--accent);color:#fff}
+.tk-roll-btn{width:54px;flex:0 0 auto;border-color:var(--accent);color:var(--accent);font-weight:bold}
+.tk-roll-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tk-apply{border-color:var(--accent2);color:var(--accent2)}
+.tk-apply:hover{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.tk-roll-val{font-size:10px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;line-height:1.2}
+.tk-droll-btn{background:var(--surface);color:var(--accent);cursor:pointer}
+.tk-droll-btn:hover:not(:disabled){background:var(--accent);color:#fff}
+.tk-droll-btn:disabled{color:var(--border);cursor:not-allowed;opacity:.55}
+.dc-block{flex:0 0 auto;width:100px;border:1px solid var(--border);border-radius:5px;padding:6px;background:var(--surface2)}
+.dc-name{text-align:center;font-weight:bold;font-size:12px;margin-bottom:4px;color:var(--accent)}
+.dc-row{display:flex;align-items:center;gap:4px;margin-top:3px}
+.dc-row>span{font-size:10px;width:34px;flex:0 0 auto;color:var(--text)}
+.dc-in{flex:1;min-width:0;border:1px solid var(--border);border-radius:3px;padding:2px 4px;font-size:11px;background:#fff;color:#000;text-align:center}
 .ver-btn{font-size:10px;padding:1px 8px;cursor:pointer;border:none;background:transparent;color:var(--hdr-text);font-family:inherit;line-height:1.6}
 .ver-btn.on{background:#fff;color:#333;font-weight:bold}
 @media(max-width:700px){
@@ -1128,9 +1138,12 @@ if (('standalone' in navigator) && navigator.standalone) {
     </div>
   </div>
   <div class="roll-panel" style="flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;justify-content:flex-start;border-left:1px solid var(--border);padding-left:8px">
-    <div style="display:flex;flex-direction:column;gap:4px;justify-content:center;min-width:0">
+    <div style="display:flex;flex-direction:column;gap:4px;justify-content:space-between;min-width:0">
     <div class="roll-row">
-      <button type="button" class="roll-all-btn2" onclick="rollAllAbilities()">🎲全体</button>
+      <span style="display:flex;flex-direction:column;gap:3px;flex:0 0 auto">
+        <button type="button" class="roll-all-btn2" onclick="rollAllAbilities()">🎲全体</button>
+        <button type="button" class="roll-all-btn2" onclick="openDiceCfg()">🎲変更</button>
+      </span>
       <span class="roll-ind">
         <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('str')">STR</button><span class="roll-val" id="rv_str">–</span></span>
         <span class="roll-col"><button type="button" class="mini-roll2" onclick="rollOne('con')">CON</button><span class="roll-val" id="rv_con">–</span></span>
@@ -1148,15 +1161,33 @@ if (('standalone' in navigator) && navigator.standalone) {
     </div>
     </div>
     <!-- 特徴表ダイス -->
-    <div class="tk-dice" style="display:flex;flex-direction:column;gap:4px;justify-content:center;align-self:center;border-left:1px solid var(--border);padding-left:8px">
-      <div style="display:flex;gap:4px;align-items:center">
-        <button type="button" class="tk-roll-btn" onclick="rollTokucho(1,this)">特徴表①</button>
-        <button type="button" class="tk-roll-btn" onclick="rollTokucho(2,this)">特徴表②</button>
+    <div class="tk-dice" style="display:flex;flex-direction:column;gap:3px;justify-content:space-between;border-left:1px solid var(--border);padding-left:8px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <button type="button" class="mini-roll2 tk-roll-btn" onclick="rollTokucho(1,this)">特徴表①</button>
+        <span id="t1_roll" class="tk-roll-val">–</span>
       </div>
-      <div style="display:flex;gap:5px;align-items:center">
-        <button type="button" class="apply-roll-btn" onclick="applyTokuchoRolls()">反映</button>
-        <span id="tk_roll_ind" class="roll-result" style="font-size:9px;max-width:120px;overflow-x:auto"></span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button type="button" class="mini-roll2 tk-roll-btn" onclick="rollTokucho(2,this)">特徴表②</button>
+        <span id="t2_roll" class="tk-roll-val">–</span>
       </div>
+      <div style="display:flex;align-items:center">
+        <button type="button" class="mini-roll2 tk-roll-btn tk-apply" onclick="applyTokuchoRolls()">反映</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 能力値ダイス変更ポップアップ -->
+<div id="dice_cfg_overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center" onclick="if(event.target===this)closeDiceCfg()">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;max-width:900px;width:95%;max-height:85vh;overflow:auto;color:var(--text)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <strong style="font-size:14px">🎲 能力値ダイスの変更</strong>
+      <button type="button" onclick="closeDiceCfg()" style="border:none;background:none;font-size:18px;cursor:pointer;color:var(--text);line-height:1">×</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted,#888);margin-bottom:10px">各能力の「ダイス」と「固定値」を設定できます。<br>ロール結果＝ダイスの出目＋固定値（例：SIZ＝2d6＋6）。</div>
+    <div style="overflow-x:auto"><div id="dc_grid" style="display:flex;gap:6px;min-width:max-content"></div></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button type="button" onclick="resetDiceCfg()" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);cursor:pointer;font-size:12px">初期値に戻す</button>
+      <button type="button" onclick="saveDiceCfg()" style="padding:5px 14px;border:1px solid var(--accent2);border-radius:5px;background:var(--accent2);color:#fff;cursor:pointer;font-size:12px;font-weight:bold">OK</button>
     </div>
   </div>
 </div>
@@ -1326,6 +1357,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <div style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--surface)">
       <div style="display:flex;gap:0;border-bottom:1px solid var(--border)">
         <select id="t1_sel" onchange="showTokucho(1)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0"><option value="">-- 特徴表①を選択 --</option><option value="ng">採用不可</option></select>
+        <button type="button" id="t1_droll" class="tk-droll-btn" onclick="rollDBonus(1)" disabled title="Dボーナスを1d6で振る（(D)特徴のときのみ）" style="flex:0 0 auto;border:none;border-right:1px solid var(--border);font-size:9px;padding:0 5px;white-space:nowrap;font-weight:bold">Dボーナス</button>
         <select id="t1_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0">
           <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
           <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
@@ -1339,6 +1371,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <div style="border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--surface)">
       <div style="display:flex;gap:0;border-bottom:1px solid var(--border)">
         <select id="t2_sel" onchange="showTokucho(2)" style="flex:7;border:none;border-right:1px solid var(--border);font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0"><option value="">-- 特徴表②を選択 --</option><option value="ng">採用不可</option></select>
+        <button type="button" id="t2_droll" class="tk-droll-btn" onclick="rollDBonus(2)" disabled title="Dボーナスを1d6で振る（(D)特徴のときのみ）" style="flex:0 0 auto;border:none;border-right:1px solid var(--border);font-size:9px;padding:0 5px;white-space:nowrap;font-weight:bold">Dボーナス</button>
         <select id="t2_bonus" onchange="calcJobPts()" style="flex:3;border:none;font-size:11px;padding:2px 3px;background:var(--surface);color:var(--text);min-width:0">
           <option value="0">Dなし</option><option value="10">+10P</option><option value="20">+20P</option>
           <option value="30">+30P</option><option value="40">+40P</option><option value="50">+50P</option><option value="60">+60P</option>
@@ -2135,28 +2168,36 @@ function showTokucho(n){
     if(isD){ bonusSel.disabled=false; }
     else { bonusSel.value='0'; bonusSel.disabled=true; }
   }
+  // Dボーナス(1d6)ボタンは(D)特徴のときだけ押せる（それ以外はグレーアウト）
+  const drollBtn=document.getElementById('t'+n+'_droll');
+  if(drollBtn) drollBtn.disabled = !isD;
   // 鋼の筋力: DBを1段階アップ
   applyHaganeDB();
   calcJobPts();
 }
-// 特徴表ダイス: 1d6(縦)・1d10(横) で（X-Y）を決定。能力値ダイス同様に「反映」で確定する
-let _tkRoll={};
-function _updateTkInd(){
-  const el=document.getElementById('tk_roll_ind'); if(!el)return;
-  const parts=[];
-  [1,2].forEach(n=>{
-    if(_tkRoll[n]==null)return;
-    const t=tokuchoList[_tkRoll[n]];
-    parts.push((n===1?'①':'②')+(t?t.label.replace(/^（[^）]*）/,''):''));
-  });
-  el.textContent=parts.join(' / ');
+// (D)特徴のDボーナスを1d6で決定（出目×10 = +10〜+60P）
+function rollDBonus(n){
+  const sel=document.getElementById('t'+n+'_sel');
+  const idx=sel?sel.value:'';
+  const t=(idx!==''&&idx!=='ng')?tokuchoList[parseInt(idx)]:null;
+  const isD=!!(t&&/[(（]\s*D\s*[)）]/.test(t.label));
+  if(!isD)return; // (D)特徴のときのみ
+  const d=1+Math.floor(Math.random()*6); // 1d6
+  const val=d*10;                         // +10〜+60P
+  const bonusSel=document.getElementById('t'+n+'_bonus');
+  if(bonusSel){ bonusSel.disabled=false; bonusSel.value=String(val); }
+  calcJobPts();
+  if(typeof saveDraft==='function') saveDraft();
 }
+// 特徴表ダイス: 1d6(縦)・1d10(横) で（X-Y）を決定。振ると内容を表示し、「反映」で特徴表①②に確定
+let _tkRoll={};
 function rollTokucho(n,btn){
   const x=1+Math.floor(Math.random()*6);   // 1d6
   const y=1+Math.floor(Math.random()*10);  // 1d10
   _tkRoll[n]=(x-1)*10+(y-1);                // tokuchoListは(1-1)〜(6-10)の順
-  if(btn)btn.classList.add('rolled');
-  _updateTkInd();
+  const t=tokuchoList[_tkRoll[n]];
+  const el=document.getElementById('t'+n+'_roll');
+  if(el)el.textContent=t?t.label.replace(/^（[^）]*）/,''):'';
 }
 function applyTokuchoRolls(){
   let any=false;
@@ -2165,9 +2206,6 @@ function applyTokuchoRolls(){
     const sel=document.getElementById('t'+n+'_sel');
     if(sel){ sel.value=String(_tkRoll[n]); showTokucho(n); any=true; }
   });
-  _tkRoll={};
-  document.querySelectorAll('.tk-roll-btn.rolled').forEach(b=>b.classList.remove('rolled'));
-  const el=document.getElementById('tk_roll_ind'); if(el)el.textContent='';
   if(any&&typeof saveDraft==='function') saveDraft();
 }
 function applyHaganeDB(){
@@ -2628,7 +2666,7 @@ function collectData(){
     const el=document.getElementById(id);
     if(el)accState[id]=el.classList.contains('open');
   });
-  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,rels,hideDefault,accState,counters:_loadedCounters||undefined,tags:_loadedTags||undefined,share_rev:_loadedShareRev||undefined,ts:Date.now()});
+  return JSON.stringify({inputs,skills,weapons,items,memos,scenarios,ae,secrets,rels,hideDefault,accState,counters:_loadedCounters||undefined,tags:_loadedTags||undefined,share_rev:_loadedShareRev||undefined,diceConfig:_diceConfig,ts:Date.now()});
 }
 
 /* ===== 能力値ロール（CoC6版） ===== */
@@ -2636,13 +2674,50 @@ const ROLL_KEYS=['str','con','pow','dex','app','siz','int_v','edu'];
 const ROLL_NAME={str:'STR',con:'CON',pow:'POW',dex:'DEX',app:'APP',siz:'SIZ',int_v:'INT',edu:'EDU'};
 let _rolled={}; // 振った結果（反映前の一時保持）
 function _d6(){return Math.floor(Math.random()*6)+1;}
-function rollAbilityValue(key){
-  switch(key){
-    case 'siz': case 'int_v': return _d6()+_d6()+6;   // 2D6+6
-    case 'edu': return _d6()+_d6()+_d6()+3;            // 3D6+3
-    default:    return _d6()+_d6()+_d6();              // 3D6（STR/CON/POW/DEX/APP）
-  }
+// 能力値ダイス設定（ダイス式＋固定値）。ロール結果＝ダイスの出目＋固定値
+function _defaultDiceConfig(){
+  return {str:{dice:'3d6',fixed:0},con:{dice:'3d6',fixed:0},pow:{dice:'3d6',fixed:0},
+          dex:{dice:'3d6',fixed:0},app:{dice:'3d6',fixed:0},siz:{dice:'2d6',fixed:6},
+          int_v:{dice:'2d6',fixed:6},edu:{dice:'3d6',fixed:3}};
 }
+let _diceConfig=_defaultDiceConfig();
+function _rollDiceFormula(formula){
+  const m=String(formula||'').trim().toLowerCase().match(/^(\d+)\s*d\s*(\d+)\s*(?:\+\s*(\d+))?$/);
+  if(!m)return 0;
+  const n=parseInt(m[1]),faces=parseInt(m[2]),add=m[3]?parseInt(m[3]):0;
+  let sum=add;
+  for(let i=0;i<n;i++)sum+=Math.floor(Math.random()*faces)+1;
+  return sum;
+}
+function rollAbilityValue(key){
+  const cfg=_diceConfig[key]||{dice:'3d6',fixed:0};
+  return _rollDiceFormula(cfg.dice)+(parseInt(cfg.fixed)||0);
+}
+// --- 「🎲変更」ポップアップ ---
+function openDiceCfg(){
+  const grid=document.getElementById('dc_grid');
+  if(grid){
+    grid.innerHTML=ROLL_KEYS.map(k=>{
+      const cfg=_diceConfig[k]||{dice:'3d6',fixed:0};
+      return '<div class="dc-block"><div class="dc-name">'+ROLL_NAME[k]+'</div>'+
+        '<div class="dc-row"><span>ダイス</span><input type="text" class="dc-in" data-k="'+k+'" data-f="dice" value="'+cfg.dice+'" placeholder="3d6 など"></div>'+
+        '<div class="dc-row"><span>固定値</span><input type="text" inputmode="numeric" class="dc-in" data-k="'+k+'" data-f="fixed" value="'+cfg.fixed+'" placeholder="0"></div></div>';
+    }).join('');
+  }
+  document.getElementById('dice_cfg_overlay').style.display='flex';
+}
+function closeDiceCfg(){const o=document.getElementById('dice_cfg_overlay');if(o)o.style.display='none';}
+function saveDiceCfg(){
+  document.querySelectorAll('#dc_grid .dc-in').forEach(inp=>{
+    const k=inp.dataset.k,f=inp.dataset.f;
+    if(!_diceConfig[k])_diceConfig[k]={dice:'3d6',fixed:0};
+    if(f==='dice')_diceConfig[k].dice=(inp.value||'').trim()||'3d6';
+    else _diceConfig[k].fixed=parseInt(inp.value)||0;
+  });
+  closeDiceCfg();
+  if(typeof saveDraft==='function')saveDraft();
+}
+function resetDiceCfg(){_diceConfig=_defaultDiceConfig();openDiceCfg();}
 function renderRollResult(){
   ROLL_KEYS.forEach(k=>{
     const el=document.getElementById('rv_'+k);
@@ -2681,6 +2756,7 @@ function applyData(json){
   if(data.counters)_loadedCounters=data.counters; // クリティカル/ファンブル数を保持
   if(data.tags)_loadedTags=data.tags;             // タグを保持
   if(data.share_rev)_loadedShareRev=data.share_rev; // 閲覧URLトークンを保持
+  _diceConfig=(data.diceConfig&&typeof data.diceConfig==='object')?data.diceConfig:_defaultDiceConfig(); // 能力値ダイス設定
 
   // input・textarea・select（id付き）を復元
   if(data.inputs)Object.entries(data.inputs).forEach(([id,val])=>{
