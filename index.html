@@ -86,6 +86,11 @@ body.light .card-tokucho .meta-value{color:#555 !important}
 #ctrlbar select{font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text)}
 #sort_dir{font-size:12px;padding:3px 9px;cursor:pointer;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text)}
 #tag_filter{display:flex;flex-wrap:wrap;gap:5px;margin:3px 0 4px}
+/* ライトモード：件数・並び替え等のラベルを濃い灰色に */
+body.light #search_hint{color:#555}
+body.light #ctrlbar label{color:#555}
+/* タグ絞込みアコーディオン（スマホのみ表示） */
+#tagfilter_toggle{display:none;font-size:12px;padding:4px 10px;margin:4px 0;cursor:pointer;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);align-items:center;gap:6px}
 .tagchip{font-size:11px;padding:2px 9px;border-radius:11px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);cursor:pointer;user-select:none}
 .tagchip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;align-items:center}
@@ -170,6 +175,10 @@ body.light .card-tokucho .meta-value{color:#555 !important}
   #search_box{max-width:100%}
   .auth-row{flex-direction:column;align-items:stretch}
   .a-inp{width:100% !important;box-sizing:border-box}
+  /* タグ絞込みをアコーディオン化（スマホ） */
+  #tagfilter_toggle{display:inline-flex}
+  #tag_filter{display:none}
+  #tag_filter.open{display:flex}
 }
 
 /* ===== カラーテーマ ===== */
@@ -666,6 +675,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <button class="bulk-only" onclick="clearSelection()">選択解除</button>
     <button class="bulk-only bulk-danger" onclick="bulkDelete()">🗑 削除</button>
   </div>
+  <button id="tagfilter_toggle" onclick="toggleTagFilter()" aria-expanded="false">🏷 タグで絞り込み <span id="tagfilter_arrow">▼</span></button>
   <div id="tag_filter"></div>
 
   <!-- カードグリッド -->
@@ -781,13 +791,24 @@ function applyFilters(){
   renderCards(rows);
 }
 
+function toggleTagFilter(){
+  const tf=document.getElementById('tag_filter');
+  const ar=document.getElementById('tagfilter_arrow');
+  const tg=document.getElementById('tagfilter_toggle');
+  if(!tf)return;
+  const open=tf.classList.toggle('open');
+  if(ar)ar.textContent=open?'▲':'▼';
+  if(tg)tg.setAttribute('aria-expanded',open?'true':'false');
+}
 function buildTagFilter(){
   const all=new Set();
   allChars.forEach(c=>charTags(c).forEach(t=>all.add(t)));
   [...activeTags].forEach(t=>{if(!all.has(t))activeTags.delete(t);});
   const wrap=document.getElementById('tag_filter');
   if(!wrap)return;
-  if(all.size===0){wrap.innerHTML='';return;}
+  const _tgl=document.getElementById('tagfilter_toggle');
+  if(all.size===0){wrap.innerHTML=''; if(_tgl)_tgl.style.display='none'; return;}
+  if(_tgl)_tgl.style.display='';
   wrap.innerHTML=orderedTags().map(t=>
     `<span class="tagchip ${activeTags.has(t)?'on':''}" data-tag="${esc(t)}">${esc(t)}</span>`
   ).join('');
