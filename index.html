@@ -78,7 +78,7 @@ body.light .card-tokucho .meta-value{color:#555 !important}
 .s-lost{background:#fde8e8;color:#b03030}
 .s-retired{background:#e8eef5;color:#3a5a8a}
 .s-missing{background:#fff3d4;color:#8a6000}
-.s-dead{background:#e8e8e8;color:#555}
+.s-dead{background:#e6d9f7;color:#5e2b9e}
 .s-insane{background:#f0e4ff;color:#6a1a9a}
 /* 並び替え・フィルタ・タグ・状態 */
 #ctrlbar{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px}
@@ -259,13 +259,13 @@ body.light .pts-remain.ok{color:#2a7a4a !important}
 .s-lost{background:#3a1a1a;color:#c87e7e}
 .s-retired{background:#1a2a3a;color:#7e9ec8}
 .s-missing{background:#3a2a0a;color:#c8b07e}
-.s-dead{background:#2a2a2a;color:#888}
+.s-dead{background:#2e1f42;color:#b58ee0}
 .s-insane{background:#2a1a3a;color:#b07ec8}
 body.light .s-alive{background:#d4f5e4;color:#1a7a45}
 body.light .s-lost{background:#fde8e8;color:#b03030}
 body.light .s-retired{background:#e8eef5;color:#3a5a8a}
 body.light .s-missing{background:#fff3d4;color:#8a6000}
-body.light .s-dead{background:#e8e8e8;color:#555}
+body.light .s-dead{background:#e6d9f7;color:#5e2b9e}
 body.light .s-insane{background:#f0e4ff;color:#6a1a9a}
 /* コンテナ・パネル */
 .container{background:transparent !important}
@@ -671,7 +671,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <button id="select_toggle" onclick="toggleSelectMode()">☑ 一括選択</button>
     <span id="bulk_count" class="bulk-only">0件選択</span>
     <button class="bulk-only" onclick="bulkAddTags()">🏷 タグ付け</button>
-    <button class="bulk-only" onclick="bulkStatusPicker(this)">🏳 状態変更</button>
+    <button class="bulk-only" onclick="event.stopPropagation();bulkStatusPicker(this)">🏳 状態変更</button>
     <button class="bulk-only" onclick="clearSelection()">選択解除</button>
     <button class="bulk-only bulk-danger" onclick="bulkDelete()">🗑 削除</button>
   </div>
