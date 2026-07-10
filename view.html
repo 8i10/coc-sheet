@@ -2078,7 +2078,7 @@ async function initViewMode() {
     const div = document.createElement('div');
     div.className = 'secret-item';
     div.dataset.pass = s.pass || '';
-    div.innerHTML = `<div class="secret-item-header" onclick="unlockViewSecret(this,'toggle')" style="cursor:pointer"><span class="acc-arrow-btn">▶</span><span style="flex:1">${s.title||'ネタバレ'}</span></div><div class="secret-item-body" style="display:none"><div style="padding:3px 6px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px">${s.summary||''}</div><div style="padding:3px 6px;background:#f5f5f5;border-bottom:1px solid var(--border);display:flex;gap:4px;align-items:center"><span style="font-size:10px;color:#666">PASS:</span><input type="password" placeholder="パスワード" style="border:1px solid var(--border);width:100px;font-size:11px;padding:1px 4px" onkeydown="if(event.key==='Enter')unlockViewSecret(this.nextElementSibling,'unlock')"><button onclick="unlockViewSecret(this,'unlock')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid var(--border);background:#eee">解除</button></div><div class="secret-content" style="display:none;padding:4px">${(s.contents||[]).map((c,i)=>`<div style="margin-bottom:4px">${s.contentTitles&&s.contentTitles[i]?`<div style="font-size:11px;font-weight:bold;padding:2px 4px;border-bottom:1px solid var(--border)">${s.contentTitles[i]}</div>`:''}<div style="font-size:11px;white-space:pre-wrap;background:var(--surface2);border:1px solid var(--border);padding:3px">${c}</div></div>`).join('')}</div></div>`;
+    div.innerHTML = `<div class="secret-item-header" onclick="unlockViewSecret(this,'toggle')" style="cursor:pointer"><span class="acc-arrow-btn">▶</span><span style="flex:1">${s.title||'ネタバレ'}</span></div><div class="secret-item-body" style="display:none"><div style="padding:3px 6px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px">${s.summary||''}</div><div style="padding:3px 6px;background:#f5f5f5;border-bottom:1px solid var(--border);display:flex;gap:4px;align-items:center"><span style="font-size:10px;color:#666">PASS:</span><input type="password" placeholder="パスワード" style="border:1px solid var(--border);width:100px;font-size:11px;padding:1px 4px" onkeydown="if(event.key==='Enter')unlockViewSecret(this.nextElementSibling,'unlock')"><button onclick="unlockViewSecret(this,'unlock')" style="font-size:11px;padding:1px 8px;cursor:pointer;border:1px solid var(--border);background:#eee">解除</button></div><div class="secret-content" style="display:none;padding:4px">${(s.contents||[]).map((c,i)=>`<div style="margin-bottom:4px">${s.contentTitles&&s.contentTitles[i]?`<div style="font-size:11px;font-weight:bold;padding:2px 4px;border-bottom:1px solid var(--border)">${s.contentTitles[i]}</div>`:''}<div class="md-rendered" style="font-size:11px;background:var(--surface2);border:1px solid var(--border);padding:3px">${discordMD(c)}</div></div>`).join('')}</div></div>`;
     secretWrap.appendChild(div);
   });
 
@@ -2148,6 +2148,7 @@ async function initViewMode() {
 
   // ?coco=1 自動起動
   if (new URLSearchParams(window.location.search).get('coco') === '1') setTimeout(openCocofoliaCopyDialog, 500);
+  try{ _applyDiscordMD(); }catch(e){ console.warn('md',e); }   // メモ類にDiscord記法を適用
   window.__viewReady = true; // PDF生成側がレンダリング完了を検知するためのフラグ
   } catch(e) {
     alert('表示エラー: ' + e.message + '\n行: ' + e.stack?.split('\n')[1]);
@@ -2487,5 +2488,71 @@ async function downloadViewPDF(btn){
   finally{ if(btn){btn.disabled=false;btn.textContent=old;} }
 }
 </script>
+<script>
+/* ===== Discord風記法レンダラ（見出しなし）：メモ類の閲覧表示用 ===== */
+function _mdEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function discordMD(src){
+  if(src==null||src==='') return '';
+  let text=_mdEsc(src);
+  const stash=[]; const put=(html)=>{ stash.push(html); return '\u0000'+(stash.length-1)+'\u0000'; };
+  // コードブロック ```...```
+  text=text.replace(/```(?:[a-zA-Z0-9_+\-]*\n)?([\s\S]*?)```/g,(m,code)=>put('<pre class="md-pre"><code>'+code.replace(/\n$/,'')+'</code></pre>'));
+  // インラインコード `...`
+  text=text.replace(/`([^`\n]+?)`/g,(m,code)=>put('<code class="md-code">'+code+'</code>'));
+  // 行単位：引用 / リスト
+  const lines=text.split('\n'); let out=[], i=0;
+  while(i<lines.length){
+    if(/^&gt;\s?/.test(lines[i])){ const q=[]; while(i<lines.length&&/^&gt;\s?/.test(lines[i])){ q.push(lines[i].replace(/^&gt;\s?/,'')); i++; } out.push('<blockquote class="md-quote">'+q.join('\n')+'</blockquote>'); continue; }
+    if(/^\s*[-*•]\s+/.test(lines[i])){ const items=[]; while(i<lines.length&&/^\s*[-*•]\s+/.test(lines[i])){ items.push('<li>'+lines[i].replace(/^\s*[-*•]\s+/,'')+'</li>'); i++; } out.push('<ul class="md-ul">'+items.join('')+'</ul>'); continue; }
+    out.push(lines[i]); i++;
+  }
+  text=out.join('\n');
+  // インライン装飾（順序重要：**/__/~~/|| を * / _ より先に）
+  text=text.replace(/\|\|([\s\S]+?)\|\|/g,'<span class="md-spoiler" onclick="this.classList.add(\'shown\')">$1</span>');
+  text=text.replace(/\*\*([\s\S]+?)\*\*/g,'<strong>$1</strong>');
+  text=text.replace(/__([\s\S]+?)__/g,'<u>$1</u>');
+  text=text.replace(/~~([\s\S]+?)~~/g,'<s>$1</s>');
+  text=text.replace(/(^|[^*])\*(?!\s)([^*\n]+?)\*(?!\*)/g,'$1<em>$2</em>');
+  text=text.replace(/(^|[^_])_(?!_)([^_\n]+?)_(?!_)/g,'$1<em>$2</em>');
+  // マスクリンク [text](url) / 素のURL
+  text=text.replace(/\[([^\]]+?)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  text=text.replace(/(^|[^"'>=\]])(https?:\/\/[^\s<]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+  // 改行 → <br>（ブロック要素周りの余分は除去）
+  text=text.replace(/\n/g,'<br>');
+  text=text.replace(/(<\/(?:blockquote|ul|pre)>)<br>/g,'$1').replace(/<br>(<(?:blockquote|ul|pre))/g,'$1');
+  // プレースホルダ復元
+  text=text.replace(/\u0000(\d+)\u0000/g,(m,n)=>stash[+n]);
+  return text;
+}
+// textarea を「レンダリング済みdiv」に置換（閲覧モードの表示専用）
+function _mdReplaceTA(ta){
+  if(!ta||ta.tagName!=='TEXTAREA'||ta.dataset.mdDone) return;
+  const div=document.createElement('div');
+  div.className=(ta.className||'').replace(/auto-h/g,'').trim()+' md-rendered';
+  div.setAttribute('style', ta.getAttribute('style')||'');
+  div.style.whiteSpace='pre-wrap'; div.style.height='auto'; div.style.minHeight='0'; div.style.resize='none';
+  div.innerHTML=discordMD(ta.value||'');
+  div.dataset.mdDone='1';
+  ta.replaceWith(div);
+}
+// 自由メモ・その他メモ・人間関係メモにDiscord記法を適用（ネタバレは描画時に適用）
+function _applyDiscordMD(){
+  _mdReplaceTA(document.getElementById('row1_memo'));                                  // 自由メモ
+  document.querySelectorAll('#memo_rows .memo-body').forEach(_mdReplaceTA);            // その他メモ
+  document.querySelectorAll('#rel_groups_wrap textarea').forEach(_mdReplaceTA);        // 人間関係メモ
+}
+</script>
+<style>
+.md-rendered{white-space:pre-wrap;word-break:break-word}
+.md-rendered a{color:#3a7bd5;text-decoration:underline}
+.md-code{background:rgba(128,128,128,.18);padding:1px 4px;border-radius:3px;font-family:Consolas,'Courier New',monospace;font-size:.92em}
+.md-pre{background:rgba(128,128,128,.14);padding:6px 8px;border-radius:4px;overflow:auto;margin:3px 0}
+.md-pre code{font-family:Consolas,'Courier New',monospace;font-size:.92em;white-space:pre}
+.md-quote{border-left:3px solid var(--border);padding:1px 8px;margin:3px 0;color:var(--text-muted,#888)}
+.md-ul{margin:3px 0 3px 1.3em;padding:0}
+.md-ul li{list-style:disc;margin-left:.3em}
+.md-spoiler{background:#222;color:transparent;border-radius:3px;padding:0 3px;cursor:pointer;transition:color .1s}
+.md-spoiler.shown{background:rgba(128,128,128,.22);color:inherit}
+</style>
 </body>
 </html>
