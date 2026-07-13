@@ -47,6 +47,7 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;ba
 #index_menu{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:5px;box-shadow:0 4px 16px rgba(0,0,0,.35);min-width:150px;z-index:99999;overflow:hidden}
 #index_menu .menu-item{padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px}
 #index_menu .menu-item:hover{background:var(--surface2)}
+.menu-sep{height:1px;background:var(--border);margin:2px 0}
 #new_btn:hover{background:#1a6a3a}
 #search_box{flex:1;min-width:180px;max-width:340px;border:1px solid #bbb;border-radius:3px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;background:#fff}
 #search_box:focus{border-color:#5588cc}
@@ -139,6 +140,19 @@ body.light #ctrlbar label{color:#555}
 .te-actions .te-save{background:var(--accent);color:#fff;border-color:var(--accent)}
 /* タグ管理モーダル */
 #tag_manage_overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100001;display:none;align-items:center;justify-content:center;padding:20px}
+/* 誕生日一覧 */
+#bday_overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100001;display:none;align-items:center;justify-content:center;padding:20px}
+#bday_overlay.on{display:flex}
+#bday_box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;width:100%;max-width:460px;max-height:85vh;display:flex;flex-direction:column;color:var(--text)}
+#bday_list{overflow:auto;margin-top:8px;font-size:12px;line-height:1.55}
+.bd-row{display:flex;align-items:flex-start;gap:8px;padding:1px 0}
+.bd-date{flex:0 0 auto;width:5.4em;color:var(--text-muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.bd-row.has .bd-date{color:var(--text);font-weight:bold}
+.bd-names{flex:1;min-width:0}
+.bd-name{cursor:pointer;text-decoration:none;color:var(--accent);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd-name:hover{text-decoration:underline}
+.bd-month{position:sticky;top:0;background:var(--surface);font-weight:bold;font-size:12px;padding:4px 0 2px;border-bottom:1px solid var(--border);margin-top:6px;color:var(--accent2)}
+.bd-unknown{margin-top:10px;border-top:1px dashed var(--border);padding-top:6px;font-size:11px;color:var(--text-muted)}
 #tag_manage_overlay.on{display:flex}
 #tag_manage{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;width:100%;max-width:360px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.4)}
 #tm_list{display:flex;flex-direction:column;gap:6px;margin:10px 0 14px}
@@ -600,11 +614,16 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 </div>
 <div id="index_menu" style="display:none">
+  <div class="menu-item" onclick="openBirthdayList();closeMenu()"><span>🎂</span> 誕生日一覧</div>
+  <div class="menu-sep"></div>
   <div class="menu-item" onclick="openTagManage();closeMenu()"><span>🏷</span> タグの編集・並べ替え</div>
+  <div class="menu-sep"></div>
   <div class="menu-item" onclick="exportJSON();closeMenu()"><span>⬇</span> JSONバックアップ(PC毎ZIP)</div>
   <div class="menu-item" onclick="exportAllPDF();closeMenu()"><span>📄</span> PDF一括ダウンロード(ZIP)</div>
   <div class="menu-item" onclick="exportCSV();closeMenu()"><span>⬇</span> CSVエクスポート</div>
+  <div class="menu-sep"></div>
   <div class="menu-item" onclick="bulkImportSpreadsheets();closeMenu()"><span>📥</span> スプシ一括取込</div>
+  <div class="menu-sep"></div>
   <div class="menu-item" onclick="doLogout();closeMenu()"><span>↩</span> ログアウト</div>
 </div>
 
@@ -714,6 +733,15 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 </div>
 
+<div id="bday_overlay" onclick="if(event.target===this)closeBirthdayList()">
+  <div id="bday_box">
+    <div class="te-title">🎂 誕生日一覧</div>
+    <div class="te-sub" id="bday_sub"></div>
+    <div id="bday_list"></div>
+    <div class="te-actions"><button onclick="closeBirthdayList()">閉じる</button></div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL='https://cicodhxebyqewfnngfwt.supabase.co/';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpY29kaHhlYnlxZXdmbm5nZnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzM4NDYsImV4cCI6MjA5NTY0OTg0Nn0.huLOglTPbW1CcGDbDB_yf5ftqEkqmtJ1HBY9WTx9J8E';
@@ -791,6 +819,48 @@ function applyFilters(){
   renderCards(rows);
 }
 
+/* ===== 誕生日一覧 ===== */
+const _BD_MDAYS=[31,29,31,30,31,30,31,31,30,31,30,31]; // 2/29も表示（うるう年対応）
+// sheetの誕生日（自由入力）から 月/日 を抽出。「1月1日」「1/1」「01-01」「1.1」「2000/1/1」等に対応
+function parseBirthday(s){
+  if(!s)return null;
+  const t=String(s).trim().replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0));
+  let m=t.match(/(\d{1,2})\s*月\s*(\d{1,2})\s*日?/);                       // 1月1日
+  if(!m) m=t.match(/(?:\d{4}\s*[\/\-.年]\s*)?(\d{1,2})\s*[\/\-.]\s*(\d{1,2})(?!\s*[\/\-.]\s*\d)/); // 1/1, 2000/1/1
+  if(!m) return null;
+  const mo=parseInt(m[1],10), d=parseInt(m[2],10);
+  if(!(mo>=1&&mo<=12))return null;
+  if(!(d>=1&&d<=_BD_MDAYS[mo-1]))return null;
+  return {m:mo,d:d};
+}
+function openBirthdayList(){
+  const byKey={}; const unknown=[];
+  (allChars||[]).forEach(c=>{
+    const s=getSheet(c); const inp=(s&&s.inputs)||{};
+    const name=(inp.pcname||c.char_name||'(名前未設定)').trim();
+    const bd=parseBirthday(inp.birthday);
+    if(!bd){ if((inp.birthday||'').trim()) unknown.push(name+'（'+inp.birthday.trim()+'）'); return; }
+    const k=bd.m+'-'+bd.d;
+    (byKey[k]=byKey[k]||[]).push({name,id:c.id});
+  });
+  const list=document.getElementById('bday_list');
+  const sub=document.getElementById('bday_sub');
+  let cnt=0; Object.values(byKey).forEach(a=>cnt+=a.length);
+  if(sub)sub.textContent='誕生日が登録されたPC：'+cnt+'人（PC名をタップでシートを開く）';
+  let html='';
+  for(let mo=1;mo<=12;mo++){
+    html+='<div class="bd-month">'+mo+'月</div>';
+    for(let d=1;d<=_BD_MDAYS[mo-1];d++){
+      const arr=byKey[mo+'-'+d]||[];
+      const names=arr.map(o=>'<a class="bd-name" onclick="location.href=\'sheet.html?id='+o.id+'\'">'+esc(o.name)+'</a>').join('');
+      html+='<div class="bd-row'+(arr.length?' has':'')+'"><span class="bd-date">'+mo+'月'+d+'日</span><span class="bd-names">'+names+'</span></div>';
+    }
+  }
+  if(unknown.length) html+='<div class="bd-unknown">日付を判別できなかった誕生日：<br>'+unknown.map(esc).join('<br>')+'</div>';
+  list.innerHTML=html;
+  document.getElementById('bday_overlay').classList.add('on');
+}
+function closeBirthdayList(){document.getElementById('bday_overlay').classList.remove('on');}
 function toggleTagFilter(){
   const tf=document.getElementById('tag_filter');
   const ar=document.getElementById('tagfilter_arrow');
