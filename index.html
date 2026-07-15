@@ -1770,6 +1770,7 @@ function _buildChatPalette(sheet) {
   const maBase = stats.edu; // dummy, ma base=1
   const alwaysKeys = new Set(['kaihi','firstaid']);
   const comboAdded = new Set();
+  const _customDone = new Set();
 
   const sectionOrder = ['combat', null, 'search', 'action', 'talk', 'know'];
 
@@ -1824,11 +1825,25 @@ function _buildChatPalette(sheet) {
         }
       }
     });
+
+    // このセクションに属するカスタム追加技能をセクション末尾に出力（sheetと同じ並び）
+    skills.forEach(s => {
+      if (!s.key || !s.key.startsWith('custom_')) return;
+      if ((s.tbodyId || '') !== 'tbody_' + sec) return;
+      const name = (s.freeVal || '').trim();
+      if (!name) return;
+      if (weaponNames.has(name)) return;
+      const base = parseInt(s.base) || 0;
+      const total = base + (parseInt(s.job)||0) + (parseInt(s.int)||0) + (parseInt(s.grw)||0) + (parseInt(s.oth)||0);
+      _customDone.add(s.key);
+      if (total <= base) return;
+      lines.push(`CCB<=${total} 【${name}】`);
+    });
   });
 
-  // カスタム追加技能（custom_xxx キー）
+  // 所属セクション不明（旧データ等）のカスタム技能は末尾に出力（保険）
   skills.forEach(s => {
-    if (!s.key || !s.key.startsWith('custom_')) return;
+    if (!s.key || !s.key.startsWith('custom_') || _customDone.has(s.key)) return;
     const name = (s.freeVal || '').trim();
     if (!name) return; // 名前未入力はスキップ
     if (weaponNames.has(name)) return; // 武器と重複する技能は出さない
