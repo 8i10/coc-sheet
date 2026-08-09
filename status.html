@@ -52,6 +52,17 @@ tbody tr:nth-child(even) td.name{background:var(--surface2)}
 
 #msg{padding:24px 12px;text-align:center;color:var(--text-muted)}
 #msg a{color:var(--accent2)}
+/* 技能比較 */
+.skbox{margin-bottom:8px}
+.skttl{font-size:11px;font-weight:bold;color:var(--text-muted);margin:2px 0 4px}
+.skadd{display:flex;gap:6px;margin-bottom:6px}
+.skadd input{flex:1;min-width:0;padding:6px 8px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);font-size:13px}
+#sk_chips{display:flex;flex-wrap:wrap;gap:5px}
+#sk_chips:not(:empty){margin-bottom:6px}
+.skchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;background:var(--surface);border:1px solid var(--accent2);color:var(--accent2);border-radius:14px;padding:3px 6px 3px 10px}
+.skchip button{border:none;background:none;color:inherit;cursor:pointer;font-size:14px;line-height:1;padding:0}
+thead th.skcol{background:#2a3f55;color:#fff}
+thead th.skcol:hover{background:#365070}
 </style>
 </head>
 <body>
@@ -67,6 +78,16 @@ tbody tr:nth-child(even) td.name{background:var(--surface2)}
   <div id="controls" style="display:none">
     <input id="search" type="text" placeholder="PC名・ふりがなで検索..." oninput="render()">
     <div class="filters" id="filters"></div>
+    <div class="skbox">
+      <div class="skttl">技能で検索・比較（合計値）</div>
+      <div class="skadd">
+        <input id="sk_input" list="sk_list" placeholder="技能名で検索して比較に追加（例: 目星）" onkeydown="if(event.key==='Enter'){event.preventDefault();addSkillCol();}">
+        <datalist id="sk_list"></datalist>
+        <button class="hbtn" onclick="addSkillCol()">＋追加</button>
+      </div>
+      <div id="sk_chips"></div>
+      <div class="filters" id="sk_filters"></div>
+    </div>
     <div class="frow"><button class="hbtn fclear" onclick="clearFilters()">フィルターをクリア</button></div>
     <div id="count"></div>
     <div class="twrap"><table id="tbl"></table></div>
@@ -94,6 +115,10 @@ function toggleTheme(){applyTheme(document.body.classList.contains('light')?'dar
 /* ===== 能力値定義 ===== */
 const AB=['str','con','pow','dex','app','siz','int_v','edu'];
 const ABLABEL={str:'STR',con:'CON',pow:'POW',dex:'DEX',app:'APP',siz:'SIZ',int_v:'INT',edu:'EDU'};
+/* 技能キー→名称（sheetのSKILLS定義と一致） */
+const SKMAP={"kaihi":"回避","kick":"キック","kumi":"組みつき","punch":"こぶし(パンチ)","atama":"頭突き","tousha":"投擲","ma":"武道(MA)","gun":"拳銃","smg":"サブマシンガン","sg":"ショットガン","mg":"マシンガン","rifle":"ライフル","firstaid":"応急手当","keylock":"鍵開け","kakusu":"隠す","hide":"隠れる","kikiimi":"聞き耳","sneak":"忍び歩き","photo":"写真術","psych":"精神分析","track":"追跡","climb":"登攀","lib":"図書館","meboshi":"目星","drive":"運転","mech":"機械修理","heavymach":"重機械操作","horse":"乗馬","swim":"水泳","make":"製作","operate":"操縦","jump":"跳躍","elec":"電気修理","navi":"ナビゲート","hensou":"変装","ii":"言いくるめ","shin":"信用","settoku":"説得","negiri":"値切り","kokugo":"母国語","gaikokugo":"外国語","ika":"医学","occult":"オカルト","chem":"化学","mythos":"クトゥルフ神話","art":"芸術","keiri":"経理","kouko":"考古学","pc":"コンピューター","shinri":"心理学","jinrui":"人類学","bio":"生物学","chishitsu":"地質学","denshi":"電子工学","tenmon":"天文学","hakubutsu":"博物学","butsuri":"物理学","law":"法律","yakugaku":"薬学","rekishi":"歴史"};
+let selectedSkills=[];   // 比較に追加した技能名
+let allSkillNames=[];    // 全キャラの技能名（datalist用）
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function num(v){const n=parseInt(v);return isNaN(n)?null:n;}
 
@@ -113,7 +138,16 @@ function parseRow(row){
     const t=num(inp[stem+'_t'])||0;
     ab[a]=base+m+t;
   });
-  return {id:row.id,name,furigana,ab};
+  // 技能合計値マップ（標準技能は名称、カスタムはfreeVal）
+  const sk={};
+  (sheet.skills||[]).forEach(s=>{
+    if(!s||!s.key) return;
+    let nm = s.key.startsWith('custom_') ? (s.freeVal||'').trim() : SKMAP[s.key];
+    if(!nm) return;
+    const total=(num(s.base)||0)+(num(s.job)||0)+(num(s.int)||0)+(num(s.grw)||0)+(num(s.oth)||0);
+    sk[nm]=total;
+  });
+  return {id:row.id,name,furigana,ab,sk};
 }
 
 async function load(){
@@ -132,6 +166,7 @@ async function load(){
     msg.style.display='none';
     document.getElementById('controls').style.display='block';
     buildFilters();
+    buildSkillDatalist();
     render();
   }catch(e){ msg.textContent='読込エラー: '+e.message; }
 }
@@ -148,9 +183,46 @@ function buildFilters(){
   )).join('');
 }
 
+/* ===== 技能検索・比較 ===== */
+function buildSkillDatalist(){
+  const set=new Set(Object.values(SKMAP));
+  chars.forEach(c=>Object.keys(c.sk||{}).forEach(n=>set.add(n)));
+  allSkillNames=[...set].sort((a,b)=>a.localeCompare(b,'ja'));
+  const dl=document.getElementById('sk_list');
+  if(dl) dl.innerHTML=allSkillNames.map(n=>`<option value="${esc(n)}"></option>`).join('');
+}
+function addSkillCol(){
+  const inp=document.getElementById('sk_input');
+  const nm=(inp.value||'').trim();
+  if(!nm) return;
+  if(!selectedSkills.includes(nm)) selectedSkills.push(nm);
+  inp.value='';
+  buildSkillFilters(); renderChips(); render();
+}
+function removeSkillCol(nm){
+  selectedSkills=selectedSkills.filter(x=>x!==nm);
+  const mn=document.getElementById('smn_'+_skId(nm)); // フィルタ値も消える(再構築)
+  buildSkillFilters(); renderChips(); render();
+}
+function _skId(nm){ return btoa(unescape(encodeURIComponent(nm))).replace(/[^A-Za-z0-9]/g,''); }
+function renderChips(){
+  const wrap=document.getElementById('sk_chips');
+  wrap.innerHTML=selectedSkills.map(nm=>`<span class="skchip">${esc(nm)}<button title="削除" onclick="removeSkillCol('${esc(nm).replace(/'/g,"\\'")}')">✕</button></span>`).join('');
+}
+function buildSkillFilters(){
+  const wrap=document.getElementById('sk_filters');
+  wrap.innerHTML=selectedSkills.map(nm=>{
+    const id=_skId(nm);
+    return `<div class="fcell"><span class="flab" style="width:auto;min-width:30px" title="${esc(nm)}">${esc(nm.length>4?nm.slice(0,4)+'…':nm)}</span>`+
+      `<input class="fnum" id="smn_${id}" type="number" inputmode="numeric" placeholder="-" oninput="render()">`+
+      `<span class="ftil">〜</span>`+
+      `<input class="fnum" id="smx_${id}" type="number" inputmode="numeric" placeholder="-" oninput="render()"></div>`;
+  }).join('');
+}
 function clearFilters(){
   document.getElementById('search').value='';
   AB.forEach(a=>{document.getElementById('mn_'+a).value='';document.getElementById('mx_'+a).value='';});
+  selectedSkills.forEach(nm=>{const id=_skId(nm);const a=document.getElementById('smn_'+id),b=document.getElementById('smx_'+id);if(a)a.value='';if(b)b.value='';});
   render();
 }
 
@@ -161,6 +233,14 @@ function passes(c){
     const mn=num(document.getElementById('mn_'+a).value);
     const mx=num(document.getElementById('mx_'+a).value);
     const v=c.ab[a];
+    if(mn!=null){ if(v==null || v<mn) return false; }
+    if(mx!=null){ if(v==null || v>mx) return false; }
+  }
+  for(const nm of selectedSkills){
+    const id=_skId(nm);
+    const mn=num(document.getElementById('smn_'+id)?.value);
+    const mx=num(document.getElementById('smx_'+id)?.value);
+    const v=c.sk[nm];
     if(mn!=null){ if(v==null || v<mn) return false; }
     if(mx!=null){ if(v==null || v>mx) return false; }
   }
@@ -180,7 +260,9 @@ function render(){
     const dir = sortDir==='asc'?1:-1;
     rows.sort((a,b)=>{
       if(sortKey==='name') return String(a.name).localeCompare(String(b.name),'ja')*dir;
-      const va=a.ab[sortKey], vb=b.ab[sortKey];
+      let va,vb;
+      if(sortKey.startsWith('sk:')){ const nm=sortKey.slice(3); va=a.sk[nm]; vb=b.sk[nm]; }
+      else { va=a.ab[sortKey]; vb=b.ab[sortKey]; }
       const an=(va==null), bn=(vb==null);
       if(an&&bn) return 0;
       if(an) return 1;   // 未入力は常に末尾
@@ -193,13 +275,16 @@ function render(){
   const head='<thead><tr>'+
     `<th class="name" onclick="sortBy('name')">PC名${ind('name')}</th>`+
     AB.map(a=>`<th onclick="sortBy('${a}')">${ABLABEL[a]}${ind(a)}</th>`).join('')+
+    selectedSkills.map(nm=>`<th class="skcol" title="${esc(nm)}" onclick="sortBy('sk:${esc(nm)}')">${esc(nm)}${ind('sk:'+nm)}</th>`).join('')+
     '</tr></thead>';
   const body='<tbody>'+rows.map(c=>(
     `<tr><td class="name" title="${esc(c.name)}">${esc(c.name)}</td>`+
     AB.map(a=>{const v=c.ab[a];return v==null?`<td class="na">–</td>`:`<td>${v}</td>`;}).join('')+
+    selectedSkills.map(nm=>{const v=c.sk[nm];return (v==null)?`<td class="na">–</td>`:`<td>${v}</td>`;}).join('')+
     `</tr>`
   )).join('')+'</tbody>';
-  document.getElementById('tbl').innerHTML=head+(rows.length?body:'<tbody><tr><td class="na" colspan="9" style="padding:14px">該当なし</td></tr></tbody>');
+  const cols=1+AB.length+selectedSkills.length;
+  document.getElementById('tbl').innerHTML=head+(rows.length?body:`<tbody><tr><td class="na" colspan="${cols}" style="padding:14px">該当なし</td></tr></tbody>`);
 }
 
 load();
