@@ -77,6 +77,7 @@ body.light .card-tokucho .meta-value{color:#555 !important}
 .badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:bold;white-space:nowrap}
 .s-alive{background:#d4f5e4;color:#1a7a45}
 .s-lost{background:#fde8e8;color:#b03030}
+.s-permalost{background:#f3cccc;color:#7a1111}
 .s-retired{background:#e8eef5;color:#3a5a8a}
 .s-missing{background:#fff3d4;color:#8a6000}
 .s-dead{background:#e6d9f7;color:#5e2b9e}
@@ -271,12 +272,14 @@ body.light .pts-remain.ok{color:#2a7a4a !important}
 /* バッジ */
 .s-alive{background:#1a3a2a;color:#7ec8a0}
 .s-lost{background:#3a1a1a;color:#c87e7e}
+.s-permalost{background:#4d1616;color:#e19a9a}
 .s-retired{background:#1a2a3a;color:#7e9ec8}
 .s-missing{background:#3a2a0a;color:#c8b07e}
 .s-dead{background:#2e1f42;color:#b58ee0}
 .s-insane{background:#2a1a3a;color:#b07ec8}
 body.light .s-alive{background:#d4f5e4;color:#1a7a45}
 body.light .s-lost{background:#fde8e8;color:#b03030}
+body.light .s-permalost{background:#f3cccc;color:#7a1111}
 body.light .s-retired{background:#e8eef5;color:#3a5a8a}
 body.light .s-missing{background:#fff3d4;color:#8a6000}
 body.light .s-dead{background:#e6d9f7;color:#5e2b9e}
@@ -680,6 +683,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       <option value="">すべて</option>
       <option value="alive">生存</option>
       <option value="lost">ロスト</option>
+      <option value="permalost">永久ロスト</option>
       <option value="retired">引退</option>
       <option value="missing">行方不明</option>
       <option value="dead">継続不可</option>
@@ -748,8 +752,8 @@ const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 const {createClient}=supabase;
 const db=createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const S_LABEL={alive:'生存',lost:'ロスト',retired:'引退',missing:'行方不明',dead:'継続不可',insane:'永久狂気'};
-const S_CLS  ={alive:'s-alive',lost:'s-lost',retired:'s-retired',missing:'s-missing',dead:'s-dead',insane:'s-insane'};
+const S_LABEL={alive:'生存',lost:'ロスト',permalost:'永久ロスト',retired:'引退',missing:'行方不明',dead:'継続不可',insane:'永久狂気'};
+const S_CLS  ={alive:'s-alive',lost:'s-lost',permalost:'s-permalost',retired:'s-retired',missing:'s-missing',dead:'s-dead',insane:'s-insane'};
 
 let allChars=[];
 
