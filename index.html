@@ -741,6 +741,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   <div id="bday_box">
     <div class="te-title">🎂 誕生日一覧</div>
     <div class="te-sub" id="bday_sub"></div>
+    <div style="margin:2px 0 6px"><button class="hbtn" style="font-size:12px;padding:4px 10px" onclick="scrollBdayToday()">📍 今日へ</button></div>
     <div id="bday_list"></div>
     <div class="te-actions"><button onclick="closeBirthdayList()">閉じる</button></div>
   </div>
@@ -857,12 +858,23 @@ function openBirthdayList(){
     for(let d=1;d<=_BD_MDAYS[mo-1];d++){
       const arr=byKey[mo+'-'+d]||[];
       const names=arr.map(o=>'<a class="bd-name" onclick="location.href=\'sheet.html?id='+o.id+'\'">'+esc(o.name)+'</a>').join('');
-      html+='<div class="bd-row'+(arr.length?' has':'')+'"><span class="bd-date">'+mo+'月'+d+'日</span><span class="bd-names">'+names+'</span></div>';
+      html+='<div id="bd_'+mo+'_'+d+'" class="bd-row'+(arr.length?' has':'')+'"><span class="bd-date">'+mo+'月'+d+'日</span><span class="bd-names">'+names+'</span></div>';
     }
   }
   if(unknown.length) html+='<div class="bd-unknown">日付を判別できなかった誕生日：<br>'+unknown.map(esc).join('<br>')+'</div>';
   list.innerHTML=html;
   document.getElementById('bday_overlay').classList.add('on');
+  setTimeout(scrollBdayToday,60);   // 開いたら今日の位置へ
+}
+// 今日の日付の行までスクロール＆ハイライト
+function scrollBdayToday(){
+  const now=new Date();
+  const el=document.getElementById('bd_'+(now.getMonth()+1)+'_'+now.getDate());
+  if(!el)return;
+  el.scrollIntoView({block:'center',behavior:'smooth'});
+  el.style.transition='background .2s';
+  el.style.background='var(--accent2)'; el.style.borderRadius='4px';
+  setTimeout(()=>{ el.style.background=''; },1200);
 }
 function closeBirthdayList(){document.getElementById('bday_overlay').classList.remove('on');}
 function toggleTagFilter(){

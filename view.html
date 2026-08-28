@@ -2042,33 +2042,22 @@ async function initViewMode() {
     }
   }
 
-  // 人間関係復元
+  // 人間関係復元（ネタバレメモと同じレイアウトで表示）
   if (sheet.rels && sheet.rels.length) {
     const relWrap = document.getElementById('rel_groups_wrap');
     relWrap.innerHTML = '';
-    sheet.rels.forEach(rel => {
+    sheet.rels.forEach((rel, gi) => {
       const hasContent = rel.name || (rel.rows||[]).some(r=>r.title||r.body);
       if (!hasContent) return;
-      addRelGroup();
-      const item = relWrap.lastElementChild; if (!item) return;
-      const hdr = item.querySelector('.secret-item-header input[type=text]');
-      if (hdr) hdr.value = rel.name||'';
-      const body = item.querySelector('.secret-item-body'); if (!body) return;
-      // textareaの高さ計算のため一時的にopenにする（計算後に閉じる）
-      body.classList.add('open');
-      const rows = [...body.querySelectorAll('div[style*="position"]')];
-      (rel.rows||[]).forEach((r,i) => {
-        let row = rows[i];
-        if (!row) { addRelSubRow(body.id); row = [...body.querySelectorAll('div[style*="position"]')].pop(); }
-        if (!row) return;
-        const ti = row.querySelector('.memo-title'); if (ti) ti.value = r.title||'';
-        const ta = row.querySelector('textarea'); if (ta) { ta.value = r.body||''; autoResizeTA(ta); }
-      });
-      // 閉じた状態に戻す（保存データには個別グループの開閉状態がないためデフォルト閉じ）
-      body.classList.remove('open');
+      const gid = 'relview_'+gi;
+      const rowsHtml = (rel.rows||[]).filter(r=>r.title||r.body).map(r=>
+        `<div style="margin-bottom:4px">${r.title?`<div style="font-size:11px;font-weight:bold;padding:2px 4px;border-bottom:1px solid var(--border)">${_mdEsc(r.title)}</div>`:''}<div class="md-rendered" style="font-size:11px;background:var(--surface2);border:1px solid var(--border);padding:3px">${discordMD(r.body||'')}</div></div>`
+      ).join('');
+      const div = document.createElement('div');
+      div.className = 'secret-item';
+      div.innerHTML = `<div class="secret-item-header" onclick="toggleRelView('${gid}')" style="cursor:pointer"><span class="acc-arrow-btn" id="arr_${gid}">▶</span><span style="flex:1">${_mdEsc(rel.name||'関係')}</span></div><div class="secret-item-body" id="${gid}" style="display:none;padding:4px">${rowsHtml}</div>`;
+      relWrap.appendChild(div);
     });
-    if (relWrap.children.length === 0) addRelGroup();
-    setTimeout(autoResizeAll, 50);
   }
 
   // ネタバレ復元
@@ -2540,7 +2529,15 @@ function _mdReplaceTA(ta){
 function _applyDiscordMD(){
   _mdReplaceTA(document.getElementById('row1_memo'));                                  // 自由メモ
   document.querySelectorAll('#memo_rows .memo-body').forEach(_mdReplaceTA);            // その他メモ
-  document.querySelectorAll('#rel_groups_wrap textarea').forEach(_mdReplaceTA);        // 人間関係メモ
+  document.querySelectorAll('#rel_groups_wrap textarea').forEach(_mdReplaceTA);        // 人間関係メモ（旧描画の保険）
+}
+// 人間関係グループの開閉（ネタバレと同じ挙動）
+function toggleRelView(id){
+  const b=document.getElementById(id), a=document.getElementById('arr_'+id);
+  if(!b)return;
+  const open=(b.style.display==='none');
+  b.style.display=open?'block':'none';
+  if(a)a.textContent=open?'▼':'▶';
 }
 </script>
 <style>
