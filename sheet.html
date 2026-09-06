@@ -1038,7 +1038,9 @@ body.light td.hdr{
 .md-spoiler{background:#222;color:transparent;border-radius:3px;padding:0 3px;cursor:pointer}
 .md-spoiler.shown{background:rgba(128,128,128,.22);color:inherit}
 .sheet-preview input,.sheet-preview textarea,.sheet-preview select{pointer-events:none !important}
-.sheet-preview .add-row-btn,.sheet-preview .del-btn,.sheet-preview .mini-roll2,.sheet-preview .roll-all-btn2,.sheet-preview .apply-roll-btn,.sheet-preview .tk-droll-btn{pointer-events:none !important;opacity:.5}
+.sheet-preview .add-row-btn,.sheet-preview .del-btn{display:none !important}
+.sheet-preview .mini-roll2,.sheet-preview .roll-all-btn2,.sheet-preview .apply-roll-btn,.sheet-preview .tk-droll-btn{pointer-events:none !important;opacity:.5}
+.pv-block .secret-item{margin-bottom:5px}
 .dc-block{flex:0 0 auto;width:100px;border:1px solid var(--border);border-radius:5px;padding:6px;background:var(--surface2)}
 .dc-name{text-align:center;font-weight:bold;font-size:12px;margin-bottom:4px;color:var(--accent)}
 .dc-row{display:flex;align-items:center;gap:4px;margin-top:3px}
@@ -4650,8 +4652,32 @@ function discordMD(src){
   text=text.replace(/\u0000(\d+)\u0000/g,(m,n)=>stash[+n]);
   return text;
 }
-function _pmMemoTAs(){ return document.querySelectorAll('#row1_memo, #memo_rows textarea, #rel_groups_wrap textarea, #secret_items_wrap textarea'); }
+function _pmMemoTAs(){ return document.querySelectorAll('#row1_memo, #memo_rows textarea'); }
+// 人間関係・ネタバレをview形式のクリーン表示に差し替え（編集用コンテナは隠す）
+function _pmContentBox(title, body){
+  return `<div style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden">`+
+    (title?`<div style="font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;border-bottom:1px solid var(--border)">${_mdEsc(title)}</div>`:'')+
+    `<div class="md-rendered" style="font-size:11px;padding:4px 6px;background:var(--surface)">${discordMD(body||'')}</div></div>`;
+}
+function _pmSecItem(gid, name, innerHtml){
+  return `<div class="secret-item"><div class="secret-item-header" onclick="_pvToggle('${gid}')" style="cursor:pointer"><span class="acc-arrow-btn" id="arr_${gid}">▶</span><span style="flex:1">${_mdEsc(name)}</span></div><div class="secret-item-body" id="${gid}" style="display:none;padding:4px">${innerHtml}</div></div>`;
+}
+function _pvToggle(id){
+  const b=document.getElementById(id), a=document.getElementById('arr_'+id);
+  if(!b)return; const open=(b.style.display==='none');
+  b.style.display=open?'block':'none'; if(a)a.textContent=open?'▼':'▶';
+}
+function _buildPreviewSection(wrapId, pvId, html){
+  const wrap=document.getElementById(wrapId); if(!wrap) return;
+  const btn=wrap.nextElementSibling;
+  const box=document.createElement('div'); box.id=pvId; box.className='pv-block';
+  box.innerHTML=html;
+  wrap.style.display='none';
+  if(btn&&btn.classList.contains('add-row-btn')) btn.style.display='none';
+  wrap.insertAdjacentElement('afterend', box);
+}
 function _enterPreview(){
+  // 自由メモ・その他メモ本文をレンダリング
   _pmMemoTAs().forEach(ta=>{
     if(ta.dataset.mdPrev) return;
     const div=document.createElement('div');
@@ -4662,10 +4688,30 @@ function _enterPreview(){
     ta.style.display='none'; ta.dataset.mdPrev='1';
     ta.insertAdjacentElement('afterend', div);
   });
+  // 人間関係・ネタバレを現在のデータからview形式で生成
+  let data={}; try{ data=JSON.parse(collectData()); }catch(e){}
+  const rels=(data.rels||[]).map((rel,gi)=>{
+    if(!(rel.name||(rel.rows||[]).some(r=>r.title||r.body))) return '';
+    const inner=(rel.rows||[]).filter(r=>r.title||r.body).map(r=>_pmContentBox(r.title,r.body)).join('');
+    return _pmSecItem('pvrel_'+gi, rel.name||'関係', inner);
+  }).join('');
+  _buildPreviewSection('rel_groups_wrap','pv_rels',rels);
+  const secs=(data.secrets||[]).map((s,gi)=>{
+    if(!(s.title||s.summary||(s.contents||[]).some(c=>c))) return '';
+    const summary=s.summary?`<div style="padding:3px 6px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;margin-bottom:6px">${_mdEsc(s.summary)}</div>`:'';
+    const inner=summary+(s.contents||[]).map((c,i)=>_pmContentBox((s.contentTitles||[])[i]||'', c)).join('');
+    return _pmSecItem('pvsec_'+gi, s.title||'ネタバレ', inner);
+  }).join('');
+  _buildPreviewSection('secret_items_wrap','pv_secrets',secs);
 }
 function _exitPreview(){
   document.querySelectorAll('.md-preview-el').forEach(d=>d.remove());
   document.querySelectorAll('[data-md-prev]').forEach(ta=>{ ta.style.display=''; ta.removeAttribute('data-md-prev'); });
+  [['pv_rels','rel_groups_wrap'],['pv_secrets','secret_items_wrap']].forEach(([pvId,wrapId])=>{
+    const box=document.getElementById(pvId); if(box) box.remove();
+    const wrap=document.getElementById(wrapId);
+    if(wrap){ wrap.style.display=''; const btn=wrap.nextElementSibling; if(btn&&btn.classList.contains('add-row-btn')) btn.style.display=''; }
+  });
 }
 let _previewMode=false;
 function togglePreview(){ setPreviewMode(!_previewMode); }
