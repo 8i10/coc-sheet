@@ -95,6 +95,7 @@ body.light #ctrlbar label{color:#555}
 #tagfilter_toggle{display:none;font-size:12px;padding:4px 10px;margin:4px 0;cursor:pointer;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);align-items:center;gap:6px}
 .tagchip{font-size:11px;padding:2px 9px;border-radius:11px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);cursor:pointer;user-select:none}
 .tagchip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tagchip.ex{background:#c0392b;color:#fff;border-color:#c0392b;text-decoration:line-through}
 .card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;align-items:center}
 .card-tag{font-size:10px;padding:1px 7px;border-radius:9px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)}
 .card-tag-edit{font-size:10px;padding:1px 7px;border-radius:9px;background:transparent;color:var(--accent2);border:1px dashed var(--border);cursor:pointer}
@@ -761,6 +762,7 @@ let allChars=[];
 /* ===== 並び替え・タグ・状態フィルタ ===== */
 let sortKey='updated', sortDir='desc';
 let activeTags=new Set();
+let excludeTags=new Set();   // マイナス検索：このタグを持つPCを除外
 const AB_KEYS=['str','con','pow','dex','app','siz','int_v','edu'];
 const S_ORDER={alive:0,missing:1,insane:2,retired:3,lost:4,dead:5};
 
@@ -800,6 +802,7 @@ function applyFilters(){
   let rows=allChars.filter(char=>{
     if(activeStatus && charStatus(char)!==activeStatus)return false;
     if(activeTags.size){const tg=charTags(char);if(![...activeTags].some(t=>tg.includes(t)))return false;}
+    if(excludeTags.size){const tg=charTags(char);if([...excludeTags].some(t=>tg.includes(t)))return false;}
     if(q){
       const s=getSheet(char);const inp=s.inputs||{};
       const hay=[(inp.pcname||char.char_name||''),(inp.furigana||''),(inp.job||''),
@@ -890,14 +893,17 @@ function buildTagFilter(){
   const all=new Set();
   allChars.forEach(c=>charTags(c).forEach(t=>all.add(t)));
   [...activeTags].forEach(t=>{if(!all.has(t))activeTags.delete(t);});
+  [...excludeTags].forEach(t=>{if(!all.has(t))excludeTags.delete(t);});
   const wrap=document.getElementById('tag_filter');
   if(!wrap)return;
   const _tgl=document.getElementById('tagfilter_toggle');
   if(all.size===0){wrap.innerHTML=''; if(_tgl)_tgl.style.display='none'; return;}
   if(_tgl)_tgl.style.display='';
-  wrap.innerHTML=orderedTags().map(t=>
-    `<span class="tagchip ${activeTags.has(t)?'on':''}" data-tag="${esc(t)}">${esc(t)}</span>`
-  ).join('');
+  wrap.innerHTML=orderedTags().map(t=>{
+    const cls=activeTags.has(t)?'on':(excludeTags.has(t)?'ex':'');
+    const tip=activeTags.has(t)?'このタグを含むPCを表示（クリックで除外に切替）':(excludeTags.has(t)?'このタグを除外中（クリックで解除）':'クリックで絞り込み');
+    return `<span class="tagchip ${cls}" data-tag="${esc(t)}" title="${tip}">${esc(t)}</span>`;
+  }).join('');
 }
 /* タグ並び順（localStorageに保存） */
 function getTagOrder(){ try{return JSON.parse(localStorage.getItem('coc_tag_order')||'[]');}catch(e){return [];} }
@@ -1298,7 +1304,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   const tf=document.getElementById('tag_filter');
   if(tf)tf.addEventListener('click',e=>{
     const chip=e.target.closest('.tagchip'); if(!chip)return;
-    const t=chip.dataset.tag; if(activeTags.has(t))activeTags.delete(t);else activeTags.add(t);
+    const t=chip.dataset.tag;
+    // 3状態を循環：無指定 → 含む → 除外 → 無指定
+    if(activeTags.has(t)){ activeTags.delete(t); excludeTags.add(t); }
+    else if(excludeTags.has(t)){ excludeTags.delete(t); }
+    else { activeTags.add(t); }
     buildTagFilter();applyFilters();
   });
   const grid=document.getElementById('grid');
