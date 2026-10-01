@@ -81,7 +81,9 @@ textarea.auto-h{resize:none;overflow:hidden;height:36px;min-height:36px;box-sizi
 .sk-del{width:0;padding:0;border:none;overflow:visible}
 .add-row-btn{font-size:11px;padding:1px 7px;cursor:pointer;margin:2px 2px 2px 0;background:#eee;border:1px solid var(--border);border-radius:2px}
 .del-row-btn-sp{display:none}
-.del-btn{font-size:11px;padding:0 3px;cursor:pointer;background:none;border:none;color:#bbb;line-height:1;font-weight:normal;transition:color .15s}.del-btn:hover{color:#933}
+.del-btn{font-size:11px;padding:0 3px;cursor:pointer;background:none;border:none;color:#bbb;line-height:1;font-weight:normal;transition:color .15s}
+.mv-btn{font-size:10px;padding:0 2px;cursor:pointer;background:none;border:none;color:#bbb;line-height:1;font-weight:normal;transition:color .15s}
+.mv-btn:hover{color:var(--accent2)}.del-btn:hover{color:#933}
 .right-panel{display:flex;flex-direction:column;gap:5px}
 .secret-item{border:1px solid var(--border);border-radius:3px;margin-bottom:4px;overflow:hidden}
 .secret-item-header{background:linear-gradient(rgba(255,255,255,.22),rgba(255,255,255,.22)),var(--hdr-bg);color:var(--hdr-text);padding:2px 6px;display:flex;align-items:center;gap:4px;font-size:11px}
@@ -1038,7 +1040,7 @@ body.light td.hdr{
 .md-spoiler{background:#222;color:transparent;border-radius:3px;padding:0 3px;cursor:pointer}
 .md-spoiler.shown{background:rgba(128,128,128,.22);color:inherit}
 .sheet-preview input,.sheet-preview textarea,.sheet-preview select{pointer-events:none !important}
-.sheet-preview .add-row-btn,.sheet-preview .del-btn{display:none !important}
+.sheet-preview .add-row-btn,.sheet-preview .del-btn,.sheet-preview .mv-btn{display:none !important}
 .sheet-preview .mini-roll2,.sheet-preview .roll-all-btn2,.sheet-preview .apply-roll-btn,.sheet-preview .tk-droll-btn{pointer-events:none !important;opacity:.5}
 .pv-block .secret-item{margin-bottom:5px}
 .dc-block{flex:0 0 auto;width:100px;border:1px solid var(--border);border-radius:5px;padding:6px;background:var(--surface2)}
@@ -1484,9 +1486,10 @@ if (('standalone' in navigator) && navigator.standalone) {
       <div class="acc-body" id="memo_acc">
         <div style="padding:4px">
           <div id="memo_rows">
-            <div class="memo-block" style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden">
+            <div class="memo-block" style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden;position:relative">
               <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
               <textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:var(--surface);resize:none;display:block" oninput="autoResizeTA(this)"></textarea>
+              <span style="position:absolute;top:2px;right:2px;display:flex;align-items:center;gap:1px"><button class="mv-btn" onclick="moveEntry(this,-1)" title="上へ">▲</button><button class="mv-btn" onclick="moveEntry(this,1)" title="下へ">▼</button><button class="del-btn" onclick="delRow(this)">✕</button></span>
             </div>
           </div>
           <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
@@ -2281,7 +2284,7 @@ function addMemoRow(){
   const w=document.createElement('div');
   w.className='memo-block';
   w.style.cssText='margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden;position:relative';
-  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:var(--surface);resize:none;display:block" oninput="autoResizeTA(this)"></textarea><button class="del-btn" onclick="delRow(this)" style="position:absolute;top:2px;right:2px">✕</button>';
+  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:var(--surface);resize:none;display:block" oninput="autoResizeTA(this)"></textarea><span style="position:absolute;top:2px;right:2px;display:flex;align-items:center;gap:1px"><button class="mv-btn" onclick="moveEntry(this,-1)" title="上へ">▲</button><button class="mv-btn" onclick="moveEntry(this,1)" title="下へ">▼</button><button class="del-btn" onclick="delRow(this)">✕</button></span>';
   div.appendChild(w);
 }
 
@@ -2297,8 +2300,8 @@ function addRelGroup(){
       <button onclick="toggleRelGroup('${id}')" class="acc-arrow-btn" id="arr_${id}">▶</button>
       <input type="text" placeholder="うちよそ・関係名"
         style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;flex:1;text-align:left">
-      <button onclick="this.closest('.secret-item').remove()"
-        class="del-btn" style="margin-left:4px">✕</button>
+      <button class="mv-btn" onclick="moveEntry(this,-1)" title="上へ" style="margin-left:4px">▲</button><button class="mv-btn" onclick="moveEntry(this,1)" title="下へ">▼</button><button onclick="this.closest('.secret-item').remove()"
+        class="del-btn" style="margin-left:2px">✕</button>
     </div>
     <div class="secret-item-body" id="${id}">
       <div style="position:relative;margin:4px">
@@ -2365,6 +2368,14 @@ function addScenarioRow(){
   div.appendChild(w);
 }
 
+// メモ類エントリ（その他メモ/ネタバレ/人間関係）の並べ替え（dir<0=上, dir>0=下）
+function moveEntry(btn,dir){
+  const item=btn.closest('.memo-block')||btn.closest('.secret-item');
+  if(!item||!item.parentNode)return;
+  if(dir<0){ const p=item.previousElementSibling; if(p)item.parentNode.insertBefore(item,p); }
+  else{ const n=item.nextElementSibling; if(n)item.parentNode.insertBefore(n,item); }
+  if(typeof saveDraft==='function')saveDraft();
+}
 function delRow(btn){
   const target=btn.closest('tr')||btn.closest('div[style]')||btn.parentElement;
   const wasSkill = !!(target && target.querySelector && target.querySelector('[data-skill]'));
@@ -2383,7 +2394,7 @@ function addSecretItem(title,pass){
     <div class="secret-item-header">
       <button onclick="toggleSecretItem('${id}')" class="acc-arrow-btn" id="arr_${id}">▶</button>
       <input type="text" value="${title||''}" placeholder="ネタバレタイトル" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;flex:1;text-align:left">
-      <button onclick="document.getElementById('${id}').remove()" class="del-btn" style="margin-left:4px">✕</button>
+      <button class="mv-btn" onclick="moveEntry(this,-1)" title="上へ" style="margin-left:4px">▲</button><button class="mv-btn" onclick="moveEntry(this,1)" title="下へ">▼</button><button onclick="document.getElementById('${id}').remove()" class="del-btn" style="margin-left:2px">✕</button>
     </div>
     <div class="secret-item-body" id="body_${id}">
       <div style="padding:3px 6px;background:var(--surface2);border-bottom:1px solid var(--border)">
