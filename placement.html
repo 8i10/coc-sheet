@@ -27,12 +27,12 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:13px;ba
 /* 本体 */
 #main{flex:1;display:flex;min-height:0}
 /* 左パレット */
-#palette{width:280px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+#palette{width:300px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
 #pal_search{margin:10px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface2);color:var(--text);outline:none}
-#pal_grid{flex:1;overflow-y:auto;padding:0 10px 10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-content:start}
-.pal-item{position:relative;aspect-ratio:1;border-radius:50%;cursor:pointer;background-color:var(--surface2);background-size:cover;background-position:center;border:2px solid transparent;transition:border-color .1s;overflow:hidden}
+#pal_grid{flex:1;overflow-y:auto;padding:0 12px 14px;display:grid;--ps:60px;grid-template-columns:repeat(auto-fill,minmax(var(--ps),1fr));gap:22px 14px;align-content:start}
+.pal-item{position:relative;aspect-ratio:1;border-radius:50%;cursor:pointer;background-color:var(--surface2);background-size:cover;background-position:center;border:2px solid transparent;transition:border-color .1s;overflow:visible}
 .pal-item:hover{border-color:var(--accent)}
-.pal-item .nm{position:absolute;inset:auto 0 0 0;font-size:7px;text-align:center;background:rgba(0,0,0,.45);color:#fff;padding:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:0}
+.pal-item .nm{position:absolute;inset:auto -6px -15px -6px;font-size:9px;text-align:center;color:var(--text);padding:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:none}
 .pal-empty-letter{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:20px;color:var(--text-muted);font-weight:700}
 #pal_foot{border-top:1px solid var(--border);padding:10px}
 #pal_foot .row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
@@ -71,8 +71,7 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:13px;ba
 #login_note{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--bg);z-index:300;flex-direction:column;gap:12px;text-align:center;padding:30px}
 #login_note a{color:var(--accent2)}
 @media(max-width:700px){
-  #palette{width:210px}
-  #pal_grid{grid-template-columns:repeat(3,1fr)}
+  #palette{width:220px}
 }
 </style>
 </head>
@@ -91,7 +90,8 @@ body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:13px;ba
       <input id="pal_search" type="text" placeholder="名前で検索" oninput="renderPalette()">
       <div id="pal_grid"></div>
       <div id="pal_foot">
-        <div class="row"><label>アイコンサイズ</label><input id="icon_size" type="range" min="24" max="160" value="72" oninput="onSizeSlider(this.value)"><span id="size_val">72px</span></div>
+        <div class="row"><label>アイコンサイズ</label><input id="icon_size" type="range" min="40" max="120" value="60" oninput="onSizeSlider(this.value)"><span id="size_val">60px</span></div>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">※一覧の表示サイズ。配置後のアイコンは選択してホイールで拡大縮小できます。</div>
         <label class="pal-upload" for="up_icon">＋ 画像をアップロードして配置</label>
         <input id="up_icon" type="file" accept="image/*" style="display:none" onchange="uploadIcon(this)">
       </div>
@@ -142,7 +142,8 @@ let icons=[];           // 配置中: {uid,url,pos,scale,fx,fy,fsize,name}
 let bg={url:'',aspect:1};
 let selected=null;      // uid
 let currentId=null;     // 保存済みの配置図ID（更新用）
-let defaultSize=72;
+let defaultSize=60;
+const PLACED_DEFAULT=64;   // キャンバスに置くアイコンの既定サイズ(px)
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200);}
@@ -207,8 +208,8 @@ function addIcon(o){
   const n=icons.length;
   const ic={
     uid:_uid++, url:o.url||'', pos:o.pos||'50% 50%', scale:o.scale||1,
-    name:o.name||'', 
-    fsize: defaultSize/w*100,                 // キャンバス幅に対する%
+    name:o.name||'',
+    fsize: (o.fsize!=null? o.fsize : PLACED_DEFAULT/w*100),  // キャンバス幅に対する%
     fx: 50 + ((n%5)-2)*6,                      // 中央付近に少しずつずらして配置
     fy: 50 + (Math.floor(n/5)%5-2)*6
   };
@@ -242,16 +243,27 @@ function selectIcon(uid){
   selected=uid; renderIcons();
   const has=uid!=null;
   ['btn_del','btn_front','btn_back'].forEach(id=>document.getElementById(id).disabled=!has);
-  if(has){ const ic=icons.find(i=>i.uid===uid); if(ic){document.getElementById('icon_size').value=Math.round(ic.fsize/100*(document.getElementById('canvas_wrap').clientWidth||760)); document.getElementById('size_val').textContent=document.getElementById('icon_size').value+'px';} }
 }
 function delSelected(){ if(selected==null)return; icons=icons.filter(i=>i.uid!==selected); selected=null; selectIcon(null); renderIcons(); }
 function bringFront(){ const i=icons.findIndex(x=>x.uid===selected); if(i<0)return; const[o]=icons.splice(i,1); icons.push(o); renderIcons(); }
 function sendBack(){ const i=icons.findIndex(x=>x.uid===selected); if(i<0)return; const[o]=icons.splice(i,1); icons.unshift(o); renderIcons(); }
+// スライダー＝一覧（パレット）のアイコン表示サイズ。列は自動調整
 function onSizeSlider(v){
-  defaultSize=parseInt(v)||72;
-  document.getElementById('size_val').textContent=defaultSize+'px';
-  if(selected!=null){ const ic=icons.find(i=>i.uid===selected); if(ic){ const w=document.getElementById('canvas_wrap').clientWidth||760; ic.fsize=defaultSize/w*100; renderIcons(); } }
+  const px=parseInt(v)||60;
+  document.getElementById('pal_grid').style.setProperty('--ps', px+'px');
+  document.getElementById('size_val').textContent=px+'px';
 }
+// 配置後アイコンをホイールで拡大縮小
+document.getElementById('canvas_wrap').addEventListener('wheel',e=>{
+  const t=e.target.closest('.ic'); if(!t)return;
+  e.preventDefault();
+  const uid=parseInt(t.dataset.uid); const ic=icons.find(i=>i.uid===uid); if(!ic)return;
+  selectIcon(uid);
+  const w=document.getElementById('canvas_wrap').clientWidth||760;
+  let px=ic.fsize/100*w + (e.deltaY<0?4:-4);
+  px=Math.max(18,Math.min(320,px));
+  ic.fsize=px/w*100; renderIcons();
+},{passive:false});
 
 /* ===== ドラッグ ===== */
 let drag=null;

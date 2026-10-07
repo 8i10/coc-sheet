@@ -3,97 +3,124 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>ステータス一覧</title>
+<title>技能検索</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
 :root{
   --bg:#0d0d12; --surface:#16161f; --surface2:#1e1e2e; --border:#4a4a63;
-  --accent:#c8a97e; --accent2:#7e9ec8; --text:#e8e4da; --text-muted:#8a8499;
+  --accent:#c8a97e; --accent2:#7e9ec8; --text:#e8e4da; --text-muted:#8a8499; --hl:#2a3f55;
 }
 body.light{
-  --bg:#fff; --surface:#ffffff; --surface2:#eeeeee; --border:#cccccc;
-  --accent:#555555; --accent2:#3366aa; --text:#111; --text-muted:#7a6e62;
+  --bg:#fff; --surface:#ffffff; --surface2:#f1f1f4; --border:#dcdce2;
+  --accent:#555; --accent2:#3366aa; --text:#2a2a33; --text-muted:#8a8a96; --hl:#eef3fb;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--surface2);color:var(--text);font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:13px;min-height:100vh;padding-top:44px}
-#hdr{position:fixed;top:0;left:0;width:100%;display:flex;align-items:center;gap:8px;padding:5px 16px;background:#333;color:#fff;border-bottom:1px solid var(--border);box-shadow:0 2px 5px rgba(0,0,0,.35);z-index:999}
+body{margin:0;background:var(--surface2);color:var(--text);font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:13px;min-height:100vh;padding-top:46px}
+#hdr{position:fixed;top:0;left:0;width:100%;display:flex;align-items:center;gap:8px;padding:6px 16px;background:#333;color:#fff;border-bottom:1px solid var(--border);box-shadow:0 2px 5px rgba(0,0,0,.3);z-index:999}
 #hdr .title{font-weight:bold;font-size:14px;flex:1}
 .hbtn{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;padding:5px 10px;font-size:12px;cursor:pointer}
 .hbtn:hover{border-color:var(--accent)}
-.container{max-width:860px;margin:0 auto;padding:12px}
-
-#search{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);font-size:13px;margin-bottom:10px}
-
-.filters{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
-@media(min-width:560px){.filters{grid-template-columns:repeat(4,1fr)}}
-.fcell{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:4px 6px}
-.flab{font-size:11px;font-weight:bold;width:30px;flex:0 0 auto}
-.fnum{width:100%;min-width:0;flex:1;height:26px;text-align:center;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:12px}
-.ftil{font-size:10px;color:var(--text-muted);flex:0 0 auto}
-.frow{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-.fclear{flex:0 0 auto}
-#count{font-size:12px;color:var(--text-muted);margin-bottom:6px}
-
-.twrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:6px}
-table{border-collapse:collapse;width:100%;font-size:12px;background:var(--surface)}
-th,td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);padding:5px 6px;text-align:center;white-space:nowrap}
-th:last-child,td:last-child{border-right:none}
-tr:last-child td{border-bottom:none}
-thead th{background:#333;color:#fff;font-size:11px;cursor:pointer;user-select:none}
-thead th:hover{background:#454545}
-.sarr{font-size:9px;margin-left:3px;vertical-align:middle}
-td.name,th.name{text-align:left;max-width:150px;overflow:hidden;text-overflow:ellipsis;font-weight:bold;position:sticky;left:0;background:var(--surface);z-index:0}
-thead th.name{background:#333;color:#fff;z-index:2}
-thead th.name:hover{background:#454545}
-td.na{color:var(--text-muted)}
-tbody tr:nth-child(even) td{background:var(--surface2)}
-tbody tr:nth-child(even) td.name{background:var(--surface2)}
-
-#msg{padding:24px 12px;text-align:center;color:var(--text-muted)}
+/* レイアウト */
+#wrap{display:flex;gap:16px;max-width:1040px;margin:0 auto;padding:14px}
+#panel{width:290px;flex-shrink:0}
+#results{flex:1;min-width:0}
+.card-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;position:sticky;top:58px}
+.sec-label{font-size:12px;font-weight:700;color:var(--text);margin:0 0 6px}
+.sec-label.mt{margin-top:14px}
+.combine{display:flex;gap:6px;margin-bottom:4px}
+.combine button{flex:1;font-size:12px;padding:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);border-radius:7px;cursor:pointer}
+.combine button.on{background:var(--accent2);color:#fff;border-color:var(--accent2);font-weight:700}
+.cond{display:flex;gap:4px;align-items:center;margin-bottom:6px}
+.cond select,.cond input{border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px;padding:5px 4px;min-width:0}
+.cond .c-item{flex:1}
+.cond .c-val{width:48px;text-align:center;flex:0 0 auto}
+.cond .c-op{width:58px;flex:0 0 auto}
+.cond .c-del{border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:2px 4px;flex:0 0 auto}
+.cond .c-del:hover{color:#c0392b}
+.addcond{width:100%;font-size:12px;padding:7px;border:1px dashed var(--border);background:var(--surface);color:var(--accent2);border-radius:7px;cursor:pointer;margin-bottom:10px}
+.addcond:hover{border-color:var(--accent2)}
+.run{width:100%;font-size:13px;font-weight:700;padding:10px;border:none;border-radius:8px;background:#4a4a55;color:#fff;cursor:pointer}
+body.light .run{background:#444}
+.run:hover{opacity:.9}
+.clearbtn{display:block;width:100%;text-align:center;font-size:11px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:8px 0 2px}
+.clearbtn:hover{color:var(--accent2)}
+#name_search{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-size:13px;margin-bottom:10px}
+/* 結果ヘッダ */
+.rhead{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.rhead .cnt{font-size:17px;font-weight:700}
+.rhead .cnt b{color:var(--accent2);font-size:20px;margin:0 3px}
+.rhead .sortwrap{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)}
+.rhead select{border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px;padding:5px 8px}
+/* カード */
+#cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;gap:10px}
+.pcard .ic{width:76px;height:76px;flex-shrink:0;border-radius:8px;background-size:cover;background-position:center;background-color:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:var(--text-muted);overflow:hidden;border:2px solid var(--accent2)}
+.pcard .body{flex:1;min-width:0}
+.pcard .top{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.pcard .pname{font-size:14px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcard .detail{font-size:11px;padding:3px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;flex-shrink:0;text-decoration:none}
+.pcard .detail:hover{border-color:var(--accent2);color:var(--accent2)}
+.srow{display:flex;justify-content:space-between;font-size:12px;padding:3px 7px;border-radius:4px}
+.srow .k{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srow .v{font-weight:700;flex-shrink:0;margin-left:8px}
+.srow.hit{background:var(--hl)}
+.srow.hit .v{color:var(--accent2)}
+.srow.alt{background:var(--surface2)}
+.more{font-size:11px;color:var(--text-muted);cursor:pointer;padding:4px 7px;user-select:none}
+.more:hover{color:var(--accent2)}
+#msg{padding:40px 12px;text-align:center;color:var(--text-muted)}
 #msg a{color:var(--accent2)}
-/* 技能比較 */
-.skbox{margin-bottom:8px}
-.skttl{font-size:11px;font-weight:bold;color:var(--text-muted);margin:2px 0 4px}
-.skadd{display:flex;gap:6px;margin-bottom:6px}
-.skadd input{flex:1;min-width:0;padding:6px 8px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);font-size:13px}
-#sk_chips{display:flex;flex-wrap:wrap;gap:5px}
-#sk_chips:not(:empty){margin-bottom:6px}
-.skchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;background:var(--surface);border:1px solid var(--accent2);color:var(--accent2);border-radius:14px;padding:3px 6px 3px 10px}
-.skchip button{border:none;background:none;color:inherit;cursor:pointer;font-size:14px;line-height:1;padding:0}
-thead th.skcol{background:#2a3f55;color:#fff}
-thead th.skcol:hover{background:#365070}
+#none{padding:30px;text-align:center;color:var(--text-muted);background:var(--surface);border:1px dashed var(--border);border-radius:10px}
+@media(max-width:760px){
+  #wrap{flex-direction:column}
+  #panel{width:100%}
+  .card-panel{position:static}
+}
 </style>
 </head>
 <body>
 <div id="hdr">
-  <div class="title">📊 ステータス一覧</div>
+  <div class="title">🔍 技能検索</div>
   <div style="display:flex;gap:6px">
     <button class="hbtn" id="theme_btn" onclick="toggleTheme()">☀️</button>
     <button class="hbtn" onclick="location.href='index.html'">← 一覧へ</button>
   </div>
 </div>
 
-<div class="container">
-  <div id="controls" style="display:none">
-    <input id="search" type="text" placeholder="PC名・ふりがなで検索..." oninput="render()">
-    <div class="filters" id="filters"></div>
-    <div class="skbox">
-      <div class="skttl">技能で検索・比較（合計値）</div>
-      <div class="skadd">
-        <input id="sk_input" list="sk_list" placeholder="技能名で検索して比較に追加（例: 目星）" onkeydown="if(event.key==='Enter'){event.preventDefault();addSkillCol();}">
-        <datalist id="sk_list"></datalist>
-        <button class="hbtn" onclick="addSkillCol()">＋追加</button>
+<div id="wrap" style="display:none">
+  <div id="panel">
+    <div class="card-panel">
+      <div class="sec-label">名前で検索</div>
+      <input id="name_search" type="text" placeholder="PC名・ふりがな" oninput="render()">
+
+      <div class="sec-label">条件の組み合わせ</div>
+      <div class="combine">
+        <button id="cmb_and" class="on" onclick="setCombine('and')">すべて満たす</button>
+        <button id="cmb_or" onclick="setCombine('or')">いずれか満たす</button>
       </div>
-      <div id="sk_chips"></div>
-      <div class="filters" id="sk_filters"></div>
+
+      <div class="sec-label mt">能力値・技能の条件</div>
+      <div id="cond_list"></div>
+      <button class="addcond" onclick="addCond()">＋ 条件を追加</button>
+
+      <button class="run" onclick="render()">この条件で検索</button>
+      <button class="clearbtn" onclick="clearConds()">条件をクリア</button>
     </div>
-    <div class="frow"><button class="hbtn fclear" onclick="clearFilters()">フィルターをクリア</button></div>
-    <div id="count"></div>
-    <div class="twrap"><table id="tbl"></table></div>
   </div>
-  <div id="msg">読込中...</div>
+
+  <div id="results">
+    <div class="rhead">
+      <span class="cnt">条件に合う探索者 <b id="cnt">0</b>人</span>
+      <span class="sortwrap">並べ替え
+        <select id="sortsel" onchange="render()"><option value="">なし</option></select>
+      </span>
+    </div>
+    <div id="cards"></div>
+    <div id="none" style="display:none">条件に合う探索者がいません。</div>
+  </div>
 </div>
+<div id="msg">読込中...</div>
 
 <script>
 const SUPABASE_URL='https://cicodhxebyqewfnngfwt.supabase.co/';
@@ -101,28 +128,28 @@ const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 const {createClient}=supabase;
 const db=createClient(SUPABASE_URL,SUPABASE_KEY);
 
-/* ===== テーマ（index.htmlと共通の保存キー） ===== */
 const THEME_KEY='coc_theme', THEME_VER='v2';
-function applyTheme(mode){
-  document.body.classList.toggle('light',mode==='light');
-  localStorage.setItem(THEME_KEY,mode);
-  localStorage.setItem(THEME_KEY+'_ver',THEME_VER);
-  const b=document.getElementById('theme_btn'); if(b)b.textContent=mode==='light'?'🌙':'☀️';
-}
+function applyTheme(mode){document.body.classList.toggle('light',mode==='light');localStorage.setItem(THEME_KEY,mode);localStorage.setItem(THEME_KEY+'_ver',THEME_VER);const b=document.getElementById('theme_btn');if(b)b.textContent=mode==='light'?'🌙':'☀️';}
 function toggleTheme(){applyTheme(document.body.classList.contains('light')?'dark':'light');}
 (function(){const ver=localStorage.getItem(THEME_KEY+'_ver');const saved=(ver===THEME_VER)?(localStorage.getItem(THEME_KEY)||'light'):'light';applyTheme(saved);})();
 
-/* ===== 能力値定義 ===== */
 const AB=['str','con','pow','dex','app','siz','int_v','edu'];
 const ABLABEL={str:'STR',con:'CON',pow:'POW',dex:'DEX',app:'APP',siz:'SIZ',int_v:'INT',edu:'EDU'};
-/* 技能キー→名称（sheetのSKILLS定義と一致） */
 const SKMAP={"kaihi":"回避","kick":"キック","kumi":"組みつき","punch":"こぶし(パンチ)","atama":"頭突き","tousha":"投擲","ma":"武道(MA)","gun":"拳銃","smg":"サブマシンガン","sg":"ショットガン","mg":"マシンガン","rifle":"ライフル","firstaid":"応急手当","keylock":"鍵開け","kakusu":"隠す","hide":"隠れる","kikiimi":"聞き耳","sneak":"忍び歩き","photo":"写真術","psych":"精神分析","track":"追跡","climb":"登攀","lib":"図書館","meboshi":"目星","drive":"運転","mech":"機械修理","heavymach":"重機械操作","horse":"乗馬","swim":"水泳","make":"製作","operate":"操縦","jump":"跳躍","elec":"電気修理","navi":"ナビゲート","hensou":"変装","ii":"言いくるめ","shin":"信用","settoku":"説得","negiri":"値切り","kokugo":"母国語","gaikokugo":"外国語","ika":"医学","occult":"オカルト","chem":"化学","mythos":"クトゥルフ神話","art":"芸術","keiri":"経理","kouko":"考古学","pc":"コンピューター","shinri":"心理学","jinrui":"人類学","bio":"生物学","chishitsu":"地質学","denshi":"電子工学","tenmon":"天文学","hakubutsu":"博物学","butsuri":"物理学","law":"法律","yakugaku":"薬学","rekishi":"歴史"};
-let selectedSkills=[];   // 比較に追加した技能名
-let allSkillNames=[];    // 全キャラの技能名（datalist用）
-const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function num(v){const n=parseInt(v);return isNaN(n)?null:n;}
+function fixDropbox(url){
+  if(!url)return'';
+  if(url.includes('dropbox.com')){let u=url.replace('www.dropbox.com','dl.dropboxusercontent.com').replace('dropbox.com','dl.dropboxusercontent.com');u=u.replace(/([?&])dl=[01]/,'$1raw=1');if(!/[?&]raw=1/.test(u))u+=(u.includes('?')?'&':'?')+'raw=1';return u;}
+  return url;
+}
 
 let chars=[];
+let allSkillNames=[];   // そのデータに実在する技能名（カスタム含む）
+let combine='and';
+let conds=[];           // {item:'ab:str'|'sk:天文学', op:'gte'|'lte'|'eq', val:number|''}
+let _cid=1;
 
 function parseRow(row){
   let sheet={}; try{sheet=JSON.parse(row.data)||{};}catch(e){}
@@ -130,24 +157,20 @@ function parseRow(row){
   const name=inp.pcname||row.char_name||'名無し';
   const furigana=inp.furigana||'';
   const ab={};
-  AB.forEach(a=>{                       // 現在値 = 能力値 + その他修加分(_m) + 一時的増減(_t)
-    const base=num(inp[a]);
-    if(base==null){ab[a]=null;return;}
-    const stem=(a==='int_v')?'int':a;   // INTの修正値はint_m/int_t
-    const m=num(inp[stem+'_m'])||0;
-    const t=num(inp[stem+'_t'])||0;
-    ab[a]=base+m+t;
+  AB.forEach(a=>{
+    const base=num(inp[a]); if(base==null){ab[a]=null;return;}
+    const stem=(a==='int_v')?'int':a;
+    ab[a]=base+(num(inp[stem+'_m'])||0)+(num(inp[stem+'_t'])||0);
   });
-  // 技能合計値マップ（標準技能は名称、カスタムはfreeVal）
   const sk={};
   (sheet.skills||[]).forEach(s=>{
-    if(!s||!s.key) return;
-    let nm = s.key.startsWith('custom_') ? (s.freeVal||'').trim() : SKMAP[s.key];
-    if(!nm) return;
-    const total=(num(s.base)||0)+(num(s.job)||0)+(num(s.int)||0)+(num(s.grw)||0)+(num(s.oth)||0);
-    sk[nm]=total;
+    if(!s||!s.key)return;
+    let nm=s.key.startsWith('custom_')?(s.freeVal||'').trim():SKMAP[s.key];
+    if(!nm)return;
+    sk[nm]=(num(s.base)||0)+(num(s.job)||0)+(num(s.int)||0)+(num(s.grw)||0)+(num(s.oth)||0);
   });
-  return {id:row.id,name,furigana,ab,sk};
+  const img=inp.charImage?fixDropbox(inp.charImage):'';
+  return {id:row.id,name,furigana,ab,sk,img,imgPos:inp.charImagePos||'50% 30%',imgScale:parseFloat(inp.charImageScale)||1.3};
 }
 
 async function load(){
@@ -155,136 +178,144 @@ async function load(){
   try{
     const {data:{user}}=await db.auth.getUser();
     if(!user){msg.innerHTML='ログインが必要です。<br><a href="index.html">一覧ページ</a>でログインしてください。';return;}
-    const {data:list,error}=await db
-      .from('character_sheets')
-      .select('id,char_name,data,updated_at')
-      .eq('user_id',user.id)
-      .order('updated_at',{ascending:false});
+    const {data:list,error}=await db.from('character_sheets').select('id,char_name,data,updated_at').eq('user_id',user.id).order('updated_at',{ascending:false});
     if(error)throw error;
     chars=(list||[]).map(parseRow);
     if(chars.length===0){msg.textContent='保存されたキャラクターがありません。';return;}
+    // 実在技能名を集計
+    const set=new Set();
+    chars.forEach(c=>Object.keys(c.sk).forEach(n=>set.add(n)));
+    allSkillNames=[...set].sort((a,b)=>a.localeCompare(b,'ja'));
     msg.style.display='none';
-    document.getElementById('controls').style.display='block';
-    buildFilters();
-    buildSkillDatalist();
+    document.getElementById('wrap').style.display='flex';
+    addCond(); // 初期の空条件を1つ
     render();
   }catch(e){ msg.textContent='読込エラー: '+e.message; }
 }
 
-function buildFilters(){
-  const wrap=document.getElementById('filters');
-  wrap.innerHTML=AB.map(a=>(
-    `<div class="fcell">`+
-      `<span class="flab">${ABLABEL[a]}</span>`+
-      `<input class="fnum" id="mn_${a}" type="number" inputmode="numeric" placeholder="-" oninput="render()">`+
-      `<span class="ftil">〜</span>`+
-      `<input class="fnum" id="mx_${a}" type="number" inputmode="numeric" placeholder="-" oninput="render()">`+
+/* ===== 条件UI ===== */
+function _itemOptions(selected){
+  let h='<optgroup label="能力値">'+AB.map(a=>`<option value="ab:${a}"${selected==='ab:'+a?' selected':''}>${ABLABEL[a]}</option>`).join('')+'</optgroup>';
+  h+='<optgroup label="技能">'+allSkillNames.map(n=>`<option value="sk:${esc(n)}"${selected==='sk:'+n?' selected':''}>${esc(n)}</option>`).join('')+'</optgroup>';
+  return h;
+}
+function renderConds(){
+  const wrap=document.getElementById('cond_list');
+  wrap.innerHTML=conds.map(c=>(
+    `<div class="cond" data-cid="${c.cid}">`+
+      `<select class="c-item" onchange="updCond(${c.cid},'item',this.value)">${_itemOptions(c.item)}</select>`+
+      `<select class="c-op" onchange="updCond(${c.cid},'op',this.value)">`+
+        `<option value="gte"${c.op==='gte'?' selected':''}>以上</option>`+
+        `<option value="lte"${c.op==='lte'?' selected':''}>以下</option>`+
+        `<option value="eq"${c.op==='eq'?' selected':''}>と等しい</option>`+
+      `</select>`+
+      `<input class="c-val" type="number" inputmode="numeric" value="${c.val}" placeholder="50" oninput="updCond(${c.cid},'val',this.value)">`+
+      `<button class="c-del" title="削除" onclick="delCond(${c.cid})">✕</button>`+
     `</div>`
   )).join('');
+  buildSort();
+}
+function addCond(){
+  const first=conds.length?conds[0].item:(allSkillNames.length?'sk:'+allSkillNames[0]:'ab:str');
+  conds.push({cid:_cid++,item:first,op:'gte',val:''});
+  renderConds();
+}
+function delCond(cid){ conds=conds.filter(c=>c.cid!==cid); renderConds(); render(); }
+function updCond(cid,k,v){ const c=conds.find(x=>x.cid===cid); if(!c)return; c[k]=(k==='val')?(v===''?'':parseInt(v)):v; if(k!=='val')renderConds(); render(); }
+function clearConds(){ conds=[]; addCond(); document.getElementById('name_search').value=''; render(); }
+function setCombine(m){ combine=m; document.getElementById('cmb_and').classList.toggle('on',m==='and'); document.getElementById('cmb_or').classList.toggle('on',m==='or'); render(); }
+
+function _val(c,item){ const[t,k]=item.split(':'); return t==='ab'?c.ab[k]:c.sk[k]; }
+function _activeConds(){ return conds.filter(c=>c.item&&c.val!==''&&c.val!=null&&!isNaN(c.val)); }
+function _condOk(c,cond){
+  const v=_val(c,cond.item); if(v==null)return false;
+  if(cond.op==='gte')return v>=cond.val;
+  if(cond.op==='lte')return v<=cond.val;
+  return v===cond.val;
 }
 
-/* ===== 技能検索・比較 ===== */
-function buildSkillDatalist(){
-  const set=new Set(Object.values(SKMAP));
-  chars.forEach(c=>Object.keys(c.sk||{}).forEach(n=>set.add(n)));
-  allSkillNames=[...set].sort((a,b)=>a.localeCompare(b,'ja'));
-  const dl=document.getElementById('sk_list');
-  if(dl) dl.innerHTML=allSkillNames.map(n=>`<option value="${esc(n)}"></option>`).join('');
-}
-function addSkillCol(){
-  const inp=document.getElementById('sk_input');
-  const nm=(inp.value||'').trim();
-  if(!nm) return;
-  if(!selectedSkills.includes(nm)) selectedSkills.push(nm);
-  inp.value='';
-  buildSkillFilters(); renderChips(); render();
-}
-function removeSkillCol(nm){
-  selectedSkills=selectedSkills.filter(x=>x!==nm);
-  const mn=document.getElementById('smn_'+_skId(nm)); // フィルタ値も消える(再構築)
-  buildSkillFilters(); renderChips(); render();
-}
-function _skId(nm){ return btoa(unescape(encodeURIComponent(nm))).replace(/[^A-Za-z0-9]/g,''); }
-function renderChips(){
-  const wrap=document.getElementById('sk_chips');
-  wrap.innerHTML=selectedSkills.map(nm=>`<span class="skchip">${esc(nm)}<button title="削除" onclick="removeSkillCol('${esc(nm).replace(/'/g,"\\'")}')">✕</button></span>`).join('');
-}
-function buildSkillFilters(){
-  const wrap=document.getElementById('sk_filters');
-  wrap.innerHTML=selectedSkills.map(nm=>{
-    const id=_skId(nm);
-    return `<div class="fcell"><span class="flab" style="width:auto;min-width:30px" title="${esc(nm)}">${esc(nm.length>4?nm.slice(0,4)+'…':nm)}</span>`+
-      `<input class="fnum" id="smn_${id}" type="number" inputmode="numeric" placeholder="-" oninput="render()">`+
-      `<span class="ftil">〜</span>`+
-      `<input class="fnum" id="smx_${id}" type="number" inputmode="numeric" placeholder="-" oninput="render()"></div>`;
-  }).join('');
-}
-function clearFilters(){
-  document.getElementById('search').value='';
-  AB.forEach(a=>{document.getElementById('mn_'+a).value='';document.getElementById('mx_'+a).value='';});
-  selectedSkills.forEach(nm=>{const id=_skId(nm);const a=document.getElementById('smn_'+id),b=document.getElementById('smx_'+id);if(a)a.value='';if(b)b.value='';});
-  render();
+/* ===== 並べ替え ===== */
+function buildSort(){
+  const sel=document.getElementById('sortsel'); const cur=sel.value;
+  const opts=['<option value="">なし</option>'].concat(_activeConds().map(c=>{
+    const[t,k]=c.item.split(':'); const lbl=t==='ab'?ABLABEL[k]:k;
+    return `<option value="${esc(c.item)}">${esc(lbl)}が高い順</option>`;
+  }));
+  sel.innerHTML=opts.join('');
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
 }
 
-function passes(c){
-  const q=document.getElementById('search').value.trim().toLowerCase();
-  if(q && !(c.name.toLowerCase().includes(q) || c.furigana.toLowerCase().includes(q))) return false;
-  for(const a of AB){
-    const mn=num(document.getElementById('mn_'+a).value);
-    const mx=num(document.getElementById('mx_'+a).value);
-    const v=c.ab[a];
-    if(mn!=null){ if(v==null || v<mn) return false; }
-    if(mx!=null){ if(v==null || v>mx) return false; }
-  }
-  for(const nm of selectedSkills){
-    const id=_skId(nm);
-    const mn=num(document.getElementById('smn_'+id)?.value);
-    const mx=num(document.getElementById('smx_'+id)?.value);
-    const v=c.sk[nm];
-    if(mn!=null){ if(v==null || v<mn) return false; }
-    if(mx!=null){ if(v==null || v>mx) return false; }
-  }
-  return true;
-}
-
-let sortKey=null, sortDir='asc';
-function sortBy(key){
-  if(sortKey===key){ sortDir = (sortDir==='asc'?'desc':'asc'); }
-  else { sortKey=key; sortDir = (key==='name'?'asc':'desc'); } // 能力値は初回降順（高い順）
-  render();
-}
-
+/* ===== 描画 ===== */
+function _itemLabel(item){ const[t,k]=item.split(':'); return t==='ab'?ABLABEL[k]:k; }
 function render(){
-  const rows=chars.filter(passes);
-  if(sortKey){
-    const dir = sortDir==='asc'?1:-1;
-    rows.sort((a,b)=>{
-      if(sortKey==='name') return String(a.name).localeCompare(String(b.name),'ja')*dir;
-      let va,vb;
-      if(sortKey.startsWith('sk:')){ const nm=sortKey.slice(3); va=a.sk[nm]; vb=b.sk[nm]; }
-      else { va=a.ab[sortKey]; vb=b.ab[sortKey]; }
-      const an=(va==null), bn=(vb==null);
-      if(an&&bn) return 0;
-      if(an) return 1;   // 未入力は常に末尾
-      if(bn) return -1;
-      return (va-vb)*dir;
+  const q=(document.getElementById('name_search').value||'').trim().toLowerCase();
+  const active=_activeConds();
+  let rows=chars.filter(c=>{
+    if(q && !(c.name.toLowerCase().includes(q)||c.furigana.toLowerCase().includes(q)))return false;
+    if(active.length){
+      const res=active.map(cd=>_condOk(c,cd));
+      if(combine==='and'&&!res.every(Boolean))return false;
+      if(combine==='or'&&!res.some(Boolean))return false;
+    }
+    return true;
+  });
+  // 並べ替え
+  const sv=document.getElementById('sortsel').value;
+  if(sv){ rows.sort((a,b)=>{ const va=_val(a,sv),vb=_val(b,sv); const an=va==null,bn=vb==null; if(an&&bn)return 0; if(an)return 1; if(bn)return -1; return vb-va; }); }
+
+  document.getElementById('cnt').textContent=rows.length;
+  const cardsEl=document.getElementById('cards');
+  const noneEl=document.getElementById('none');
+  if(!rows.length){ cardsEl.innerHTML=''; noneEl.style.display='block'; buildSort(); return; }
+  noneEl.style.display='none';
+
+  const condItems=active.map(c=>c.item);
+  cardsEl.innerHTML=rows.map(c=>{
+    // 表示する行：条件の項目を先頭(ヒット強調)、続いて高い技能
+    const shown=new Set();
+    let rowsHtml='';
+    condItems.forEach(item=>{
+      if(shown.has(item))return; shown.add(item);
+      const v=_val(c,item);
+      rowsHtml+=`<div class="srow hit"><span class="k">${esc(_itemLabel(item))}</span><span class="v">${v==null?'–':v}</span></div>`;
     });
-  }
-  document.getElementById('count').textContent=`${rows.length}件 / 全${chars.length}件`;
-  const ind = k => sortKey===k ? `<span class="sarr">${sortDir==='asc'?'▲':'▼'}</span>` : '';
-  const head='<thead><tr>'+
-    `<th class="name" onclick="sortBy('name')">PC名${ind('name')}</th>`+
-    AB.map(a=>`<th onclick="sortBy('${a}')">${ABLABEL[a]}${ind(a)}</th>`).join('')+
-    selectedSkills.map(nm=>`<th class="skcol" title="${esc(nm)}" onclick="sortBy('sk:${esc(nm)}')">${esc(nm)}${ind('sk:'+nm)}</th>`).join('')+
-    '</tr></thead>';
-  const body='<tbody>'+rows.map(c=>(
-    `<tr><td class="name" title="${esc(c.name)}">${esc(c.name)}</td>`+
-    AB.map(a=>{const v=c.ab[a];return v==null?`<td class="na">–</td>`:`<td>${v}</td>`;}).join('')+
-    selectedSkills.map(nm=>{const v=c.sk[nm];return (v==null)?`<td class="na">–</td>`:`<td>${v}</td>`;}).join('')+
-    `</tr>`
-  )).join('')+'</tbody>';
-  const cols=1+AB.length+selectedSkills.length;
-  document.getElementById('tbl').innerHTML=head+(rows.length?body:`<tbody><tr><td class="na" colspan="${cols}" style="padding:14px">該当なし</td></tr></tbody>`);
+    // 技能を高い順に補完（条件外）。合計3〜4行になるまで
+    const skEntries=Object.entries(c.sk).sort((a,b)=>b[1]-a[1]);
+    let filled=shown.size, alt=0;
+    const need=Math.max(0,3-shown.size);
+    for(const[nm,v] of skEntries){
+      if(need<=0)break;
+      const item='sk:'+nm; if(shown.has(item))continue;
+      shown.add(item);
+      rowsHtml+=`<div class="srow ${alt%2?'alt':''}"><span class="k">${esc(nm)}</span><span class="v">${v}</span></div>`;
+      alt++; if(shown.size-condItems.length>=need)break;
+    }
+    // その他件数（技能＋能力値のうち未表示）
+    const totalItems=Object.keys(c.sk).length+AB.filter(a=>c.ab[a]!=null).length;
+    const more=totalItems-shown.size;
+    const moreHtml=more>0?`<div class="more" onclick="expandCard(this,'${c.id}')">▸ その他の技能・能力値 +${more}</div>`:'';
+    const icon=c.img?`<div class="ic" style="background-image:url('${esc(c.img)}');background-size:${Math.round(c.imgScale*100)}%;background-position:${esc(c.imgPos)}"></div>`
+                     :`<div class="ic">${esc(c.name.charAt(0)||'?')}</div>`;
+    return `<div class="pcard" data-id="${c.id}">`+
+      icon+
+      `<div class="body"><div class="top"><span class="pname" title="${esc(c.name)}">${esc(c.name)}</span>`+
+      `<a class="detail" href="sheet.html?id=${c.id}">詳細</a></div>`+
+      `<div class="srows">${rowsHtml}</div>${moreHtml}</div></div>`;
+  }).join('');
+  buildSort();
+}
+
+// 「その他」展開：全技能＋能力値を表示
+function expandCard(el,id){
+  const c=chars.find(x=>x.id===id); if(!c)return;
+  const card=el.closest('.pcard'); const box=card.querySelector('.srows');
+  const active=_activeConds().map(x=>x.item);
+  let html='';
+  active.forEach(item=>{ const v=_val(c,item); html+=`<div class="srow hit"><span class="k">${esc(_itemLabel(item))}</span><span class="v">${v==null?'–':v}</span></div>`; });
+  let alt=0;
+  AB.forEach(a=>{ if(c.ab[a]==null)return; if(active.includes('ab:'+a))return; html+=`<div class="srow ${alt%2?'alt':''}"><span class="k">${ABLABEL[a]}</span><span class="v">${c.ab[a]}</span></div>`; alt++; });
+  Object.entries(c.sk).sort((a,b)=>b[1]-a[1]).forEach(([nm,v])=>{ if(active.includes('sk:'+nm))return; html+=`<div class="srow ${alt%2?'alt':''}"><span class="k">${esc(nm)}</span><span class="v">${v}</span></div>`; alt++; });
+  box.innerHTML=html; el.remove();
 }
 
 load();
