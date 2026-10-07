@@ -136,6 +136,10 @@ function toggleTheme(){applyTheme(document.body.classList.contains('light')?'dar
 const AB=['str','con','pow','dex','app','siz','int_v','edu'];
 const ABLABEL={str:'STR',con:'CON',pow:'POW',dex:'DEX',app:'APP',siz:'SIZ',int_v:'INT',edu:'EDU'};
 const SKMAP={"kaihi":"回避","kick":"キック","kumi":"組みつき","punch":"こぶし(パンチ)","atama":"頭突き","tousha":"投擲","ma":"武道(MA)","gun":"拳銃","smg":"サブマシンガン","sg":"ショットガン","mg":"マシンガン","rifle":"ライフル","firstaid":"応急手当","keylock":"鍵開け","kakusu":"隠す","hide":"隠れる","kikiimi":"聞き耳","sneak":"忍び歩き","photo":"写真術","psych":"精神分析","track":"追跡","climb":"登攀","lib":"図書館","meboshi":"目星","drive":"運転","mech":"機械修理","heavymach":"重機械操作","horse":"乗馬","swim":"水泳","make":"製作","operate":"操縦","jump":"跳躍","elec":"電気修理","navi":"ナビゲート","hensou":"変装","ii":"言いくるめ","shin":"信用","settoku":"説得","negiri":"値切り","kokugo":"母国語","gaikokugo":"外国語","ika":"医学","occult":"オカルト","chem":"化学","mythos":"クトゥルフ神話","art":"芸術","keiri":"経理","kouko":"考古学","pc":"コンピューター","shinri":"心理学","jinrui":"人類学","bio":"生物学","chishitsu":"地質学","denshi":"電子工学","tenmon":"天文学","hakubutsu":"博物学","butsuri":"物理学","law":"法律","yakugaku":"薬学","rekishi":"歴史"};
+// CSの技能並び順（戦闘→探索→行動→交渉→知識）
+const CS_SKILL_ORDER=["回避","キック","組みつき","こぶし(パンチ)","頭突き","投擲","武道(MA)","拳銃","サブマシンガン","ショットガン","マシンガン","ライフル","応急手当","鍵開け","隠す","隠れる","聞き耳","忍び歩き","写真術","精神分析","追跡","登攀","図書館","目星","運転","機械修理","重機械操作","乗馬","水泳","製作","操縦","跳躍","電気修理","ナビゲート","変装","言いくるめ","信用","説得","値切り","母国語","外国語","医学","オカルト","化学","クトゥルフ神話","芸術","経理","考古学","コンピューター","心理学","人類学","生物学","地質学","電子工学","天文学","博物学","物理学","法律","薬学","歴史"];
+const CS_ORDER_IDX={}; CS_SKILL_ORDER.forEach((n,i)=>CS_ORDER_IDX[n]=i);
+function _skillSort(a,b){ const ia=CS_ORDER_IDX[a], ib=CS_ORDER_IDX[b]; if(ia!=null&&ib!=null)return ia-ib; if(ia!=null)return -1; if(ib!=null)return 1; return a.localeCompare(b,'ja'); }
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function num(v){const n=parseInt(v);return isNaN(n)?null:n;}
@@ -185,7 +189,7 @@ async function load(){
     // 実在技能名を集計
     const set=new Set();
     chars.forEach(c=>Object.keys(c.sk).forEach(n=>set.add(n)));
-    allSkillNames=[...set].sort((a,b)=>a.localeCompare(b,'ja'));
+    allSkillNames=[...set].sort(_skillSort);
     msg.style.display='none';
     document.getElementById('wrap').style.display='flex';
     addCond(); // 初期の空条件を1つ
@@ -209,7 +213,7 @@ function renderConds(){
         `<option value="lte"${c.op==='lte'?' selected':''}>以下</option>`+
         `<option value="eq"${c.op==='eq'?' selected':''}>と等しい</option>`+
       `</select>`+
-      `<input class="c-val" type="number" inputmode="numeric" value="${c.val}" placeholder="50" oninput="updCond(${c.cid},'val',this.value)">`+
+      `<input class="c-val" type="number" inputmode="numeric" value="${c.val}" placeholder="80" oninput="updCond(${c.cid},'val',this.value)">`+
       `<button class="c-del" title="削除" onclick="delCond(${c.cid})">✕</button>`+
     `</div>`
   )).join('');
@@ -217,7 +221,7 @@ function renderConds(){
 }
 function addCond(){
   const first=conds.length?conds[0].item:(allSkillNames.length?'sk:'+allSkillNames[0]:'ab:str');
-  conds.push({cid:_cid++,item:first,op:'gte',val:''});
+  conds.push({cid:_cid++,item:first,op:'gte',val:80});
   renderConds();
 }
 function delCond(cid){ conds=conds.filter(c=>c.cid!==cid); renderConds(); render(); }
