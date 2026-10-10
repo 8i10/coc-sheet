@@ -11,7 +11,13 @@
 <meta name="apple-mobile-web-app-title" content="CoC6 CS">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#333333">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#2c2c3c">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./offline.js"></script>
 <title>CoC6版 キャラクターシート</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
@@ -3006,6 +3012,19 @@ function applyData(json){
 }
 // 保存ボタン
 let currentCharId = null;
+let _uid = null;   // 同期キュー用のユーザーID（オンライン時に取得して保持）
+async function _getUid(){ try{ const {data:{user}}=await db.auth.getUser(); if(user){_uid=user.id; return user.id;} }catch(_){} return _uid; }
+// オフライン/失敗時にローカル保存＋同期キューへ
+async function _saveOffline(name,data){
+  try{
+    if(!window.OCO) return false;
+    if(!currentCharId){ currentCharId='';  }
+    if(!currentCharId){ currentCharId = OCO.newLocalId(); if(history.replaceState)history.replaceState(null,'','sheet.html?id='+currentCharId); }
+    const rec={id:currentCharId,char_name:name,data:data,updated_at:new Date().toISOString()};
+    await OCO.queueUpsert(rec,_uid);
+    return true;
+  }catch(e){ console.warn('オフライン保存失敗',e); return false; }
+}
 
 // 閲覧URLを再生成（以前のURLを無効化）
 async function regenShareUrl(){
@@ -3094,12 +3113,21 @@ async function saveToStorage() {
   let data;
   try { data = collectData(); } catch(e) { alert('データ収集エラー: ' + e.message + '\n' + e.stack); return; }
   const name = document.getElementById('pcname').value || '名無し';
+  // オフライン時はローカル保存＋同期キューへ
+  if(window.OCO && !navigator.onLine){
+    const ok=await _saveOffline(name,data);
+    try{ const rec={id:currentCharId,char_name:name,data,updated_at:new Date().toISOString()}; await OCO.mirrorOne(rec); }catch(_){}
+    showSaveMsg(ok?'✓ オフライン保存（後で同期）':'保存に失敗');
+    return;
+  }
   try {
     const { data: { user } } = await db.auth.getUser();
     if (!user) { alert('ログインしてください'); return; }
+    _uid=user.id;
 
+    const isLocal = currentCharId && String(currentCharId).startsWith('local_');
     // currentCharId があればそのCSを更新、なければ新規作成（PC名での上書きはしない）
-    if (currentCharId) {
+    if (currentCharId && !isLocal) {
       // シートがタグ未読込（古いセッション）の場合、一覧で付けたタグを保存で消さないようサーバー値を保持
       if(_loadedTags===null){
         try{
@@ -3111,20 +3139,27 @@ async function saveToStorage() {
         .update({ char_name: name, data: data, updated_at: new Date() })
         .eq('id', currentCharId)
         .eq('user_id', user.id);
-      if(upErr){alert('更新エラー: '+upErr.message);return;}
+      if(upErr)throw upErr;
     } else {
+      const oldLocal = isLocal ? currentCharId : null;
       const { data: inserted, error: insErr } = await db.from('character_sheets')
         .insert({ user_id: user.id, char_name: name, data: data })
         .select('id')
         .single();
-      if(insErr){alert('挿入エラー: '+insErr.message);return;}
+      if(insErr)throw insErr;
       if (inserted) currentCharId = inserted.id;
       if (currentCharId && history.replaceState) history.replaceState(null,'','sheet.html?id='+currentCharId);
+      if(oldLocal && window.OCO){ try{ await OCO.removeOne(oldLocal); }catch(_){} }
       console.log('[SAVE] 新規挿入成功 id=',inserted?.id);
     }
+    // オフライン用ミラー更新＋保留分の同期
+    try{ if(window.OCO){ await OCO.mirrorOne({id:currentCharId,char_name:name,data,updated_at:new Date().toISOString()}); OCO.flush(db); } }catch(_){}
     showSaveMsg();
   } catch(e) {
-    alert('保存エラー: ' + e.message);
+    // サーバ到達不可 → オフライン保存にフォールバック
+    const ok=await _saveOffline(name,data);
+    try{ if(window.OCO)await OCO.mirrorOne({id:currentCharId,char_name:name,data,updated_at:new Date().toISOString()}); }catch(_){}
+    showSaveMsg(ok?'✓ オフライン保存（後で同期）':('保存エラー: '+e.message));
   }
 }
 
@@ -4457,16 +4492,22 @@ const SHEET_KEY = 'coc_sheet_draft';
     try {
       const { data: { user } } = await db.auth.getUser();
       if (user) {
+        _uid=user.id;
         const { data, error } = await db.from('character_sheets').select('data').eq('id', urlId).single();
         if (!error && data) {
           applyData(data.data);
           currentCharId = urlId;
           try { const o = JSON.parse(data.data); o._charId = urlId; sessionStorage.setItem(SHEET_KEY, JSON.stringify(o)); }
           catch(_) { sessionStorage.setItem(SHEET_KEY, data.data); }
+          try{ if(window.OCO)await OCO.mirrorOne({id:urlId,char_name:(JSON.parse(data.data).inputs||{}).pcname||'',data:data.data,updated_at:new Date().toISOString()}); }catch(_){}
           return;
         }
       }
     } catch(e) { console.warn('load error (url id)', e); }
+    // オフライン/失敗 → 端末ミラーから読込
+    try{
+      if(window.OCO){ const rec=await OCO.getOne(urlId); if(rec&&rec.data){ applyData(rec.data); currentCharId=urlId; sessionStorage.setItem(SHEET_KEY, rec.data); return; } }
+    }catch(_){}
   }
 
   // 1) 一覧からの「編集」遷移 → Supabaseから読込
@@ -4477,16 +4518,19 @@ const SHEET_KEY = 'coc_sheet_draft';
     try {
       const { data: { user } } = await db.auth.getUser();
       if (user) {
+        _uid=user.id;
         const { data, error } = await db.from('character_sheets').select('data').eq('id', loadId).single();
         if (!error && data) {
           applyData(data.data);
           currentCharId = loadId;
           try { const o = JSON.parse(data.data); o._charId = loadId; sessionStorage.setItem(SHEET_KEY, JSON.stringify(o)); }
           catch(_) { sessionStorage.setItem(SHEET_KEY, data.data); }
+          try{ if(window.OCO)await OCO.mirrorOne({id:loadId,char_name:(JSON.parse(data.data).inputs||{}).pcname||'',data:data.data,updated_at:new Date().toISOString()}); }catch(_){}
           return;
         }
       }
     } catch(e) { console.warn('load error', e); }
+    try{ if(window.OCO){ const rec=await OCO.getOne(loadId); if(rec&&rec.data){ applyData(rec.data); currentCharId=loadId; sessionStorage.setItem(SHEET_KEY, rec.data); return; } } }catch(_){}
   }
 
   // 2) 新規作成フラグがある場合は白紙のまま
@@ -4544,35 +4588,51 @@ function saveDraft() {
 
 async function autoSaveToSupabase() {
   if (_autoSaving) return;
+  const name = document.getElementById('pcname')?.value || '名無し';
+  if (!name || name === '名無し') return; // PC名未入力は保存しない
+  const data = collectData();
+  const nm = name;
+  // sessionStorageドラフトは常に更新
+  try { const obj=JSON.parse(data); if(currentCharId)obj._charId=currentCharId; sessionStorage.setItem(SHEET_KEY, JSON.stringify(obj)); } catch(e){}
+  // オフライン → ローカル保存＋同期キュー
+  if (window.OCO && !navigator.onLine){
+    await _saveOffline(nm,data);
+    try{ await OCO.mirrorOne({id:currentCharId,char_name:nm,data,updated_at:new Date().toISOString()}); }catch(_){}
+    showSaveMsg('✓ オフライン保存');
+    return;
+  }
   try {
-    const { data: { user } } = await db.auth.getUser();
-    if (!user) return; // 未ログインは保存しない
-    const name = document.getElementById('pcname')?.value || '名無し';
-    if (!name || name === '名無し') return; // PC名未入力は保存しない
     _autoSaving = true;
-    const data = collectData();
-    const nm = document.getElementById('pcname').value || '名無し';
-    if (currentCharId) {
-      await db.from('character_sheets').update({char_name: nm, data, updated_at: new Date()}).eq('id', currentCharId).eq('user_id', user.id);
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) { _autoSaving=false; return; }
+    _uid=user.id;
+    const isLocal = currentCharId && String(currentCharId).startsWith('local_');
+    if (currentCharId && !isLocal) {
+      const {error}=await db.from('character_sheets').update({char_name: nm, data, updated_at: new Date()}).eq('id', currentCharId).eq('user_id', user.id);
+      if(error)throw error;
     } else {
-      const { data: ins } = await db.from('character_sheets')
+      const oldLocal = isLocal ? currentCharId : null;
+      const { data: ins, error } = await db.from('character_sheets')
         .insert({user_id: user.id, char_name: nm, data}).select('id').single();
+      if(error)throw error;
       if (ins) currentCharId = ins.id;
       if (currentCharId && history.replaceState) history.replaceState(null,'','sheet.html?id='+currentCharId);
+      if(oldLocal && window.OCO){ try{ await OCO.removeOne(oldLocal); }catch(_){} }
     }
-    // sessionStorageも更新
-    try {
-      const obj = JSON.parse(data);
-      if (currentCharId) obj._charId = currentCharId;
-      sessionStorage.setItem(SHEET_KEY, JSON.stringify(obj));
-    } catch(e) {}
+    try{ if(window.OCO){ await OCO.mirrorOne({id:currentCharId,char_name:nm,data,updated_at:new Date().toISOString()}); OCO.flush(db); } }catch(_){}
     showSaveMsg('✓ 自動保存');
   } catch(e) {
-    console.warn('自動保存エラー:', e);
+    // 失敗 → オフライン保存
+    await _saveOffline(nm,data);
+    try{ if(window.OCO)await OCO.mirrorOne({id:currentCharId,char_name:nm,data,updated_at:new Date().toISOString()}); }catch(_){}
+    showSaveMsg('✓ オフライン保存');
+    console.warn('自動保存→オフライン保存:', e);
   } finally {
     _autoSaving = false;
   }
 }
+// オンライン復帰で同期
+window.addEventListener('online',()=>{ try{ if(window.OCO)OCO.flush(db); }catch(_){} });
 
 document.addEventListener('input', saveDraft);
 document.addEventListener('change', saveDraft);

@@ -11,7 +11,13 @@
 <meta name="apple-mobile-web-app-title" content="CoC6 一覧">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#333333">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#2c2c3c">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./offline.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <title>キャラクター一覧 - CoC6版</title>
 <style>
@@ -1441,10 +1447,33 @@ async function loadList(){
     allChars=list||[];
     buildTagFilter();
     applyFilters();
+    try{ if(window.OCO){ await OCO.mirrorList(list); OCO.flush(db); } }catch(_){}
+    _setOffline(false);
   }catch(e){
-    loadEl.textContent='読込エラー: '+e.message;
+    // オフライン/サーバ到達不可 → 端末のミラーから表示
+    try{
+      if(window.OCO){
+        const cached=await OCO.getList();
+        if(cached&&cached.length){
+          loadEl.style.display='none';
+          allChars=cached;
+          buildTagFilter(); applyFilters();
+          _setOffline(true);
+          return;
+        }
+      }
+    }catch(_){}
+    loadEl.textContent='読込エラー: '+e.message+'（オフラインの場合、一度オンラインで開くと以降オフライン表示できます）';
   }
 }
+function _setOffline(off){
+  let b=document.getElementById('offline_badge');
+  if(off){
+    if(!b){ b=document.createElement('div'); b.id='offline_badge'; b.style.cssText='position:fixed;bottom:10px;left:10px;z-index:99998;background:#c0392b;color:#fff;font-size:12px;padding:5px 12px;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.3)'; document.body.appendChild(b); }
+    b.textContent='⚠ オフライン表示中';
+  } else if(b){ b.remove(); }
+}
+window.addEventListener('online',()=>{ try{ if(window.OCO)OCO.flush(db); }catch(_){}; setTimeout(loadList,400); });
 
 /* ===== スプレッドシートHTML 一括取込（新規キャラとして追加） ===== */
 function bulkImportSpreadsheets(){

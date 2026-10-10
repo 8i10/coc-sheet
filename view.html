@@ -11,7 +11,13 @@
 <meta name="apple-mobile-web-app-title" content="CoC6 閲覧">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#333333">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#2c2c3c">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./offline.js"></script>
 <title>CoC6版 キャラクターシート</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
@@ -1870,8 +1876,15 @@ async function initViewMode() {
   const id = params.get('id');
   if (!id) { document.body.innerHTML = '<div style="padding:40px;text-align:center">IDが指定されていません</div>'; return; }
 
-  const { data, error } = await db.from('character_sheets').select('*').eq('id', id).single();
-  if (error || !data) { document.body.innerHTML = '<div style="padding:40px;text-align:center">データが見つかりません: ' + (error?.message||'') + '</div>'; return; }
+  let data=null, error=null;
+  try{ const r=await db.from('character_sheets').select('*').eq('id', id).single(); data=r.data; error=r.error; }catch(e){ error=e; }
+  if (error || !data) {
+    // オフライン/失敗 → 端末ミラーから閲覧
+    try{ if(window.OCO){ const rec=await OCO.getOne(id); if(rec&&rec.data){ data={data:rec.data}; error=null; } } }catch(_){}
+  } else {
+    try{ if(window.OCO)await OCO.mirrorOne({id,char_name:data.char_name,data:data.data,updated_at:data.updated_at}); }catch(_){}
+  }
+  if (!data) { document.body.innerHTML = '<div style="padding:40px;text-align:center">データが見つかりません: ' + (error&&error.message||'') + '</div>'; return; }
 
   const sheet = JSON.parse(data.data);
 
