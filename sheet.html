@@ -3774,9 +3774,10 @@ function parseSpreadsheetHTML(html){
         // 右隣のセルが値
         for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&t!=='ふりがな'){furigana=t;break;}}
       }
-      // PC名
-      if(v==='PC名' && !pcname){
-        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&t!=='PC名'){pcname=t;break;}}
+      // PC名（テンプレにより「PC名」「キャラクター名」等のラベル差を許容。武器表ヘッダ「名前」とは衝突させない）
+      if((v==='PC名'||v==='キャラクター名'||v==='ＰＣ名'||v==='キャラクター名：') && !pcname){
+        const _NLBL=['PC名','キャラクター名','ＰＣ名','キャラクター名：'];
+        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&!_NLBL.includes(t)){pcname=t;break;}}
       }
       // 文字色
       if(v==='文字色' && !txtcolor){
