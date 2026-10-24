@@ -599,11 +599,10 @@ body:not(.light) .card-top{ border:none !important; }
 /* ===== 表示切替アイコン（状態の右） ===== */
 #vm_toggle{margin-left:auto;font-size:16px;padding:4px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;cursor:pointer;line-height:1}
 #vm_toggle:hover{border-color:var(--accent)}
-/* ===== アークナイツ風グリッド（横スクロール・2行） ===== */
-#grid.grid-ark{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-auto-columns:150px;gap:10px;overflow-x:auto;overflow-y:hidden;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+/* ===== アークナイツ風グリッド（横スクロール・ウィンドウ縦に2PC） ===== */
+#grid.grid-ark{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,1fr);grid-auto-columns:max-content;gap:12px;overflow-x:auto;overflow-y:hidden;padding-bottom:10px;-webkit-overflow-scrolling:touch;height:calc(100dvh - 220px);min-height:380px}
 #grid.grid-ark .group-head{display:none}
-@media(max-width:600px){ #grid.grid-ark{grid-auto-columns:150px !important} }
-.ark-card{position:relative;aspect-ratio:3/4;border-radius:9px;overflow:hidden;background:#20202a;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.28);border:1px solid var(--border)}
+.ark-card{position:relative;height:100%;width:auto;aspect-ratio:7/10;border-radius:9px;overflow:hidden;background:#20202a;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.28);border:1px solid var(--border)}
 .ark-card:hover{box-shadow:0 3px 14px rgba(0,0,0,.45)}
 .ark-img{position:absolute;inset:0;background-size:cover;background-repeat:no-repeat}
 .ark-noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;color:#555;background:linear-gradient(135deg,#2a2a38,#1b1b24)}
@@ -1565,6 +1564,21 @@ function setViewMode(m){
   applyFilters();
 }
 function toggleViewMode(){ setViewMode(viewMode==='ark'?'list':'ark'); }
+// アーク風表示時：マウスホイールの縦回転を横スクロールに変換
+(function(){
+  function bindWheel(){
+    const g=document.getElementById('grid'); if(!g||g._arkWheel)return; g._arkWheel=1;
+    g.addEventListener('wheel',function(e){
+      if(!g.classList.contains('grid-ark'))return;
+      const d = Math.abs(e.deltaY)>=Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if(!d)return;
+      e.preventDefault();
+      g.scrollLeft += d;
+    }, {passive:false});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindWheel);
+  else bindWheel();
+})();
 function renderCards(chars){
   const grid=document.getElementById('grid');
   // 既存カード・見出しを削除（loading/empty/no_result以外）
