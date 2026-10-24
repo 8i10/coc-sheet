@@ -600,22 +600,22 @@ body:not(.light) .card-top{ border:none !important; }
 #vm_toggle{margin-left:auto;font-size:16px;padding:4px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;cursor:pointer;line-height:1}
 #vm_toggle:hover{border-color:var(--accent)}
 /* ===== アークナイツ風グリッド（横スクロール・ウィンドウ縦に2PC） ===== */
-#grid.grid-ark{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,1fr);grid-auto-columns:calc((100dvh - 226px) * 0.33);gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:8px;-webkit-overflow-scrolling:touch;height:calc(100dvh - 220px);min-height:380px}
+#grid.grid-ark{display:grid;grid-auto-flow:column;grid-template-columns:none;grid-template-rows:repeat(2,1fr);grid-auto-columns:calc((100dvh - 226px) * 0.27);gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:8px;-webkit-overflow-scrolling:touch;height:calc(100dvh - 220px);min-height:380px}
 #grid.grid-ark .group-head{display:none}
-.ark-card{position:relative;height:100%;width:100%;border-radius:9px;overflow:hidden;background:#20202a;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.28);border:1px solid var(--border)}
+.ark-card{position:relative;height:100%;width:100%;border-radius:4px;overflow:hidden;background:#20202a;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.28);border:1px solid var(--border)}
 .ark-card:hover{box-shadow:0 3px 14px rgba(0,0,0,.45)}
 .ark-img{position:absolute;inset:0;background-size:cover;background-repeat:no-repeat}
 .ark-noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;color:#555;background:linear-gradient(135deg,#2a2a38,#1b1b24)}
 .ark-status-dot{position:absolute;top:6px;right:6px;z-index:3;font-size:9px;font-weight:700;color:#fff;padding:1px 6px;border-radius:9px}
-.ark-overlay{position:absolute;left:0;right:0;bottom:0;z-index:2;background:linear-gradient(transparent,rgba(0,0,0,.82) 55%);padding:30px 6px 6px}
+.ark-overlay{position:absolute;left:0;right:0;bottom:0;z-index:2;background:linear-gradient(transparent,rgba(0,0,0,.85) 45%);padding:24px 6px 5px}
 .ark-botrow{display:flex;align-items:flex-end;gap:5px}
-.ark-san{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:rgba(20,20,26,.78);border:2px solid #e2aa46;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
-.ark-san .lab{font-size:7px;color:#e2aa46;font-weight:700;letter-spacing:.5px}
-.ark-san .val{font-size:15px;color:#fff;font-weight:700;margin-top:-1px}
+.ark-san{flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:rgba(20,20,26,.85);border:2px solid #e2aa46;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ark-san .lab{font-size:8px;color:#e2aa46;font-weight:700;letter-spacing:.5px}
+.ark-san .val{font-size:21px;color:#fff;font-weight:700;margin-top:0}
 .ark-acts{margin-left:auto;display:flex;gap:4px}
-.ark-act{width:30px;height:30px;border-radius:6px;border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;background:rgba(40,40,52,.82);color:#fff}
+.ark-act{width:32px;height:32px;border-radius:3px;border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;background:rgba(40,40,52,.82);color:#fff}
 .ark-act:hover{background:var(--accent2)}
-.ark-name{margin-top:5px;color:#fff;font-size:12px;font-weight:700;text-align:center;text-shadow:0 1px 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ark-name{margin-top:4px;color:#fff;font-size:14px;font-weight:700;text-align:right;text-shadow:0 1px 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 
 <!-- PWA: Safari スタンドアロンモード維持 -->
