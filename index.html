@@ -596,13 +596,13 @@ body.light .card-job{ color:#111 !important; }
 body:not(.light) .card{ border-color:var(--border) !important; }
 body:not(.light) .card-top{ border:none !important; }
 
-/* ===== 表示切替ボタン ===== */
-#viewmode_bar{display:flex;gap:6px;margin:4px 0 10px}
-#viewmode_bar button{font-size:12px;padding:5px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
-#viewmode_bar button.on{background:var(--accent2);color:#fff;border-color:var(--accent2);font-weight:700}
-/* ===== アークナイツ風グリッド ===== */
-#grid.grid-ark{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
-@media(max-width:600px){ #grid.grid-ark{grid-template-columns:repeat(auto-fill,minmax(108px,1fr)) !important} }
+/* ===== 表示切替アイコン（状態の右） ===== */
+#vm_toggle{margin-left:auto;font-size:16px;padding:4px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;cursor:pointer;line-height:1}
+#vm_toggle:hover{border-color:var(--accent)}
+/* ===== アークナイツ風グリッド（横スクロール・2行） ===== */
+#grid.grid-ark{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-auto-columns:150px;gap:10px;overflow-x:auto;overflow-y:hidden;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+#grid.grid-ark .group-head{display:none}
+@media(max-width:600px){ #grid.grid-ark{grid-auto-columns:150px !important} }
 .ark-card{position:relative;aspect-ratio:3/4;border-radius:9px;overflow:hidden;background:#20202a;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.28);border:1px solid var(--border)}
 .ark-card:hover{box-shadow:0 3px 14px rgba(0,0,0,.45)}
 .ark-img{position:absolute;inset:0;background-size:cover;background-repeat:no-repeat}
@@ -690,12 +690,6 @@ if (('standalone' in navigator) && navigator.standalone) {
     </div>
   </div>
 
-  <!-- 表示切替（検索の下） -->
-  <div id="viewmode_bar" style="display:none">
-    <button id="vm_list" onclick="setViewMode('list')">📋 リスト</button>
-    <button id="vm_ark" onclick="setViewMode('ark')">🎴 アーク風</button>
-  </div>
-
   <!-- 並び替え・状態フィルタ -->
   <div id="ctrlbar">
     <label>並び替え</label>
@@ -726,6 +720,7 @@ if (('standalone' in navigator) && navigator.standalone) {
       <option value="dead">継続不可</option>
       <option value="insane">永久狂気</option>
     </select>
+    <button id="vm_toggle" onclick="toggleViewMode()" title="表示切替（リスト／アーク風）">🎴</button>
   </div>
   <div id="bulkbar">
     <button id="select_toggle" onclick="toggleSelectMode()">☑ 一括選択</button>
@@ -1557,22 +1552,25 @@ function bulkImportSpreadsheets(){
 
 // 表示モード（list=従来 / ark=アークナイツ風）
 let viewMode = (function(){ try{return localStorage.getItem('coc_view_mode')||'list';}catch(e){return 'list';} })();
+function _updVmIcon(){
+  const b=document.getElementById('vm_toggle'); if(!b)return;
+  // 現在の表示モードを示すアイコン（タップで切替）
+  b.textContent = (viewMode==='ark') ? '📋' : '🎴';
+  b.title = (viewMode==='ark') ? 'リスト表示に切替' : 'アーク風表示に切替';
+}
 function setViewMode(m){
   viewMode=m;
   try{ localStorage.setItem('coc_view_mode',m); }catch(e){}
-  const bl=document.getElementById('vm_list'), ba=document.getElementById('vm_ark');
-  if(bl)bl.classList.toggle('on',m==='list'); if(ba)ba.classList.toggle('on',m==='ark');
+  _updVmIcon();
   applyFilters();
 }
+function toggleViewMode(){ setViewMode(viewMode==='ark'?'list':'ark'); }
 function renderCards(chars){
   const grid=document.getElementById('grid');
   // 既存カード・見出しを削除（loading/empty/no_result以外）
   [...grid.querySelectorAll('.card, .group-head, .ark-card')].forEach(el=>el.remove());
   grid.classList.toggle('grid-ark', viewMode==='ark');
-  // 切替ボタンの表示＆状態
-  const vb=document.getElementById('viewmode_bar'); if(vb)vb.style.display='flex';
-  const bl=document.getElementById('vm_list'), ba=document.getElementById('vm_ark');
-  if(bl)bl.classList.toggle('on',viewMode==='list'); if(ba)ba.classList.toggle('on',viewMode==='ark');
+  _updVmIcon();
 
   document.getElementById('empty').style.display='none';
   document.getElementById('no_result').style.display='none';
