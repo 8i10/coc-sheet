@@ -596,6 +596,29 @@ body.light .card-job{ color:#111 !important; }
 body:not(.light) .card{ border-color:var(--border) !important; }
 body:not(.light) .card-top{ border:none !important; }
 
+/* ===== 表示切替ボタン ===== */
+#viewmode_bar{display:flex;gap:6px;margin:4px 0 10px}
+#viewmode_bar button{font-size:12px;padding:5px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+#viewmode_bar button.on{background:var(--accent2);color:#fff;border-color:var(--accent2);font-weight:700}
+/* ===== アークナイツ風グリッド ===== */
+#grid.grid-ark{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+@media(max-width:600px){ #grid.grid-ark{grid-template-columns:repeat(auto-fill,minmax(108px,1fr)) !important} }
+.ark-card{position:relative;aspect-ratio:3/4;border-radius:9px;overflow:hidden;background:#20202a;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.28);border:1px solid var(--border)}
+.ark-card:hover{box-shadow:0 3px 14px rgba(0,0,0,.45)}
+.ark-img{position:absolute;inset:0;background-size:cover;background-repeat:no-repeat}
+.ark-noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;color:#555;background:linear-gradient(135deg,#2a2a38,#1b1b24)}
+/* 斜めのステータス帯（アークナイツ風） */
+.ark-stripe{position:absolute;left:0;right:0;bottom:30%;height:30%;background:linear-gradient(135deg,rgba(226,170,70,.0) 0%,rgba(226,170,70,.75) 60%,rgba(226,170,70,.95) 100%);mix-blend-mode:normal;pointer-events:none;clip-path:polygon(0 55%,100% 15%,100% 100%,0 100%)}
+.ark-status-dot{position:absolute;top:6px;right:6px;z-index:3;font-size:9px;font-weight:700;color:#fff;padding:1px 6px;border-radius:9px}
+.ark-overlay{position:absolute;left:0;right:0;bottom:0;z-index:2;background:linear-gradient(transparent,rgba(0,0,0,.82) 55%);padding:30px 6px 6px}
+.ark-botrow{display:flex;align-items:flex-end;gap:5px}
+.ark-san{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:rgba(20,20,26,.78);border:2px solid #e2aa46;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ark-san .lab{font-size:7px;color:#e2aa46;font-weight:700;letter-spacing:.5px}
+.ark-san .val{font-size:15px;color:#fff;font-weight:700;margin-top:-1px}
+.ark-acts{margin-left:auto;display:flex;gap:4px}
+.ark-act{width:30px;height:30px;border-radius:6px;border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;background:rgba(40,40,52,.82);color:#fff}
+.ark-act:hover{background:var(--accent2)}
+.ark-name{margin-top:5px;color:#fff;font-size:12px;font-weight:700;text-align:center;text-shadow:0 1px 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 
 <!-- PWA: Safari スタンドアロンモード維持 -->
@@ -665,6 +688,12 @@ if (('standalone' in navigator) && navigator.standalone) {
       <input id="search_box" type="text" placeholder="PC名・ふりがな・職業・特徴表・通過シナリオで検索..." oninput="filterCards()">
       <span id="search_hint"></span>
     </div>
+  </div>
+
+  <!-- 表示切替（検索の下） -->
+  <div id="viewmode_bar" style="display:none">
+    <button id="vm_list" onclick="setViewMode('list')">📋 リスト</button>
+    <button id="vm_ark" onclick="setViewMode('ark')">🎴 アーク風</button>
   </div>
 
   <!-- 並び替え・状態フィルタ -->
@@ -1526,10 +1555,24 @@ function bulkImportSpreadsheets(){
   input.click();
 }
 
+// 表示モード（list=従来 / ark=アークナイツ風）
+let viewMode = (function(){ try{return localStorage.getItem('coc_view_mode')||'list';}catch(e){return 'list';} })();
+function setViewMode(m){
+  viewMode=m;
+  try{ localStorage.setItem('coc_view_mode',m); }catch(e){}
+  const bl=document.getElementById('vm_list'), ba=document.getElementById('vm_ark');
+  if(bl)bl.classList.toggle('on',m==='list'); if(ba)ba.classList.toggle('on',m==='ark');
+  applyFilters();
+}
 function renderCards(chars){
   const grid=document.getElementById('grid');
   // 既存カード・見出しを削除（loading/empty/no_result以外）
-  [...grid.querySelectorAll('.card, .group-head')].forEach(el=>el.remove());
+  [...grid.querySelectorAll('.card, .group-head, .ark-card')].forEach(el=>el.remove());
+  grid.classList.toggle('grid-ark', viewMode==='ark');
+  // 切替ボタンの表示＆状態
+  const vb=document.getElementById('viewmode_bar'); if(vb)vb.style.display='flex';
+  const bl=document.getElementById('vm_list'), ba=document.getElementById('vm_ark');
+  if(bl)bl.classList.toggle('on',viewMode==='list'); if(ba)ba.classList.toggle('on',viewMode==='ark');
 
   document.getElementById('empty').style.display='none';
   document.getElementById('no_result').style.display='none';
@@ -1537,32 +1580,75 @@ function renderCards(chars){
 
   if(chars.length===0){
     document.getElementById(allChars.length===0?'empty':'no_result').style.display='block';
+    const hint0=document.getElementById('search_hint'); if(hint0)hint0.textContent='0件 / '+allChars.length+'件';
     return;
   }
-  let lastHead=null;
-  chars.forEach(char=>{
-    if(sortKey==='furigana'){
-      const hd=kanaHead((getSheet(char).inputs||{}).furigana);
-      if(hd!==lastHead){
-        const h=document.createElement('div');h.className='group-head';h.textContent=hd;
-        grid.appendChild(h);lastHead=hd;
-      }
-    }
-    grid.appendChild(makeCard(char));
-  });
 
-  // カードの高さに合わせて画像を正方形にする
-  requestAnimationFrame(()=>{
-    grid.querySelectorAll('.card-icon').forEach(icon=>{
-      const h=icon.offsetHeight||56;
-      icon.style.width=h+'px';
-      icon.style.flexShrink='0';
+  if(viewMode==='ark'){
+    chars.forEach(char=>grid.appendChild(makeArkCard(char)));
+  } else {
+    let lastHead=null;
+    chars.forEach(char=>{
+      if(sortKey==='furigana'){
+        const hd=kanaHead((getSheet(char).inputs||{}).furigana);
+        if(hd!==lastHead){
+          const h=document.createElement('div');h.className='group-head';h.textContent=hd;
+          grid.appendChild(h);lastHead=hd;
+        }
+      }
+      grid.appendChild(makeCard(char));
     });
-  });
+    // カードの高さに合わせて画像を正方形にする
+    requestAnimationFrame(()=>{
+      grid.querySelectorAll('.card-icon').forEach(icon=>{
+        const h=icon.offsetHeight||56;
+        icon.style.width=h+'px';
+        icon.style.flexShrink='0';
+      });
+    });
+  }
 
   // 件数表示
   const hint=document.getElementById('search_hint');
   hint.textContent = (chars.length!==allChars.length)?`${chars.length}件 / ${allChars.length}件`:`${allChars.length}件`;
+}
+// アークナイツ風カード
+function makeArkCard(char){
+  let sheet={};try{sheet=JSON.parse(char.data);}catch(e){}
+  char._sheet=sheet;
+  const inp=sheet.inputs||{};
+  const pcname=inp.pcname||char.char_name||'名無し';
+  const status=inp.pc_status||'alive';
+  const sanNow=inp.san_now||(parseInt(inp.pow||0)*5)||'?';
+  const charImage=inp.charImage||'';
+  const fixedImg=charImage?fixDropboxUrlIndex(charImage):'';
+  const pos=(inp.charImagePos||'50% 30%').split(' ');
+  const ox=parseFloat(pos[0])||50, oy=parseFloat(pos[1]||pos[0])||30;
+  const bgSize=Math.round((inp.charImageScale||1.3)*100)+'%';
+  const imgHtml=fixedImg
+    ? `<div class="ark-img" style="background-image:url('${esc(fixedImg)}');background-size:${bgSize};background-position:${ox}% ${oy}%"></div>`
+    : `<div class="ark-noimg">${esc(pcname.charAt(0)||'?')}</div>`;
+  const stColor={alive:'#1a7a45',lost:'#b03030',permalost:'#7a1111',retired:'#3a5a8a',missing:'#8a6000',dead:'#5e2b9e',insane:'#6a1a9a'}[status]||'#555';
+  const card=document.createElement('div');
+  card.className='ark-card';
+  card.dataset.id=char.id;
+  card.innerHTML=
+    imgHtml+
+    `<div class="ark-stripe"></div>`+
+    `<span class="ark-status-dot" style="background:${stColor}">${S_LABEL[status]||''}</span>`+
+    `<div class="ark-overlay">`+
+      `<div class="ark-botrow">`+
+        `<div class="ark-san"><span class="lab">SAN</span><span class="val">${esc(String(sanNow))}</span></div>`+
+        `<div class="ark-acts">`+
+          `<button class="ark-act" title="駒出力" onclick="event.stopPropagation();openCocoFromIndex('${char.id}')">🐔</button>`+
+          `<button class="ark-act" title="閲覧URLをコピー" onclick="event.stopPropagation();copyViewUrl('${char.id}')">🔗</button>`+
+        `</div>`+
+      `</div>`+
+      `<div class="ark-name" title="${esc(pcname)}">${esc(pcname)}</div>`+
+    `</div>`;
+  // アイコン（カード本体）タップで編集へ
+  card.addEventListener('click',()=>openEdit(char.id));
+  return card;
 }
 
 // 検索フィルター
