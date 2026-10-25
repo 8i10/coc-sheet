@@ -122,14 +122,15 @@ html.compact .vbtn .tt{padding:7px 10px;font-size:13px}
 .hint{color:#555;font-size:13px;padding:0 14px}
 #msg{padding:40px;text-align:center;line-height:1.8}
 /* ===== 最初の画面（オペレーター詳細風） ===== */
-#top{position:relative;flex:1;overflow:hidden;background:#1b1b1d;color:#fff}
+#top{position:relative;flex:1;overflow:hidden;background:#1b1b1d;color:#fff;container-type:size}
 .t-bg{position:absolute;inset:0;overflow:hidden}
 .t-bg i{position:absolute;display:block}
 .t-bg .s1{inset:0;background:linear-gradient(115deg,#ececec 0 30%,transparent 30%)}
 .t-bg .s2{left:18%;top:-10%;width:70%;height:75%;background:#fafafa;clip-path:polygon(38% 0,100% 0,62% 100%,0 100%)}
 .t-bg .s3{left:30%;top:20%;width:80%;height:90%;background:#2a2a2c;clip-path:polygon(55% 0,100% 0,45% 100%,0 100%);opacity:.9}
 .t-clsbg{position:absolute;left:3%;top:6%;width:min(26vh,240px);opacity:.12;filter:invert(1);pointer-events:none}
-.t-art{position:absolute;left:52%;bottom:0;height:100%;max-width:60%;object-fit:contain;object-position:center bottom;transform:translateX(-50%);filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))}
+/* 立ち絵：シートで設定したクロップ（画面高さ基準）で表示 */
+.t-art{position:absolute;left:calc(50% + var(--x,0)*1cqh);top:calc(50% + var(--y,0)*1cqh);height:calc(var(--z,100)*1cqh);width:auto;max-width:none;transform:translate(-50%,-50%);filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))}
 .t-noimg{position:absolute;left:52%;top:50%;transform:translate(-50%,-50%);font-size:40vh;color:rgba(0,0,0,.08);font-family:var(--font);font-weight:700}
 .tb{border:1px solid rgba(255,255,255,.08);background:rgba(44,44,47,.92);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .tb svg{width:46%;height:46%;max-width:30px;max-height:30px;fill:currentColor}
@@ -488,7 +489,7 @@ function renderTop(){
   return `<div id="top">`+
     `<div class="t-bg"><i class="s1"></i><i class="s2"></i><i class="s3"></i></div>`+
     (ci?`<img class="t-clsbg" src="${ci.s}" alt="">`:'')+
-    (O.img?`<img class="t-art" src="${esc(O.img)}" alt="" onerror="this.remove()">`:`<div class="t-noimg">${esc(c.name.charAt(0))}</div>`)+
+    (O.img?`<img class="t-art" src="${esc(O.img)}" alt="" style="--z:${(O.crop||c.crop).z};--x:${(O.crop||c.crop).x};--y:${(O.crop||c.crop).y}" onerror="this.remove()">`:`<div class="t-noimg">${esc(c.name.charAt(0))}</div>`)+
     // 上部ボタン（参考画像の ⓘ と ハンガー の位置）
     // 上部中央：左＝情報（プロフィール）、右＝コーデ（参考画像のノード／ハンガーのボタン）
     `<div class="t-topbtns"><button class="tb" title="情報" onclick="openDetail()">${TSVG.node}</button><i></i>`+
