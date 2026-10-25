@@ -1491,6 +1491,60 @@ if (('standalone' in navigator) && navigator.standalone) {
 
   <!-- 右側パネル -->
   <div class="right-panel" style="flex:1;min-width:0">
+    <!-- アークナイツ風表示用（編集時のみ表示） -->
+    <div class="section" id="ark_section">
+      <div class="acc-header" onclick="toggleAcc('ark_outer')"><span>アークナイツ風表示</span><span id="arr_ark_outer">▶</span></div>
+      <div class="acc-body" id="ark_outer">
+        <div style="padding:6px">
+          <div style="font-size:11px;margin-bottom:4px">クラスアイコン（一覧・アーク風閲覧の左上に表示）</div>
+          <input type="hidden" id="ark_class" value="">
+          <div id="ark_cls_picker"></div>
+          <div style="font-size:11px;margin:10px 0 4px">属性アイコン（スタレ風閲覧の名前の右に表示）</div>
+          <input type="hidden" id="hsr_elem" value="">
+          <div id="hsr_elem_picker" class="ark-cls-picker2"></div>
+          <div style="font-size:11px;margin:10px 0 4px">運命アイコン（スタレ風閲覧の左上・職業の左に表示）</div>
+          <input type="hidden" id="hsr_path" value="">
+          <div id="hsr_path_picker"></div>
+          <div style="border:1px solid var(--border);border-radius:2px;margin:10px 0 4px">
+          <div class="sub2-acc-header" onclick="toggleSub2Acc('ark_outfit_acc')"><span>コーデ・立ち絵クロップ</span><span id="arr_ark_outfit_acc">▶</span></div>
+          <div class="sub2-acc-body" id="ark_outfit_acc"><div style="padding:6px">
+          <div style="font-size:11px;margin:0 0 4px">コーデ（立ち絵が複数ある場合。デフォルトの立ち絵はアイコン画像）</div>
+          <div class="ark-orow ark-orow-def">
+            <span class="ark-odef">デフォルト</span>
+            <textarea id="ark_def_desc" class="od" placeholder="デフォルトコーデの説明（任意）" rows="2"></textarea>
+          </div>
+          <input type="hidden" id="ark_outfits" value="">
+          <div id="ark_outfit_rows"></div>
+          <button type="button" class="add-row-btn" onclick="arkAddOutfit()">＋コーデ追加</button>
+          <div style="font-size:11px;margin:10px 0 4px">立ち絵クロップ（アーク風閲覧用・ドラッグで移動／ホイールかスライダーで拡大縮小）</div>
+          <div style="margin-bottom:4px;font-size:11px">対象 <select class="ark-crop-target" onchange="_arkCropPaint()"></select></div>
+          <input type="hidden" id="ark_img_z" value=""><input type="hidden" id="ark_img_x" value=""><input type="hidden" id="ark_img_y" value="">
+          <div class="ark-crop-wrap">
+            <div id="ark_crop_box" class="ark-crop-box"><img id="ark_crop_img" alt="" draggable="false"><span class="ark-crop-none">立ち絵（アイコン画像URL）が未設定です</span></div>
+            <div class="ark-crop-ctl">
+              <label style="font-size:11px">拡大 <span id="ark_crop_zv">100</span>%</label>
+              <input type="range" id="ark_crop_zoom" min="30" max="400" step="1" value="100">
+              <button type="button" class="ark-url-btn" onclick="arkCropReset()">リセット</button>
+            </div>
+          </div>
+          </div></div></div>
+          <div style="border:1px solid var(--border);border-radius:2px;margin:0 0 4px">
+          <div class="sub2-acc-header" onclick="toggleSub2Acc('ark_voice_acc')"><span>ボイス</span><span id="arr_ark_voice_acc">▶</span></div>
+          <div class="sub2-acc-body" id="ark_voice_acc"><div style="padding:6px">
+          <div style="font-size:11px;margin:0 0 4px">ボイス（Dropbox共有リンク／音声ファイル添付）</div>
+          <input type="hidden" id="ark_voices" value="">
+          <div id="ark_voice_rows"></div>
+          <button type="button" class="add-row-btn" onclick="arkAddVoice()">＋ボイス追加</button>
+          </div></div></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+            <button class="ark-url-btn" onclick="openArkView()">アーク風閲覧を開く</button>
+            <button class="ark-url-btn" onclick="copyArkViewURL()">アーク風閲覧URLをコピー</button>
+            <button class="ark-url-btn" onclick="openArkView('hsr')">スタレ風閲覧を開く</button>
+            <button class="ark-url-btn" onclick="copyArkViewURL('hsr')">スタレ風閲覧URLをコピー</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="section">
       <div class="acc-header" onclick="toggleAcc('combat_acc')"><span>戦闘・武器</span><span id="arr_combat_acc">▶</span></div>
       <div class="acc-body" id="combat_acc">
@@ -1607,60 +1661,6 @@ if (('standalone' in navigator) && navigator.standalone) {
         <div style="padding:4px">
           <div id="scenario_rows"><div style="position:relative;margin-bottom:4px"><textarea class="auto-h" style="width:100%" placeholder="通過シナリオを入力..." oninput="autoResizeTA(this)"></textarea></div></div>
           <button class="add-row-btn" onclick="addScenarioRow()">＋追加</button>
-        </div>
-      </div>
-    </div>
-    <!-- アークナイツ風表示用（編集時のみ表示） -->
-    <div class="section" id="ark_section">
-      <div class="acc-header" onclick="toggleAcc('ark_outer')"><span>アークナイツ風表示</span><span id="arr_ark_outer">▶</span></div>
-      <div class="acc-body" id="ark_outer">
-        <div style="padding:6px">
-          <div style="font-size:11px;margin-bottom:4px">クラスアイコン（一覧・アーク風閲覧の左上に表示）</div>
-          <input type="hidden" id="ark_class" value="">
-          <div id="ark_cls_picker"></div>
-          <div style="font-size:11px;margin:10px 0 4px">属性アイコン（スタレ風閲覧の名前の右に表示）</div>
-          <input type="hidden" id="hsr_elem" value="">
-          <div id="hsr_elem_picker" class="ark-cls-picker2"></div>
-          <div style="font-size:11px;margin:10px 0 4px">運命アイコン（スタレ風閲覧の左上・職業の左に表示）</div>
-          <input type="hidden" id="hsr_path" value="">
-          <div id="hsr_path_picker"></div>
-          <div style="border:1px solid var(--border);border-radius:2px;margin:10px 0 4px">
-          <div class="sub2-acc-header" onclick="toggleSub2Acc('ark_outfit_acc')"><span>コーデ・立ち絵クロップ</span><span id="arr_ark_outfit_acc">▶</span></div>
-          <div class="sub2-acc-body" id="ark_outfit_acc"><div style="padding:6px">
-          <div style="font-size:11px;margin:0 0 4px">コーデ（立ち絵が複数ある場合。デフォルトの立ち絵はアイコン画像）</div>
-          <div class="ark-orow ark-orow-def">
-            <span class="ark-odef">デフォルト</span>
-            <textarea id="ark_def_desc" class="od" placeholder="デフォルトコーデの説明（任意）" rows="2"></textarea>
-          </div>
-          <input type="hidden" id="ark_outfits" value="">
-          <div id="ark_outfit_rows"></div>
-          <button type="button" class="add-row-btn" onclick="arkAddOutfit()">＋コーデ追加</button>
-          <div style="font-size:11px;margin:10px 0 4px">立ち絵クロップ（アーク風閲覧用・ドラッグで移動／ホイールかスライダーで拡大縮小）</div>
-          <div style="margin-bottom:4px;font-size:11px">対象 <select class="ark-crop-target" onchange="_arkCropPaint()"></select></div>
-          <input type="hidden" id="ark_img_z" value=""><input type="hidden" id="ark_img_x" value=""><input type="hidden" id="ark_img_y" value="">
-          <div class="ark-crop-wrap">
-            <div id="ark_crop_box" class="ark-crop-box"><img id="ark_crop_img" alt="" draggable="false"><span class="ark-crop-none">立ち絵（アイコン画像URL）が未設定です</span></div>
-            <div class="ark-crop-ctl">
-              <label style="font-size:11px">拡大 <span id="ark_crop_zv">100</span>%</label>
-              <input type="range" id="ark_crop_zoom" min="30" max="400" step="1" value="100">
-              <button type="button" class="ark-url-btn" onclick="arkCropReset()">リセット</button>
-            </div>
-          </div>
-          </div></div></div>
-          <div style="border:1px solid var(--border);border-radius:2px;margin:0 0 4px">
-          <div class="sub2-acc-header" onclick="toggleSub2Acc('ark_voice_acc')"><span>ボイス</span><span id="arr_ark_voice_acc">▶</span></div>
-          <div class="sub2-acc-body" id="ark_voice_acc"><div style="padding:6px">
-          <div style="font-size:11px;margin:0 0 4px">ボイス（Dropbox共有リンク／音声ファイル添付）</div>
-          <input type="hidden" id="ark_voices" value="">
-          <div id="ark_voice_rows"></div>
-          <button type="button" class="add-row-btn" onclick="arkAddVoice()">＋ボイス追加</button>
-          </div></div></div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-            <button class="ark-url-btn" onclick="openArkView()">アーク風閲覧を開く</button>
-            <button class="ark-url-btn" onclick="copyArkViewURL()">アーク風閲覧URLをコピー</button>
-            <button class="ark-url-btn" onclick="openArkView('hsr')">スタレ風閲覧を開く</button>
-            <button class="ark-url-btn" onclick="copyArkViewURL('hsr')">スタレ風閲覧URLをコピー</button>
-          </div>
         </div>
       </div>
     </div>
