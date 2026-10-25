@@ -1059,6 +1059,13 @@ body.light td.hdr{
 .ark-vrow .vl{flex-basis:100%;width:100%;min-height:38px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;padding:3px 4px;resize:vertical;font-family:inherit;text-align:left}
 .ark-vbtn{font-size:11px;padding:3px 6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:3px;cursor:pointer;white-space:nowrap}
 .ark-vbtn.on{background:#e2aa46;color:#000;border-color:#e2aa46}
+.ark-orow{display:flex;gap:4px;align-items:center;margin-bottom:4px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px dashed var(--border)}
+.ark-orow input[type=text]{text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;padding:3px 4px}
+.ark-orow .on{width:130px}
+.ark-orow .ou{flex:1;min-width:160px}
+.ark-orow .od{flex-basis:100%;width:100%;min-height:36px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;padding:3px 4px;resize:vertical;font-family:inherit;text-align:left}
+.ark-odef{font-size:11px;font-weight:bold;padding:3px 0}
+.ark-crop-target{font-size:11px;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:2px 4px}
 .ark-crop-wrap{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
 .ark-crop-box{position:relative;width:180px;height:200px;container-type:size;overflow:hidden;background:linear-gradient(135deg,#e4e4e4,#a9a9a9);border:1px solid var(--border);cursor:grab;touch-action:none;user-select:none}
 .ark-crop-box.drag{cursor:grabbing}
@@ -1611,7 +1618,16 @@ if (('standalone' in navigator) && navigator.standalone) {
           <div style="font-size:11px;margin-bottom:4px">クラスアイコン（一覧・アーク風閲覧の左上に表示）</div>
           <input type="hidden" id="ark_class" value="">
           <div id="ark_cls_picker"></div>
+          <div style="font-size:11px;margin:10px 0 4px">コーデ（立ち絵が複数ある場合。デフォルトの立ち絵はアイコン画像）</div>
+          <div class="ark-orow ark-orow-def">
+            <span class="ark-odef">デフォルト</span>
+            <textarea id="ark_def_desc" class="od" placeholder="デフォルトコーデの説明（任意）" rows="2"></textarea>
+          </div>
+          <input type="hidden" id="ark_outfits" value="">
+          <div id="ark_outfit_rows"></div>
+          <button type="button" class="add-row-btn" onclick="arkAddOutfit()">＋コーデ追加</button>
           <div style="font-size:11px;margin:10px 0 4px">立ち絵クロップ（アーク風閲覧用・ドラッグで移動／ホイールかスライダーで拡大縮小）</div>
+          <div style="margin-bottom:4px;font-size:11px">対象 <select class="ark-crop-target" onchange="_arkCropPaint()"></select></div>
           <input type="hidden" id="ark_img_z" value=""><input type="hidden" id="ark_img_x" value=""><input type="hidden" id="ark_img_y" value="">
           <div class="ark-crop-wrap">
             <div id="ark_crop_box" class="ark-crop-box"><img id="ark_crop_img" alt="" draggable="false"><span class="ark-crop-none">立ち絵（アイコン画像URL）が未設定です</span></div>
@@ -4944,19 +4960,32 @@ async function _arkUploadVoice(i,file){
   }
 }
 // ---- 立ち絵クロップ（値はステージ高さ基準の%：z=高さ, x/y=中心からのずれ）----
+// クロップ対象：0=デフォルト（アイコン画像）、1〜=コーデ
+function _arkCropTarget(){ const s=document.querySelector('.ark-crop-target'); return s?(parseInt(s.value)||0):0; }
 function _arkCropVals(){
+  const t=_arkCropTarget();
+  if(t>0){ const o=_arkGetOutfits()[t-1]||{}; const f=(v,d)=>{ v=parseFloat(v); return isNaN(v)?d:v; }; return {z:f(o.z,100),x:f(o.x,0),y:f(o.y,0)}; }
   const g=(id,d)=>{ const v=parseFloat(document.getElementById(id).value); return isNaN(v)?d:v; };
   return {z:g('ark_img_z',100), x:g('ark_img_x',0), y:g('ark_img_y',0)};
 }
 function _arkCropSet(v,silent){
   const z=Math.max(30,Math.min(400,Math.round(v.z))), x=Math.round(v.x*10)/10, y=Math.round(v.y*10)/10;
+  const t=_arkCropTarget();
+  if(t>0){
+    const l=_arkGetOutfits(); if(!l[t-1])return; Object.assign(l[t-1],{z,x,y});
+    const h=document.getElementById('ark_outfits'); h.value=JSON.stringify(l);
+    _arkCropPaint();
+    if(!silent) h.dispatchEvent(new Event('input',{bubbles:true}));
+    return;
+  }
   document.getElementById('ark_img_z').value=z; document.getElementById('ark_img_x').value=x; document.getElementById('ark_img_y').value=y;
   _arkCropPaint();
   if(!silent) document.getElementById('ark_img_z').dispatchEvent(new Event('input',{bubbles:true}));
 }
 function _arkCropPaint(){
   const box=document.getElementById('ark_crop_box'), img=document.getElementById('ark_crop_img'); if(!box||!img)return;
-  const url=_arkFixUrl(document.getElementById('char_image_url')?.value||'');
+  const t=_arkCropTarget();
+  const url=_arkFixUrl(t>0?((_arkGetOutfits()[t-1]||{}).url||''):(document.getElementById('char_image_url')?.value||''));
   if(img.dataset.src!==url){ img.dataset.src=url; if(url) img.src=url; else img.removeAttribute('src'); }
   box.classList.toggle('has',!!url);
   const v=_arkCropVals();
@@ -4964,6 +4993,45 @@ function _arkCropPaint(){
   const sl=document.getElementById('ark_crop_zoom'); if(sl) sl.value=v.z;
   const zv=document.getElementById('ark_crop_zv'); if(zv) zv.textContent=v.z;
 }
+// ---- コーデ ----
+function _arkGetOutfits(){ try{ const v=JSON.parse(document.getElementById('ark_outfits').value||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
+function _arkSetOutfits(list){ const h=document.getElementById('ark_outfits'); h.value=list.length?JSON.stringify(list):''; h.dispatchEvent(new Event('input',{bubbles:true})); }
+function _arkTargetOpts(){
+  const sel=document.querySelector('.ark-crop-target'); if(!sel)return;
+  const cur=sel.value||'0', l=_arkGetOutfits();
+  sel.innerHTML='<option value="0">デフォルト</option>'+l.map((o,i)=>'<option value="'+(i+1)+'">'+_arkEsc(o.name||('コーデ'+(i+1)))+'</option>').join('');
+  sel.value=(parseInt(cur)<=l.length)?cur:'0';
+}
+function _arkRenderOutfits(){
+  const box=document.getElementById('ark_outfit_rows'); if(!box)return;
+  const l=_arkGetOutfits();
+  box.innerHTML=l.map((o,i)=>
+    '<div class="ark-orow" data-i="'+i+'">'+
+      '<input type="text" class="on" placeholder="コーデ名" value="'+_arkEsc(o.name)+'" data-k="name">'+
+      '<input type="text" class="ou" placeholder="立ち絵URL（Dropbox共有リンク等）" value="'+_arkEsc(o.url)+'" data-k="url">'+
+      '<button type="button" class="ark-vbtn" data-a="up" title="上へ"'+(i===0?' disabled':'')+'>▲</button>'+
+      '<button type="button" class="ark-vbtn" data-a="down" title="下へ"'+(i===l.length-1?' disabled':'')+'>▼</button>'+
+      '<button type="button" class="ark-vbtn" data-a="del" title="削除">×</button>'+
+      '<textarea class="od" placeholder="コーデの説明（任意）" data-k="desc" rows="2">'+_arkEsc(o.desc)+'</textarea>'+
+    '</div>').join('');
+  box.querySelectorAll('.ark-orow').forEach(row=>{
+    const i=+row.dataset.i;
+    row.querySelectorAll('[data-k]').forEach(inp=>inp.addEventListener('input',e=>{
+      e.stopPropagation(); const ll=_arkGetOutfits(); if(!ll[i])return; ll[i][inp.dataset.k]=inp.value; _arkSetOutfits(ll);
+      if(inp.dataset.k==='name') _arkTargetOpts();
+      if(inp.dataset.k==='url') _arkCropPaint();
+    }));
+    row.querySelectorAll('button[data-a]').forEach(b=>b.onclick=()=>{
+      const ll=_arkGetOutfits(), a=b.dataset.a;
+      if(a==='up'&&i>0)[ll[i-1],ll[i]]=[ll[i],ll[i-1]];
+      else if(a==='down'&&i<ll.length-1)[ll[i+1],ll[i]]=[ll[i],ll[i+1]];
+      else if(a==='del'){ if(!confirm('このコーデを削除しますか？'))return; ll.splice(i,1); }
+      _arkSetOutfits(ll); _arkRenderOutfits(); _arkCropPaint();
+    });
+  });
+  _arkTargetOpts();
+}
+function arkAddOutfit(){ const l=_arkGetOutfits(); l.push({name:'',url:'',desc:''}); _arkSetOutfits(l); _arkRenderOutfits(); }
 function arkCropReset(){ _arkCropSet({z:100,x:0,y:0}); }
 (function(){
   const bind=()=>{
@@ -4995,8 +5063,8 @@ function copyArkViewURL(){
 }
 (function(){
   const _orig=applyData;
-  applyData=function(){ const r=_orig.apply(this,arguments); try{_arkStop();_arkSync();_arkRenderVoices();_arkCropPaint();}catch(_){} return r; };
-  const init=()=>{ _arkSync(); _arkRenderVoices(); };
+  applyData=function(){ const r=_orig.apply(this,arguments); try{_arkStop();_arkSync();_arkRenderVoices();_arkRenderOutfits();_arkCropPaint();}catch(_){} return r; };
+  const init=()=>{ _arkSync(); _arkRenderVoices(); _arkRenderOutfits(); };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 // ===== /アークナイツ風表示設定 =====
