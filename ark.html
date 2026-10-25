@@ -170,10 +170,12 @@ html.compact .vbtn .tt{padding:7px 10px;font-size:13px}
 .t-rg i.me{background:#fff}
 .t-tag2{font-size:clamp(10px,calc(var(--u,1vh)*2),18px)}
 /* HP・MP（参考：昇進・潜在の枠） */
-.t-st{position:absolute;top:34.5%;height:9%;width:11.3%;z-index:3;background:rgba(56,56,60,.9);display:flex;align-items:center;justify-content:space-between;padding:0 1.2%}
+.t-st{position:absolute;top:34.5%;height:10%;width:11.3%;z-index:3;background:rgba(30,30,32,.92);overflow:hidden}
 .t-st1{left:70%}.t-st2{left:82%}
-.t-st .sv{font-family:'ArkNum','Jost',sans-serif;font-weight:300;font-size:calc(var(--u,1vh)*5.4);color:#fff;line-height:1}
-.t-st .sl{font-size:calc(var(--u,1vh)*2.6);color:#ccc;letter-spacing:.08em;align-self:flex-start;margin-top:calc(var(--u,1vh)*1.4)}
+/* 参考：大きな数字が、中央下寄りの明るい帯に重なる */
+.t-st::before{content:'';position:absolute;left:12%;right:12%;top:46%;bottom:14%;background:rgba(255,255,255,.2)}
+.t-st .sv{position:absolute;left:16%;bottom:10%;z-index:1;font-family:'ArkNum','Jost',sans-serif;font-weight:400;font-size:calc(var(--u,1vh)*6.6);color:#fff;line-height:.9}
+.t-st .sl{position:absolute;right:18%;top:46%;bottom:14%;z-index:1;display:flex;align-items:center;font-family:'ArkNum','Jost',sans-serif;font-weight:500;font-size:calc(var(--u,1vh)*2.1);color:#fff;letter-spacing:.06em}
 .t-brd{margin-top:calc(var(--u,1vh)*1.2);font-size:clamp(10px,calc(var(--u,1vh)*1.9),16px);line-height:1.55;color:#ddd;background:rgba(255,255,255,.07);padding:calc(var(--u,1vh)*.8) calc(var(--uw,1vw)*.8)}
 .t-sanbox{position:absolute;left:calc(var(--u,1vh)*7);right:0;top:calc(var(--u,1vh)*3.8);height:calc(var(--u,1vh)*7);background:rgba(56,56,60,.9)}
 /* 素質（特徴表） */
