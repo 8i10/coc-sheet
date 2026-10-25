@@ -1051,6 +1051,12 @@ body.light td.hdr{
 .ark-cls-opt{width:44px;height:44px;border-radius:4px;border:2px solid transparent;background:#2b2b2d;color:#bbb;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-size:10px}
 .ark-cls-opt img{width:32px;height:32px;object-fit:contain}
 .ark-cls-opt.on{border-color:#e2aa46;box-shadow:0 0 0 1px #e2aa46}
+.ark-vrow{display:flex;gap:4px;align-items:center;margin-bottom:4px;flex-wrap:wrap}
+.ark-vrow input[type=text]{text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;padding:3px 4px}
+.ark-vrow .vt{width:150px}
+.ark-vrow .vu{flex:1;min-width:160px}
+.ark-vbtn{font-size:11px;padding:3px 6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:3px;cursor:pointer;white-space:nowrap}
+.ark-vbtn.on{background:#e2aa46;color:#000;border-color:#e2aa46}
 .ark-url-btn{font-size:11px;padding:4px 10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:4px;cursor:pointer}
 .sheet-preview .add-row-btn,.sheet-preview .del-btn,.sheet-preview .mv-btn{display:none !important}
 .sheet-preview .mini-roll2,.sheet-preview .roll-all-btn2,.sheet-preview .apply-roll-btn,.sheet-preview .tk-droll-btn{pointer-events:none !important;opacity:.5}
@@ -1594,6 +1600,10 @@ if (('standalone' in navigator) && navigator.standalone) {
           <div style="font-size:11px;margin-bottom:4px">クラスアイコン（一覧・アーク風閲覧の左上に表示）</div>
           <input type="hidden" id="ark_class" value="">
           <div id="ark_cls_picker"></div>
+          <div style="font-size:11px;margin:10px 0 4px">ボイス（Dropbox共有リンク／音声ファイル添付）</div>
+          <input type="hidden" id="ark_voices" value="">
+          <div id="ark_voice_rows"></div>
+          <button type="button" class="add-row-btn" onclick="arkAddVoice()">＋ボイス追加</button>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
             <button class="ark-url-btn" onclick="openArkView()">アーク風閲覧を開く</button>
             <button class="ark-url-btn" onclick="copyArkViewURL()">アーク風閲覧URLをコピー</button>
@@ -4835,6 +4845,80 @@ function _arkSync(){
     ARK_ICONS.map((ic,i)=>'<button type="button" class="ark-cls-opt'+(cur===String(i+1)?' on':'')+'" data-v="'+(i+1)+'" title="'+ic.n+'"><img src="'+ic.s+'" alt="'+ic.n+'"></button>').join('');
   box.querySelectorAll('.ark-cls-opt').forEach(b=>b.onclick=()=>{ hid.value=b.dataset.v; hid.dispatchEvent(new Event('input',{bubbles:true})); _arkSync(); });
 }
+// ---- ボイス ----
+const ARK_VOICE_BUCKET='voices';
+let _arkAudio=null, _arkPlayingIdx=-1;
+function _arkFixUrl(u){
+  u=(u||'').trim(); if(!u)return'';
+  if(u.includes('dropbox.com')){ u=u.replace('www.dropbox.com','dl.dropboxusercontent.com').replace(/^https:\/\/dropbox\.com/,'https://dl.dropboxusercontent.com'); u=u.replace(/([?&])dl=[01]/,'$1raw=1'); if(!/[?&]raw=1/.test(u))u+=(u.includes('?')?'&':'?')+'raw=1'; }
+  return u;
+}
+function _arkGetVoices(){ try{ const v=JSON.parse(document.getElementById('ark_voices').value||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
+function _arkSetVoices(list){ const h=document.getElementById('ark_voices'); h.value=list.length?JSON.stringify(list):''; h.dispatchEvent(new Event('input',{bubbles:true})); }
+function _arkEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function _arkRenderVoices(){
+  const box=document.getElementById('ark_voice_rows'); if(!box)return;
+  const list=_arkGetVoices();
+  box.innerHTML=list.map((v,i)=>
+    '<div class="ark-vrow" data-i="'+i+'">'+
+      '<input type="text" class="vt" placeholder="タイトル（例：秘書任命）" value="'+_arkEsc(v.title)+'" data-k="title">'+
+      '<input type="text" class="vu" placeholder="Dropbox共有リンク等のURL" value="'+_arkEsc(v.url)+'" data-k="url">'+
+      '<button type="button" class="ark-vbtn" data-a="file" title="音声ファイルを添付">📎添付</button>'+
+      '<button type="button" class="ark-vbtn'+(_arkPlayingIdx===i?' on':'')+'" data-a="play" title="試聴">'+(_arkPlayingIdx===i?'■':'▶')+'</button>'+
+      '<button type="button" class="ark-vbtn" data-a="up" title="上へ"'+(i===0?' disabled':'')+'>▲</button>'+
+      '<button type="button" class="ark-vbtn" data-a="down" title="下へ"'+(i===list.length-1?' disabled':'')+'>▼</button>'+
+      '<button type="button" class="ark-vbtn" data-a="del" title="削除">×</button>'+
+    '</div>').join('');
+  box.querySelectorAll('.ark-vrow').forEach(row=>{
+    const i=+row.dataset.i;
+    row.querySelectorAll('input[data-k]').forEach(inp=>{
+      // 入力欄はid無し（collectDataの対象外）。値はark_voicesにまとめて保存
+      inp.addEventListener('input',e=>{ e.stopPropagation(); const l=_arkGetVoices(); if(!l[i])return; l[i][inp.dataset.k]=inp.value; _arkSetVoices(l); });
+    });
+    row.querySelectorAll('button[data-a]').forEach(b=>b.onclick=()=>_arkVoiceAction(b.dataset.a,i));
+  });
+}
+function arkAddVoice(){ const l=_arkGetVoices(); l.push({title:'',url:''}); _arkSetVoices(l); _arkRenderVoices(); }
+function _arkStop(){ if(_arkAudio){ try{_arkAudio.pause();}catch(_){} _arkAudio=null; } _arkPlayingIdx=-1; }
+function _arkVoiceAction(a,i){
+  const l=_arkGetVoices(); if(!l[i])return;
+  if(a==='up'&&i>0){ [l[i-1],l[i]]=[l[i],l[i-1]]; _arkStop(); _arkSetVoices(l); _arkRenderVoices(); }
+  else if(a==='down'&&i<l.length-1){ [l[i+1],l[i]]=[l[i],l[i+1]]; _arkStop(); _arkSetVoices(l); _arkRenderVoices(); }
+  else if(a==='del'){ if(!confirm('このボイスを削除しますか？'))return; _arkStop(); l.splice(i,1); _arkSetVoices(l); _arkRenderVoices(); }
+  else if(a==='play'){
+    if(_arkPlayingIdx===i){ _arkStop(); _arkRenderVoices(); return; }
+    _arkStop(); const u=_arkFixUrl(l[i].url); if(!u){ alert('URLが未設定です'); return; }
+    _arkAudio=new Audio(u); _arkPlayingIdx=i;
+    _arkAudio.onended=()=>{ _arkStop(); _arkRenderVoices(); };
+    _arkAudio.play().catch(()=>{ alert('再生できませんでした。URLを確認してください'); _arkStop(); _arkRenderVoices(); });
+    _arkRenderVoices();
+  }
+  else if(a==='file'){
+    const f=document.createElement('input'); f.type='file'; f.accept='audio/*';
+    f.onchange=()=>{ if(f.files[0]) _arkUploadVoice(i,f.files[0]); };
+    f.click();
+  }
+}
+async function _arkUploadVoice(i,file){
+  if(file.size>10*1024*1024){ alert('10MB以下の音声ファイルを選んでください'); return; }
+  try{
+    const { data:{ user } } = await db.auth.getUser();
+    if(!user){ alert('ログインしてください'); return; }
+    const ext=(file.name.split('.').pop()||'mp3').toLowerCase().replace(/[^a-z0-9]/g,'')||'mp3';
+    const path=user.id+'/'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
+    if(typeof showSaveMsg==='function') showSaveMsg('🎙 アップロード中…');
+    const { error } = await db.storage.from(ARK_VOICE_BUCKET).upload(path,file,{contentType:file.type||'audio/mpeg',upsert:false});
+    if(error) throw error;
+    const { data } = db.storage.from(ARK_VOICE_BUCKET).getPublicUrl(path);
+    const l=_arkGetVoices(); if(!l[i])return;
+    l[i].url=data.publicUrl;
+    if(!l[i].title) l[i].title=file.name.replace(/\.[^.]+$/,'');
+    _arkSetVoices(l); _arkRenderVoices();
+    if(typeof showSaveMsg==='function') showSaveMsg('✓ ボイスを添付しました');
+  }catch(e){
+    alert('アップロードに失敗しました: '+(e&&e.message||e)+'\n（Supabaseにvoicesバケットが作成されているか確認してください）');
+  }
+}
 function _arkViewURL(){
   if(!currentCharId){ alert('先に保存してください'); return ''; }
   const rev=_loadedShareRev;
@@ -4849,8 +4933,9 @@ function copyArkViewURL(){
 }
 (function(){
   const _orig=applyData;
-  applyData=function(){ const r=_orig.apply(this,arguments); try{_arkSync();}catch(_){} return r; };
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_arkSync); else _arkSync();
+  applyData=function(){ const r=_orig.apply(this,arguments); try{_arkStop();_arkSync();_arkRenderVoices();}catch(_){} return r; };
+  const init=()=>{ _arkSync(); _arkRenderVoices(); };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 // ===== /アークナイツ風表示設定 =====
 </script>
