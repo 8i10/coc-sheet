@@ -257,7 +257,9 @@ function tabs(){
   if(!D)return TABS;
   const has={voice:D.voices.length, outfit:(D.outfits||[]).length>1, rel:D.rels.length, secret:D.secrets.length, scen:D.scenarios.length};
   // コーデは最初の画面の上部アイコンから開く（タブ一覧には出さない）
-  return TABS.filter(t=>!(t.k in has)||has[t.k]).filter(t=>t.k!=='outfit'||tab==='outfit');
+  // コーデ画面では他タブへの切り替えを出さない
+  if(tab==='outfit')return TABS.filter(t=>t.k==='outfit');
+  return TABS.filter(t=>!(t.k in has)||has[t.k]).filter(t=>t.k!=='outfit');
 }
 let tab=null, D=null, view='top';
 
@@ -448,7 +450,9 @@ function openTab(k){
 function centerOutfit(){
   [['.othumbs','.othumb.sel'],['.otabs','.otabs button.on']].forEach(([w,e])=>{
     const box=document.querySelector(w), el=document.querySelector(e); if(!box||!el)return;
-    const br=box.getBoundingClientRect(), er=el.getBoundingClientRect(); box.scrollLeft+=(er.left+er.width/2)-(br.left+br.width/2);
+    // 回転表示でも正しく中央に来るよう、画面座標ではなくレイアウト座標で計算
+    if(getComputedStyle(box).position==='static')box.style.position='relative';
+    box.scrollLeft=el.offsetLeft+el.offsetWidth/2-box.clientWidth/2;
   });
 }
 function selOutfit(i){ osel=i; render(); centerOutfit(); }

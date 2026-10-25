@@ -1840,7 +1840,11 @@ function makeArkCard(char){
     : `<div class="ark-noimg">${esc(pcname.charAt(0)||'?')}</div>`;
   const stColor={alive:'#1a7a45',lost:'#b03030',permalost:'#7a1111',retired:'#3a5a8a',missing:'#8a6000',dead:'#5e2b9e',insane:'#6a1a9a'}[status]||'#555';
   // SAN割合（99で満円）
-  const sanPct=Math.max(0,Math.min(100,(parseInt(sanNow)||0)/99*100));
+  // SAN上限（99−クトゥルフ神話技能）に対する割合：閲覧画面と同じ
+  let mythos=0;
+  (sheet.skills||[]).forEach(s=>{ if(s&&s.key==='mythos'){ const n=x=>parseInt(x)||0; mythos=n(s.base)+n(s.job)+n(s.int)+n(s.grw)+n(s.oth); } });
+  const sanMax=99-mythos;
+  const sanPct=Math.max(0,Math.min(100,sanMax>0?(parseInt(sanNow)||0)/sanMax*100:0));
   // クラスアイコン（シートのアーク風設定）
   const clsI=parseInt(inp.ark_class)||0;
   const topIc=(clsI>=1&&clsI<=ARK_ICONS.length)?ARK_ICONS[clsI-1]:null;
