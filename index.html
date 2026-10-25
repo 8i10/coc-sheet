@@ -662,10 +662,8 @@ body:not(.light) .card-top{ border:none !important; }
 .ark-cls{position:absolute;top:0;left:0;z-index:3;width:34%;aspect-ratio:1;background:rgba(17,17,20,.82);display:flex;align-items:center;justify-content:center;clip-path:polygon(0 0,100% 0,100% 72%,72% 100%,0 100%);cursor:pointer}
 .ark-cls:hover{background:rgba(60,60,70,.9)}
 .ark-cls img{width:80%;height:80%;object-fit:contain;pointer-events:none}
-/* SAN数字：Novecento Sans（端末にインストール済み or ./fonts/novecento.woff2 を置いた場合に使用）→ 無ければ形の近いJost */
-@font-face{font-family:'ArkNum';font-weight:300 400;src:local('Novecento Sans Light'),local('NovecentoSans-Light'),local('Novecento sans wide Light'),local('NovecentosanswideLight'),url('./fonts/novecento.woff2') format('woff2'),url('./fonts/novecento.otf') format('opentype')}
-.ark-san .lab{font-family:'ArkNum','Jost',sans-serif;font-size:8px;color:#e2aa46;font-weight:400;letter-spacing:.5px}
-.ark-san .val{font-family:'ArkNum','Jost',sans-serif;font-size:22px;color:#fff;font-weight:300;margin-top:-1px;line-height:1}
+.ark-san .lab{font-family:'Jost',sans-serif;font-size:8px;color:#e2aa46;font-weight:400;letter-spacing:.5px}
+.ark-san .val{font-family:'Jost',sans-serif;font-size:22px;color:#fff;font-weight:300;margin-top:-1px;line-height:1}
 .ark-acts{margin-left:auto;display:flex;gap:4px}
 .ark-act{width:32px;height:32px;border-radius:3px;border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;background:rgba(40,40,52,.82);color:#fff}
 .ark-act:hover{background:var(--accent2)}
