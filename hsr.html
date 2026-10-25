@@ -440,7 +440,7 @@ function fitView(){
   // ノッチ・ステータスバー・ホームバー（セーフエリア）を避ける
   let pr=document.getElementById('_safe_probe');
   if(!pr){ pr=document.createElement('div'); pr.id='_safe_probe'; pr.style.cssText='position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)'; document.body.appendChild(pr); }
-  const cs=getComputedStyle(pr), st=parseFloat(cs.paddingTop)||0, sb=parseFloat(cs.paddingBottom)||0, sl=parseFloat(cs.paddingLeft)||0, sr=parseFloat(cs.paddingRight)||0;
+  const cs=getComputedStyle(pr), st=34, sb=34, sl=parseFloat(cs.paddingLeft)||0, sr=parseFloat(cs.paddingRight)||0;
   if(rot){ app.style.top=st+'px'; app.style.left=sl+'px'; app.style.width=(h-st-sb)+'px'; app.style.height=(w-sl-sr)+'px'; } else { app.style.top=''; app.style.left=''; app.style.width=''; app.style.height=''; }
   if(rot){ h=h-st-sb; w=w-sl-sr; }
   document.documentElement.classList.toggle('compact',(rot?w:h)<=520);
