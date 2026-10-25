@@ -612,8 +612,9 @@ body:not(.light) .card-top{ border:none !important; }
 .ark-san{position:relative;flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:conic-gradient(#e2aa46 calc(var(--p,0)*1%),rgba(255,255,255,.16) 0);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
 .ark-san::before{content:'';position:absolute;inset:3px;border-radius:50%;background:rgba(20,20,26,.92)}
 .ark-san .lab,.ark-san .val{position:relative}
-.ark-cls{position:absolute;top:0;left:0;z-index:3;width:30px;height:30px;background:rgba(17,17,20,.82);display:flex;align-items:center;justify-content:center;clip-path:polygon(0 0,100% 0,100% 72%,72% 100%,0 100%)}
-.ark-cls img{width:22px;height:22px;object-fit:contain}
+.ark-cls{position:absolute;top:0;left:0;z-index:3;width:34%;aspect-ratio:1;background:rgba(17,17,20,.82);display:flex;align-items:center;justify-content:center;clip-path:polygon(0 0,100% 0,100% 72%,72% 100%,0 100%);cursor:pointer}
+.ark-cls:hover{background:rgba(60,60,70,.9)}
+.ark-cls img{width:80%;height:80%;object-fit:contain;pointer-events:none}
 .ark-san .lab{font-size:8px;color:#e2aa46;font-weight:700;letter-spacing:.5px}
 .ark-san .val{font-size:21px;color:#fff;font-weight:700;margin-top:0}
 .ark-acts{margin-left:auto;display:flex;gap:4px}
@@ -1301,6 +1302,15 @@ function copyViewUrl(id){
     navigator.clipboard.writeText(url).then(()=>showToast('閲覧URLをコピーしました')).catch(()=>fallbackCopy(url));
   }else fallbackCopy(url);
 }
+// アーク風閲覧URL（ark.html）をコピー
+function copyArkUrl(id){
+  const char=allChars.find(c=>c.id===id);
+  const rev=char?getSheet(char).share_rev:'';
+  const url=new URL('ark.html?id='+id+(rev?'&r='+encodeURIComponent(rev):''), location.href).href;
+  const ok=()=>showToast('アーク風閲覧URLをコピーしました');
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok).catch(()=>fallbackCopy(url));
+  else fallbackCopy(url);
+}
 function fallbackCopy(url){
   const ta=document.createElement('textarea');ta.value=url;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
   try{document.execCommand('copy');showToast('閲覧URLをコピーしました');}catch(_){showToast('コピーできませんでした');}
@@ -1649,7 +1659,7 @@ function makeArkCard(char){
   const sanPct=Math.max(0,Math.min(100,(parseInt(sanNow)||0)/99*100));
   // クラスアイコン（シートのアーク風設定）
   const clsI=parseInt(inp.ark_class)||0;
-  const clsHtml=(clsI>=1&&clsI<=ARK_ICONS.length)?`<div class="ark-cls" title="${ARK_ICONS[clsI-1].n}"><img src="${ARK_ICONS[clsI-1].s}" alt=""></div>`:'';
+  const clsHtml=(clsI>=1&&clsI<=ARK_ICONS.length)?`<div class="ark-cls" title="${ARK_ICONS[clsI-1].n}（タップでアーク風閲覧URLをコピー）" onclick="event.stopPropagation();copyArkUrl('${char.id}')"><img src="${ARK_ICONS[clsI-1].s}" alt=""></div>`:'';
   const card=document.createElement('div');
   card.className='ark-card';
   card.dataset.id=char.id;

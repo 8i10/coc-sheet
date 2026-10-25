@@ -18,8 +18,9 @@ html,body{height:100%;margin:0;background:var(--ink);color:#eee;font-family:var(
 html.rot #app{position:fixed;top:0;left:0;transform:rotate(90deg) translateY(-100%);transform-origin:top left}
 #main{flex:1;display:flex;min-height:0}
 /* 左：立ち絵ステージ */
-#stage{position:relative;flex:1.3;min-width:0;background:linear-gradient(135deg,#e4e4e4,#a9a9a9);overflow:hidden}
-#stage img.art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}
+#stage{position:relative;flex:1.3;min-width:0;background:linear-gradient(135deg,#e4e4e4,#a9a9a9);overflow:hidden;container-type:size}
+/* 立ち絵クロップ（シートで設定：ステージ高さ基準） */
+#stage img.art{position:absolute;left:calc(50% + var(--x,0)*1cqh);top:calc(50% + var(--y,0)*1cqh);height:calc(var(--z,100)*1cqh);width:auto;max-width:none;transform:translate(-50%,-50%)}
 #stage .empty{position:absolute;inset:0;display:grid;place-items:center;color:#888;font-family:var(--font);font-size:min(30vw,260px);opacity:.25}
 #nameplate{position:absolute;left:24px;right:22px;bottom:62px;color:#fff;text-shadow:0 2px 8px #000a;pointer-events:none}
 #nameplate .role{display:flex;align-items:center;gap:8px}
@@ -32,6 +33,9 @@ html.rot #app{position:fixed;top:0;left:0;transform:rotate(90deg) translateY(-10
 #nameplate .cls img{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
 #nameplate .en{font-size:26px;margin-top:6px;letter-spacing:.04em}
 #nameplate .nm{font-size:clamp(34px,6vw,72px);font-family:var(--font);font-weight:700;line-height:1.1;word-break:break-word}
+#dialog{position:absolute;left:12px;right:12px;bottom:58px;z-index:4;background:rgba(17,17,17,.84);border:1px solid #444;color:#fff;padding:14px 18px;min-height:84px;font-size:clamp(14px,1.6vw,18px);line-height:1.85;white-space:pre-wrap;word-break:break-word;display:none}
+#dialog.show{display:block}
+#dialog .tag{position:absolute;top:-17px;left:-1px;background:#bbb;color:#222;font-size:11px;padding:1px 8px;letter-spacing:.06em}
 #credit{position:absolute;left:0;bottom:0;display:flex;max-width:100%;pointer-events:none}
 .cr{display:flex;align-items:stretch;min-width:260px;max-width:100%;height:46px;background:rgba(28,28,30,.85);color:#fff;font-size:16px}
 .cr i{width:46px;display:grid;place-items:center;background:rgba(0,0,0,.55);flex:none}
@@ -42,7 +46,7 @@ html.rot #app{position:fixed;top:0;left:0;transform:rotate(90deg) translateY(-10
 #side{flex:1;min-width:320px;max-width:560px;background:radial-gradient(#0002 1px,transparent 1px) 0 0/14px 14px,var(--panel);color:#111;overflow:auto;padding:14px}
 #side.cards{display:flex;flex-direction:column;gap:clamp(14px,3vh,28px)}
 #side.open{display:flex;gap:10px;overflow:hidden}
-.card-tab{flex:none;display:flex;padding:0;background:#ffffff55;color:#111;border:2px solid #111;text-align:left;height:clamp(84px,15vh,140px);cursor:pointer;font:inherit}
+.card-tab{flex:1 1 0;min-height:52px;max-height:140px;display:flex;padding:0;background:#ffffff55;color:#111;border:2px solid #111;text-align:left;height:clamp(84px,15vh,140px);cursor:pointer;font:inherit}
 .card-tab:hover{background:#ffffffb0}
 .ico{display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:#2b2b2d;color:#fff;border:0;padding:14px 0 6px;width:56px;cursor:pointer;flex:none;font:inherit}
 .ico:hover{background:#444}
@@ -56,13 +60,18 @@ html.rot #app{position:fixed;top:0;left:0;transform:rotate(90deg) translateY(-10
 .vh-line{flex:1;align-self:center;height:1px;background:#777;margin:0 14px}
 .vh-label{align-self:center;padding-right:22px;font-size:22px;font-family:var(--font);letter-spacing:.1em}
 .vbody{flex:1;overflow:auto;margin-top:12px;padding-right:4px}
-.rail{width:56px;flex:none;display:flex;flex-direction:column;gap:10px;margin-top:108px}
-.rail .ico{height:96px;box-shadow:0 2px 6px #0005}
+.rail{width:56px;flex:none;display:flex;flex-direction:column;gap:10px;margin-top:108px;overflow-y:auto;scrollbar-width:none}
+.rail .ico{height:84px;flex:none;box-shadow:0 2px 6px #0005}
+.sec-lock{display:flex;gap:6px;align-items:center;padding:0 14px 14px;font-size:13px}
+.sec-lock input{border:1px solid var(--line);padding:4px 6px;font-size:13px;width:140px}
+.sec-lock button{border:1px solid #2b2b2d;background:#2b2b2d;color:#fff;padding:4px 14px;cursor:pointer;font:inherit;font-size:13px}
 .ph{background:#555;color:#fff;padding:6px 14px;font-size:17px;margin-bottom:8px;font-family:var(--font);letter-spacing:.06em}
 .pt{white-space:pre-wrap;line-height:1.75;font-size:15px;padding:0 14px 16px;word-break:break-word}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;padding:0 14px 16px;font-size:15px}
 .kv dt{color:#555;font-weight:700}
 .kv dd{margin:0;word-break:break-word}
+.abtxt{display:grid;grid-template-columns:repeat(4,max-content);gap:2px 18px;padding:0 14px 16px;font-size:15px;line-height:1.75}
+html.compact .abtxt{font-size:13px;gap:0 12px;padding:0 10px 10px}
 .abgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 14px 16px}
 .abgrid div{background:#ececec;border:1px solid var(--line);text-align:center;padding:6px 2px}
 .abgrid b{display:block;font-size:11px;color:#555;letter-spacing:.06em}
@@ -85,7 +94,7 @@ html.compact .vbtn .tt{padding:7px 10px;font-size:13px}
 /* 高さの低い画面（スマホ横向き） */
 html.compact #side{min-width:0;padding:10px}
 html.compact #side.cards{gap:8px}
-html.compact .card-tab{height:auto;flex:1;min-height:0}
+html.compact .card-tab{min-height:0}
 html.compact .ico{width:44px;padding:8px 0 4px}
 html.compact .ico svg{width:18px;height:18px}
 html.compact .ct-label{font-size:18px}
@@ -93,7 +102,7 @@ html.compact .vhead{height:58px}
 html.compact .vh-label{font-size:17px;padding-right:14px}
 html.compact .vbody{margin-top:8px}
 html.compact .rail{width:44px;gap:6px;margin-top:66px}
-html.compact .rail .ico{height:58px}
+html.compact .rail .ico{height:50px}
 html.compact .ph{font-size:14px;padding:4px 10px;margin-bottom:6px}
 html.compact .pt,html.compact .kv,html.compact .skgrid{font-size:13px;padding:0 10px 10px}
 html.compact .abgrid{gap:4px;padding:0 10px 10px}
@@ -110,6 +119,7 @@ html.compact #nameplate .nm{font-size:34px}
 html.compact .cr{height:32px;min-width:180px;font-size:13px}
 html.compact .cr i{width:32px}
 html.compact .cr i svg{width:16px;height:16px}
+html.compact #dialog{bottom:38px;left:8px;right:8px;padding:8px 12px;min-height:54px;font-size:12px;line-height:1.7}
 html.compact .stbadge{top:8px;right:8px}
 </style>
 </head>
@@ -133,11 +143,18 @@ const SVG={
   stat:'<svg viewBox="0 0 24 24"><path d="M4 20V10h3v10H4zm6.5 0V4h3v16h-3zM17 20v-7h3v7h-3z"/></svg>',
   skill:'<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 16.9 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2z"/></svg>',
   voice:'<svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zm-7 9h2a5 5 0 0 0 10 0h2a7 7 0 0 1-6 6.9V21h3v2H8v-2h3v-3.1A7 7 0 0 1 5 11z"/></svg>',
+  rel:'<svg viewBox="0 0 24 24"><path d="M8 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm8.5 1a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7zM1 20c0-3.9 3.1-7 7-7s7 3.1 7 7v1H1v-1zm15.5-6c3 0 6.5 1.6 6.5 5v2h-6v-1c0-2.4-.9-4.5-2.4-5.9.6-.1 1.2-.1 1.9-.1z"/></svg>',
+  secret:'<svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v3h6V7a3 3 0 0 0-3-3zm0 9a2 2 0 0 0-1 3.7V19h2v-2.3A2 2 0 0 0 12 13z"/></svg>',
+  scen:'<svg viewBox="0 0 24 24"><path d="M4 3h7a3 3 0 0 1 2 .8A3 3 0 0 1 15 3h5v16h-6a2 2 0 0 0-2 2 2 2 0 0 0-2-2H4V3zm2 2v12h4c.7 0 1.4.2 2 .5V6a1 1 0 0 0-1-1H6zm12 0h-3a1 1 0 0 0-1 1v11.5c.6-.3 1.3-.5 2-.5h2V5z"/></svg>',
   memo:'<svg viewBox="0 0 24 24"><path d="M5 3h11l4 4v14H5V3zm2 2v14h11V8h-3V5H7zm2 5h7v2H9v-2zm0 4h7v2H9v-2z"/></svg>'
 };
-const TABS=[{k:'prof',label:'プロフィール',ic:SVG.prof},{k:'voice',label:'ボイス',ic:SVG.voice},{k:'stat',label:'能力値',ic:SVG.stat},{k:'skill',label:'技能',ic:SVG.skill},{k:'memo',label:'メモ',ic:SVG.memo}];
+const TABS=[{k:'prof',label:'プロフィール',ic:SVG.prof},{k:'voice',label:'ボイス',ic:SVG.voice},{k:'stat',label:'能力値・技能',ic:SVG.stat},{k:'memo',label:'メモ',ic:SVG.memo},{k:'rel',label:'人間関係',ic:SVG.rel},{k:'secret',label:'ネタバレメモ',ic:SVG.secret},{k:'scen',label:'通過シナリオ',ic:SVG.scen}];
 // ボイス未設定ならボイスタブは出さない
-function tabs(){ return TABS.filter(t=>t.k!=='voice'||(D&&D.voices.length)); }
+function tabs(){
+  if(!D)return TABS;
+  const has={voice:D.voices.length, memo:D.memos.length||D.freeMemo.trim(), rel:D.rels.length, secret:D.secrets.length, scen:D.scenarios.length};
+  return TABS.filter(t=>!(t.k in has)||has[t.k]);
+}
 let tab=null, D=null;
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -184,13 +201,15 @@ function build(row){
     id:row.id, name:inp.pcname||row.char_name||'名無し', furigana:inp.furigana||'', job:inp.job||'',
     status:inp.pc_status||'alive', cls:parseInt(inp.ark_class)||0,
     img:inp.charImage?fixDropbox(inp.charImage):'',
+    crop:(()=>{ const f=(k,d)=>{ const v=parseFloat(inp[k]); return isNaN(v)?d:v; }; return {z:f('ark_img_z',100),x:f('ark_img_x',0),y:f('ark_img_y',0)}; })(),
     ab, sub, sanNow:sanNow==null?(v(ab.pow)*5):sanNow, sanMax:99-mythos, sanInit:v(ab.pow)*5+add('san'),
     prof:[['職業',inp.job],['年齢',inp.age],['性別',inp.gender],['身長',inp.height],['体重',inp.weight],['出身',inp.origin],['誕生日',inp.birthday],['髪の色',inp.hair],['瞳の色',inp.eye],['時代',inp.era]].filter(x=>x[1]&&String(x[1]).trim()),
     freeMemo:inp.row1_memo||'',
     voices:(()=>{ try{ const v=JSON.parse(inp.ark_voices||'[]'); return Array.isArray(v)?v.filter(x=>x&&x.url):[]; }catch(e){ return []; } })(),
     scenarios:(sheet.scenarios||[]).filter(x=>x&&x.trim()),
     sk, memos:(sheet.memos||[]).filter(m=>m&&(m.title||m.body)),
-    rels:(sheet.rels||[]).filter(r=>r&&(r.name||(r.rows||[]).some(x=>x.title||x.body)))
+    rels:(sheet.rels||[]).filter(r=>r&&(r.name||(r.rows||[]).some(x=>x.title||x.body))),
+    secrets:(sheet.secrets||[]).filter(x=>x&&(x.title||x.summary||(x.contents||[]).some(t=>t)))
   };
 }
 
@@ -198,58 +217,90 @@ function renderStage(){
   const c=D;
   const clsHtml=(c.cls>=1&&c.cls<=ARK_ICONS.length)?`<span class="cls" title="${ARK_ICONS[c.cls-1].n}"><img src="${ARK_ICONS[c.cls-1].s}" alt=""></span>`:'';
   return `<div id="stage">`+
-    (c.img?`<img class="art" src="${esc(c.img)}" alt="${esc(c.name)}" onerror="this.remove()">`:`<div class="empty">${esc(c.name.charAt(0))}</div>`)+
+    (c.img?`<img class="art" src="${esc(c.img)}" alt="${esc(c.name)}" style="--z:${c.crop.z};--x:${c.crop.x};--y:${c.crop.y}" onerror="this.remove()">`:`<div class="empty">${esc(c.name.charAt(0))}</div>`)+
     `<span class="stbadge" style="background:${ST_COLOR[c.status]||'#555'}">${ST_LABEL[c.status]||''}</span>`+
     `<div id="nameplate"><div class="role"><div class="san" style="--p:${Math.max(0,Math.min(100,c.sanNow/99*100)).toFixed(1)}"><span class="lab">SAN</span><span class="val">${c.sanNow}</span></div>${clsHtml}</div>`+
     (c.furigana?`<div class="en">${esc(c.furigana)}</div>`:'')+
     `<div class="nm">${esc(c.name)}</div></div>`+
+    `<div id="dialog"><span class="tag">VOICE</span><span id="dtext"></span></div>`+
     (c.job?`<div id="credit"><div class="cr"><i>${SVG.prof}</i><span>${esc(c.job)}</span></div></div>`:'')+
     `</div>`;
 }
 function body(k){
   const c=D;
   if(k==='prof'){
-    let h='';
     const lw=Math.max(0,...c.prof.map(([a])=>a.length));
-    h+=`<div class="ph">基本情報</div>`+(c.prof.length?`<div class="pt">${c.prof.map(([a,b])=>`【${a}${'　'.repeat(lw-a.length)}】${esc(b)}`).join('\n')}</div>`:`<p class="hint">登録されていません。</p>`);
-    if(c.scenarios.length)h+=`<div class="ph">通過シナリオ</div><div class="pt">${c.scenarios.map(esc).join('\n')}</div>`;
-    if(c.freeMemo.trim())h+=`<div class="ph">自由メモ</div><div class="pt">${esc(c.freeMemo)}</div>`;
-    return h;
+    return `<div class="ph">基本情報</div>`+(c.prof.length?`<div class="pt">${c.prof.map(([a,b])=>`【${a}${'　'.repeat(lw-a.length)}】${esc(b)}`).join('\n')}</div>`:`<p class="hint">登録されていません。</p>`);
   }
   if(k==='voice'){
     return c.voices.map((v,i)=>`<button class="vbtn${playing===i?' playing':''}" onclick="playVoice(${i})"><span class="ic">${playing===i?'■':'▶'}</span><span class="tt">${esc(v.title||'(無題)')}</span><span class="bar" id="vbar${i}"></span></button>`).join('');
   }
   if(k==='stat'){
     const L={str:'STR',con:'CON',pow:'POW',dex:'DEX',app:'APP',siz:'SIZ',int_v:'INT',edu:'EDU'};
-    let h=`<div class="ph">能力値</div><div class="abgrid">${Object.keys(L).map(a=>`<div><b>${L[a]}</b><span>${c.ab[a]==null?'-':c.ab[a]}</span></div>`).join('')}</div>`;
-    h+=`<div class="ph">副能力値</div><div class="abgrid"><div><b>SAN</b><span>${c.sanNow}</span></div>${Object.entries(c.sub).map(([a,b])=>`<div><b>${a}</b><span>${b}</span></div>`).join('')}</div>`;
-    h+=`<dl class="kv"><dt>初期SAN</dt><dd>${c.sanInit}</dd><dt>最大SAN</dt><dd>${c.sanMax}</dd></dl>`;
-    return h;
-  }
-  if(k==='skill'){
-    if(!c.sk.length)return `<p class="hint">ポイントを振った技能がありません。</p>`;
-    return SEC_DEF.map(([sk,lab])=>{
+    const cell=(a,b)=>`<div>【${a}】${esc(String(b))}</div>`;
+    let h=`<div class="ph">能力値</div><div class="abtxt">${Object.keys(L).map(a=>cell(L[a],c.ab[a]==null?'-':c.ab[a])).join('')}</div>`;
+    h+=`<div class="ph">副能力値</div><div class="abtxt">${cell('SAN',c.sanNow)}${Object.entries(c.sub).map(([a,b])=>cell(a,b)).join('')}${cell('初期SAN',c.sanInit)}${cell('最大SAN',c.sanMax)}</div>`;
+    // 技能（同じタブ内）
+    if(!c.sk.length) return h+`<div class="ph">技能</div><p class="hint">ポイントを振った技能がありません。</p>`;
+    return h+SEC_DEF.map(([sk,lab])=>{
       const list=c.sk.filter(s=>s.sec===sk).sort((a,b)=>(a.ord<0?999:a.ord)-(b.ord<0?999:b.ord));
       if(!list.length)return'';
       return `<div class="ph">${lab}</div><div class="skgrid">${list.map(s=>`<div><span>${esc(s.nm)}</span><b>${s.total}</b></div>`).join('')}</div>`;
     }).join('');
   }
   if(k==='memo'){
-    let h=c.memos.map(m=>`<div class="ph">${esc(m.title||'メモ')}</div><div class="pt">${esc(m.body||'')}</div>`).join('');
-    if(c.rels.length){
-      h+=c.rels.map(r=>`<div class="ph">${esc(r.name||'関係')}</div>`+(r.rows||[]).filter(x=>x.title||x.body).map(x=>`<div class="pt">${x.title?`<b>${esc(x.title)}</b>\n`:''}${esc(x.body||'')}</div>`).join('')).join('');
-    }
+    let h='';
+    if(c.freeMemo.trim())h+=`<div class="ph">自由メモ</div><div class="pt">${esc(c.freeMemo)}</div>`;
+    h+=c.memos.map(m=>`<div class="ph">${esc(m.title||'メモ')}</div><div class="pt">${esc(m.body||'')}</div>`).join('');
     return h||`<p class="hint">メモがありません。</p>`;
+  }
+  if(k==='rel'){
+    return c.rels.map(r=>`<div class="ph">${esc(r.name||'関係')}</div>`+(r.rows||[]).filter(x=>x.title||x.body).map(x=>`<div class="pt">${x.title?`<b>${esc(x.title)}</b>\n`:''}${esc(x.body||'')}</div>`).join('')).join('')||`<p class="hint">人間関係がありません。</p>`;
+  }
+  if(k==='secret'){
+    return c.secrets.map((s,i)=>{
+      let h=`<div class="ph">${esc(s.title||'ネタバレ')}</div>`;
+      if(s.summary)h+=`<div class="pt">${esc(s.summary)}</div>`;
+      const cs=(s.contents||[]).map((t,j)=>({t:(s.contentTitles||[])[j]||'',b:t||''})).filter(x=>x.t||x.b);
+      if(!cs.length)return h;
+      if(unlocked.has(i)){
+        h+=cs.map(x=>`<div class="pt">${x.t?`<b>${esc(x.t)}</b>\n`:''}${esc(x.b)}</div>`).join('')+`<div class="sec-lock"><button onclick="lockSecret(${i})">閉じる</button></div>`;
+      }else{
+        h+=`<div class="sec-lock">${s.pass?`<span>PASS</span><input type="password" id="spass${i}" placeholder="パスワード" onkeydown="if(event.key==='Enter')unlockSecret(${i})">`:''}<button onclick="unlockSecret(${i})">解除</button></div>`;
+      }
+      return h;
+    }).join('')||`<p class="hint">ネタバレメモがありません。</p>`;
+  }
+  if(k==='scen'){
+    return c.scenarios.length?`<div class="pt">${c.scenarios.map(esc).join('\n')}</div>`:`<p class="hint">通過シナリオがありません。</p>`;
   }
   return '';
 }
+const unlocked=new Set();
+function unlockSecret(i){
+  const s=D.secrets[i]; if(!s)return;
+  const inp=document.getElementById('spass'+i);
+  if(!s.pass||(inp&&inp.value===s.pass)){ unlocked.add(i); openTab(tab); }
+  else alert('パスワードが違います');
+}
+function lockSecret(i){ unlocked.delete(i); openTab(tab); }
 let audio=null, playing=-1;
-function stopVoice(){ if(audio){ try{audio.pause();}catch(_){} audio=null; } playing=-1; }
+let typeTimer=null;
+function showLine(t){
+  const d=document.getElementById('dialog'), x=document.getElementById('dtext'); if(!d||!x)return;
+  clearInterval(typeTimer);
+  if(!t){ d.classList.remove('show'); x.textContent=''; return; }
+  d.classList.add('show'); x.textContent='';
+  // 1文字ずつ表示
+  const ch=[...t]; let n=0;
+  typeTimer=setInterval(()=>{ n+=1; x.textContent=ch.slice(0,n).join(''); if(n>=ch.length)clearInterval(typeTimer); },40);
+}
+function stopVoice(){ if(audio){ try{audio.pause();}catch(_){} audio=null; } playing=-1; showLine(''); }
 function playVoice(i){
   const was=playing; stopVoice();
   if(was===i){ openTab(tab); return; }
   const v=D.voices[i]; if(!v)return;
-  audio=new Audio(fixDropbox(v.url)); playing=i;
+  audio=new Audio(fixDropbox(v.url)); playing=i; showLine((v.line||'').trim());
   audio.ontimeupdate=()=>{ const b=document.getElementById('vbar'+i); if(b&&audio&&audio.duration) b.style.width=(audio.currentTime/audio.duration*100)+'%'; };
   audio.onended=()=>{ stopVoice(); openTab(tab); };
   audio.play().catch(()=>{ stopVoice(); openTab(tab); alert('再生できませんでした'); });

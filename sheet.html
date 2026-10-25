@@ -1055,8 +1055,19 @@ body.light td.hdr{
 .ark-vrow input[type=text]{text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;padding:3px 4px}
 .ark-vrow .vt{width:150px}
 .ark-vrow .vu{flex:1;min-width:160px}
+.ark-vrow{padding-bottom:6px;border-bottom:1px dashed var(--border)}
+.ark-vrow .vl{flex-basis:100%;width:100%;min-height:38px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;padding:3px 4px;resize:vertical;font-family:inherit;text-align:left}
 .ark-vbtn{font-size:11px;padding:3px 6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:3px;cursor:pointer;white-space:nowrap}
 .ark-vbtn.on{background:#e2aa46;color:#000;border-color:#e2aa46}
+.ark-crop-wrap{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.ark-crop-box{position:relative;width:180px;height:200px;container-type:size;overflow:hidden;background:linear-gradient(135deg,#e4e4e4,#a9a9a9);border:1px solid var(--border);cursor:grab;touch-action:none;user-select:none}
+.ark-crop-box.drag{cursor:grabbing}
+.ark-crop-box img{position:absolute;left:calc(50% + var(--x,0)*1cqh);top:calc(50% + var(--y,0)*1cqh);height:calc(var(--z,100)*1cqh);width:auto;max-width:none;transform:translate(-50%,-50%);pointer-events:none;display:none}
+.ark-crop-box.has img{display:block}
+.ark-crop-box.has .ark-crop-none{display:none}
+.ark-crop-none{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:#666;padding:10px}
+.ark-crop-ctl{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.ark-crop-ctl input[type=range]{width:160px}
 .ark-url-btn{font-size:11px;padding:4px 10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:4px;cursor:pointer}
 .sheet-preview .add-row-btn,.sheet-preview .del-btn,.sheet-preview .mv-btn{display:none !important}
 .sheet-preview .mini-roll2,.sheet-preview .roll-all-btn2,.sheet-preview .apply-roll-btn,.sheet-preview .tk-droll-btn{pointer-events:none !important;opacity:.5}
@@ -1600,6 +1611,16 @@ if (('standalone' in navigator) && navigator.standalone) {
           <div style="font-size:11px;margin-bottom:4px">クラスアイコン（一覧・アーク風閲覧の左上に表示）</div>
           <input type="hidden" id="ark_class" value="">
           <div id="ark_cls_picker"></div>
+          <div style="font-size:11px;margin:10px 0 4px">立ち絵クロップ（アーク風閲覧用・ドラッグで移動／ホイールかスライダーで拡大縮小）</div>
+          <input type="hidden" id="ark_img_z" value=""><input type="hidden" id="ark_img_x" value=""><input type="hidden" id="ark_img_y" value="">
+          <div class="ark-crop-wrap">
+            <div id="ark_crop_box" class="ark-crop-box"><img id="ark_crop_img" alt="" draggable="false"><span class="ark-crop-none">立ち絵（アイコン画像URL）が未設定です</span></div>
+            <div class="ark-crop-ctl">
+              <label style="font-size:11px">拡大 <span id="ark_crop_zv">100</span>%</label>
+              <input type="range" id="ark_crop_zoom" min="30" max="400" step="1" value="100">
+              <button type="button" class="ark-url-btn" onclick="arkCropReset()">リセット</button>
+            </div>
+          </div>
           <div style="font-size:11px;margin:10px 0 4px">ボイス（Dropbox共有リンク／音声ファイル添付）</div>
           <input type="hidden" id="ark_voices" value="">
           <div id="ark_voice_rows"></div>
@@ -4868,17 +4889,18 @@ function _arkRenderVoices(){
       '<button type="button" class="ark-vbtn" data-a="up" title="上へ"'+(i===0?' disabled':'')+'>▲</button>'+
       '<button type="button" class="ark-vbtn" data-a="down" title="下へ"'+(i===list.length-1?' disabled':'')+'>▼</button>'+
       '<button type="button" class="ark-vbtn" data-a="del" title="削除">×</button>'+
+      '<textarea class="vl" placeholder="台詞（再生時に表示）" data-k="line" rows="2">'+_arkEsc(v.line)+'</textarea>'+
     '</div>').join('');
   box.querySelectorAll('.ark-vrow').forEach(row=>{
     const i=+row.dataset.i;
-    row.querySelectorAll('input[data-k]').forEach(inp=>{
+    row.querySelectorAll('input[data-k],textarea[data-k]').forEach(inp=>{
       // 入力欄はid無し（collectDataの対象外）。値はark_voicesにまとめて保存
       inp.addEventListener('input',e=>{ e.stopPropagation(); const l=_arkGetVoices(); if(!l[i])return; l[i][inp.dataset.k]=inp.value; _arkSetVoices(l); });
     });
     row.querySelectorAll('button[data-a]').forEach(b=>b.onclick=()=>_arkVoiceAction(b.dataset.a,i));
   });
 }
-function arkAddVoice(){ const l=_arkGetVoices(); l.push({title:'',url:''}); _arkSetVoices(l); _arkRenderVoices(); }
+function arkAddVoice(){ const l=_arkGetVoices(); l.push({title:'',url:'',line:''}); _arkSetVoices(l); _arkRenderVoices(); }
 function _arkStop(){ if(_arkAudio){ try{_arkAudio.pause();}catch(_){} _arkAudio=null; } _arkPlayingIdx=-1; }
 function _arkVoiceAction(a,i){
   const l=_arkGetVoices(); if(!l[i])return;
@@ -4919,6 +4941,44 @@ async function _arkUploadVoice(i,file){
     alert('アップロードに失敗しました: '+(e&&e.message||e)+'\n（Supabaseにvoicesバケットが作成されているか確認してください）');
   }
 }
+// ---- 立ち絵クロップ（値はステージ高さ基準の%：z=高さ, x/y=中心からのずれ）----
+function _arkCropVals(){
+  const g=(id,d)=>{ const v=parseFloat(document.getElementById(id).value); return isNaN(v)?d:v; };
+  return {z:g('ark_img_z',100), x:g('ark_img_x',0), y:g('ark_img_y',0)};
+}
+function _arkCropSet(v,silent){
+  const z=Math.max(30,Math.min(400,Math.round(v.z))), x=Math.round(v.x*10)/10, y=Math.round(v.y*10)/10;
+  document.getElementById('ark_img_z').value=z; document.getElementById('ark_img_x').value=x; document.getElementById('ark_img_y').value=y;
+  _arkCropPaint();
+  if(!silent) document.getElementById('ark_img_z').dispatchEvent(new Event('input',{bubbles:true}));
+}
+function _arkCropPaint(){
+  const box=document.getElementById('ark_crop_box'), img=document.getElementById('ark_crop_img'); if(!box||!img)return;
+  const url=_arkFixUrl(document.getElementById('char_image_url')?.value||'');
+  if(img.dataset.src!==url){ img.dataset.src=url; if(url) img.src=url; else img.removeAttribute('src'); }
+  box.classList.toggle('has',!!url);
+  const v=_arkCropVals();
+  box.style.setProperty('--z',v.z); box.style.setProperty('--x',v.x); box.style.setProperty('--y',v.y);
+  const sl=document.getElementById('ark_crop_zoom'); if(sl) sl.value=v.z;
+  const zv=document.getElementById('ark_crop_zv'); if(zv) zv.textContent=v.z;
+}
+function arkCropReset(){ _arkCropSet({z:100,x:0,y:0}); }
+(function(){
+  const bind=()=>{
+    const box=document.getElementById('ark_crop_box'), sl=document.getElementById('ark_crop_zoom'); if(!box||box._bound)return; box._bound=1;
+    let st=null;
+    box.addEventListener('pointerdown',e=>{ if(!box.classList.contains('has'))return; const v=_arkCropVals(); st={px:e.clientX,py:e.clientY,x:v.x,y:v.y}; box.setPointerCapture(e.pointerId); box.classList.add('drag'); });
+    box.addEventListener('pointermove',e=>{ if(!st)return; const h=box.clientHeight||200; _arkCropSet({z:_arkCropVals().z,x:st.x+(e.clientX-st.px)/h*100,y:st.y+(e.clientY-st.py)/h*100},true); });
+    const end=()=>{ if(!st)return; st=null; box.classList.remove('drag'); _arkCropSet(_arkCropVals()); };
+    box.addEventListener('pointerup',end); box.addEventListener('pointercancel',end);
+    box.addEventListener('wheel',e=>{ if(!box.classList.contains('has'))return; e.preventDefault(); const v=_arkCropVals(); v.z+=(e.deltaY<0?5:-5); _arkCropSet(v); },{passive:false});
+    sl.addEventListener('input',e=>{ e.stopPropagation(); const v=_arkCropVals(); v.z=parseFloat(sl.value); _arkCropSet(v); });
+    _arkCropPaint();
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind); else bind();
+  // アイコン画像URLの変更をプレビューへ反映
+  if(typeof previewCharImage==='function'){ const _p=previewCharImage; previewCharImage=function(){ const r=_p.apply(this,arguments); try{_arkCropPaint();}catch(_){} return r; }; }
+})();
 function _arkViewURL(){
   if(!currentCharId){ alert('先に保存してください'); return ''; }
   const rev=_loadedShareRev;
@@ -4933,7 +4993,7 @@ function copyArkViewURL(){
 }
 (function(){
   const _orig=applyData;
-  applyData=function(){ const r=_orig.apply(this,arguments); try{_arkStop();_arkSync();_arkRenderVoices();}catch(_){} return r; };
+  applyData=function(){ const r=_orig.apply(this,arguments); try{_arkStop();_arkSync();_arkRenderVoices();_arkCropPaint();}catch(_){} return r; };
   const init=()=>{ _arkSync(); _arkRenderVoices(); };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
