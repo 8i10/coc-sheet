@@ -666,8 +666,8 @@ body:not(.light) .card-top{ border:none !important; }
 .ark-clsw{position:absolute;top:4px;left:4px;z-index:3;width:31%;aspect-ratio:1}
 .ark-bgtopw{position:absolute;left:0;top:0;width:100%;aspect-ratio:4/1;z-index:0;pointer-events:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.55))}
 .ark-bgtop{position:absolute;inset:0;background:#646770;clip-path:polygon(0 0,54% 0,0 100%)}
-.ark-br{position:absolute;left:5%;top:55%;z-index:3;width:34%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.ark-br img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.85)) drop-shadow(0 0 1px rgba(0,0,0,.9))}
+.ark-br{display:flex;justify-content:flex-end;margin-bottom:3px;pointer-events:none}
+.ark-br img{width:30px;height:30px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.85)) drop-shadow(0 0 1px rgba(0,0,0,.9))}
 .ark-cls{position:absolute;inset:0;--bg:rgba(52,55,62,.88);background:linear-gradient(135deg,var(--bg) 86%,transparent 86%);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .ark-cls:hover{--bg:rgba(80,84,94,.95)}
 .ark-cls img{width:80%;height:80%;object-fit:contain;pointer-events:none}
@@ -1843,10 +1843,10 @@ function makeArkCard(char){
   const sanPct=Math.max(0,Math.min(100,(parseInt(sanNow)||0)/99*100));
   // クラスアイコン（シートのアーク風設定）
   const clsI=parseInt(inp.ark_class)||0;
-  // 左上アイコン：職分があれば職分、なければ職種
+  const topIc=(clsI>=1&&clsI<=ARK_ICONS.length)?ARK_ICONS[clsI-1]:null;
+  // 職分（リンクコピーの上）
   const brL=ARK_BRANCHES[clsI], brI=parseInt(inp.ark_branch)||0;
-  const hasBr=!!(brL&&brI>=1&&brI<=brL.length);
-  const topIc=hasBr?brL[brI-1]:((clsI>=1&&clsI<=ARK_ICONS.length)?ARK_ICONS[clsI-1]:null);
+  const brHtml=(brL&&brI>=1&&brI<=brL.length)?`<div class="ark-br" title="${brL[brI-1].n}"><img src="${brL[brI-1].s}" alt=""></div>`:'';
   const clsHtml=topIc?`<div class="ark-cls" title="${topIc.n}（タップでアーク風閲覧URLをコピーして開く）" onclick="event.stopPropagation();copyArkUrl('${char.id}')"><img src="${topIc.s}" alt=""></div>`:'';
   
   const card=document.createElement('div');
@@ -1855,7 +1855,7 @@ function makeArkCard(char){
   card.innerHTML=
     '<div class="ark-bgw"></div><div class="ark-bgtopw"><div class="ark-bgtop"></div></div>'+imgHtml+(clsHtml?'<div class="ark-clsw">'+clsHtml+'</div>':'')+
     `<span class="ark-status-dot" style="background:${stColor}">${S_LABEL[status]||''}</span>`+
-    `<div class="ark-overlay">`+
+    `<div class="ark-overlay">`+brHtml+
       `<div class="ark-botrow">`+
         `<div class="ark-san" style="--p:${sanPct.toFixed(1)}"><span class="lab">SAN</span><span class="val">${esc(String(sanNow))}</span></div>`+
         `<div class="ark-acts">`+
