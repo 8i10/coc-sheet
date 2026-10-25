@@ -558,6 +558,9 @@ async function init(){
 // スマホ縦持ちなら横向きに回転、低い画面はコンパクト表示
 function fitView(){
   let w=window.innerWidth, h=window.innerHeight; const app=document.getElementById('app');
+  // ホーム画面アプリ（iOS）では innerHeight がステータスバー分短く報告され、下の余白が広がるため画面の高さを使う
+  const standalone=window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+  if(standalone&&h>w&&screen.height>h&&screen.width===w) h=screen.height;
   const rot = h>w && w<=760;
   document.documentElement.classList.toggle('rot',rot);
   // ノッチ・ステータスバー・ホームバー（セーフエリア）を避ける
