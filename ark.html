@@ -131,13 +131,15 @@ html.compact .vbtn .tt{padding:7px 10px;font-size:13px}
 .t-clsbg{position:absolute;left:3%;top:6%;width:min(26vh,240px);opacity:.12;filter:invert(1);pointer-events:none}
 .t-art{position:absolute;left:52%;bottom:0;height:100%;max-width:60%;object-fit:contain;object-position:center bottom;transform:translateX(-50%);filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))}
 .t-noimg{position:absolute;left:52%;top:50%;transform:translate(-50%,-50%);font-size:40vh;color:rgba(0,0,0,.08);font-family:var(--font);font-weight:700}
-.tb{position:absolute;top:1.8%;height:6.9%;z-index:5;border:1px solid rgba(255,255,255,.08);background:rgba(44,44,47,.92);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.tb{border:1px solid rgba(255,255,255,.08);background:rgba(44,44,47,.92);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .tb svg{width:46%;height:46%;max-width:30px;max-height:30px;fill:currentColor}
 .tb:disabled{opacity:.35;cursor:default}
 .tb:not(:disabled):hover{background:rgba(70,70,74,.95)}
-.tb-info{left:29.4%;width:3.2%;min-width:34px}
-.tb-wide{left:42.2%;width:8.8%;min-width:70px}
-.t-left{position:absolute;left:5%;top:33%;bottom:4%;width:42%;display:flex;flex-direction:column;z-index:3}
+.t-topbtns{position:absolute;left:50%;top:1.8%;height:6.8%;width:17.5%;min-width:150px;transform:translateX(-50%);z-index:5;display:flex;align-items:stretch;background:rgba(44,44,47,.92);border:1px solid rgba(255,255,255,.08)}
+.t-topbtns .tb{flex:1;height:auto;background:transparent;border:none}
+.t-topbtns .tb svg{height:62%;width:auto;max-width:none;max-height:none}
+.t-topbtns i{flex:none;width:2px;margin:calc(var(--u,1vh)*1.3) 0;background:#6a6a6c}
+.t-left{position:absolute;left:5%;top:39%;bottom:4%;width:42%;display:flex;flex-direction:column;z-index:3}
 .t-ab{display:grid;grid-template-columns:repeat(2,max-content);gap:calc(var(--u,1vh)*1.1) calc(var(--uw,1vw)*3.2);margin:0 0 12px}
 .t-ab div{display:flex;align-items:center;gap:6px}
 .t-ab b{flex:none;width:clamp(22px,calc(var(--u,1vh)*3.3),32px);height:clamp(22px,calc(var(--u,1vh)*3.3),32px);display:flex;align-items:center;justify-content:center;font-size:clamp(8px,calc(var(--u,1vh)*1.35),12px);letter-spacing:0;background:#111;color:#fff;font-weight:700;text-shadow:none}
@@ -151,10 +153,10 @@ html.compact .vbtn .tt{padding:7px 10px;font-size:13px}
 .t-tag{align-self:stretch;text-align:center;background:rgba(60,60,62,.92);color:#fff;padding:.6vh calc(var(--uw,1vw)*1.6);font-size:clamp(12px,calc(var(--u,1vh)*2.6),24px);letter-spacing:.06em;text-shadow:none;background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 2px,transparent 2px 6px)}
 /* SAN（参考：LVの円＋EXPバー） */
 .t-right{position:absolute;left:70%;top:12.5%;z-index:3;width:23.5%;height:calc(var(--u,1vh)*16)}
-.t-san{position:absolute;left:0;top:0;width:calc(var(--u,1vh)*15);height:calc(var(--u,1vh)*15);border-radius:50%;background:conic-gradient(from -60deg,#e2aa46 0 calc(var(--p,0)*.6%),transparent 0) ,#1c1c1e;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #5a5a5c}
-.t-san::before{content:'';position:absolute;inset:3px;border-radius:50%;background:#1c1c1e;border:1px solid #3a3a3c}
+.t-san{position:absolute;left:0;top:0;z-index:2;width:calc(var(--u,1vh)*15);height:calc(var(--u,1vh)*15);border-radius:50%;background:conic-gradient(#e2aa46 calc(var(--p,0)*1%),rgba(255,255,255,.16) 0);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.t-san::before{content:'';position:absolute;inset:calc(var(--u,1vh)*1);border-radius:50%;background:rgba(20,20,26,.95)}
 .t-san span{position:relative;line-height:1}
-.t-san .lab{font-family:'ArkNum','Jost',sans-serif;font-size:calc(var(--u,1vh)*2.3);font-weight:400;color:#ddd}
+.t-san .lab{font-family:'ArkNum','Jost',sans-serif;font-size:calc(var(--u,1vh)*2.3);font-weight:400;color:#e2aa46;letter-spacing:.05em}
 .t-san .val{font-family:'ArkNum','Jost',sans-serif;font-size:calc(var(--u,1vh)*7);font-weight:300;color:#fff;margin-top:-.3vh}
 .t-sanmax{position:absolute;left:calc(var(--u,1vh)*13);top:calc(var(--u,1vh)*11.5);font-family:'ArkNum','Jost',sans-serif;font-size:calc(var(--u,1vh)*3.3);font-weight:300;color:#fff}
 .t-range{flex:none;width:calc(var(--uw,1vw)*9);min-width:70px;background:rgba(56,56,60,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u,1vh)*.8);padding:calc(var(--u,1vh)*1) 4px}
@@ -170,6 +172,10 @@ html.compact .vbtn .tt{padding:7px 10px;font-size:13px}
 .t-st .sv{font-family:'ArkNum','Jost',sans-serif;font-weight:300;font-size:calc(var(--u,1vh)*5.4);color:#fff;line-height:1}
 .t-st .sl{font-size:calc(var(--u,1vh)*2.6);color:#ccc;letter-spacing:.08em;align-self:flex-start;margin-top:calc(var(--u,1vh)*1.4)}
 .t-brd{margin-top:calc(var(--u,1vh)*1.2);font-size:clamp(10px,calc(var(--u,1vh)*1.9),16px);line-height:1.55;color:#ddd;background:rgba(255,255,255,.07);padding:calc(var(--u,1vh)*.8) calc(var(--uw,1vw)*.8)}
+.t-sanbox{position:absolute;left:calc(var(--u,1vh)*7);right:0;top:calc(var(--u,1vh)*3.8);height:calc(var(--u,1vh)*7);background:rgba(56,56,60,.9)}
+/* 素質（特徴表） */
+.t-tk{display:flex;flex-wrap:wrap;gap:calc(var(--u,1vh)*.8);margin-top:calc(var(--u,1vh)*1.4)}
+.t-tk span{background:#f1f1f1;color:#1a1a1a;font-size:clamp(11px,calc(var(--u,1vh)*2.4),20px);padding:calc(var(--u,1vh)*.3) calc(var(--uw,1vw)*.6);letter-spacing:.04em}
 /* 職分（参考：右下のモジュール欄） */
 .t-branch{position:absolute;left:70%;width:23.3%;top:63%;z-index:3;background:rgba(56,56,60,.9);padding:calc(var(--u,1vh)*1.6) 1.2%}
 .t-brin{display:flex;align-items:center;gap:calc(var(--uw,1vw)*1.4)}
@@ -452,6 +458,7 @@ function render(){
 const TSVG={
   back:'<svg viewBox="0 0 24 24"><path d="M15.5 3.5 7 12l8.5 8.5-1.6 1.6L3.8 12 13.9 1.9z"/></svg>',
   home:'<svg viewBox="0 0 24 24"><path d="M12 3 2 11.5l1.3 1.5L5 11.6V21h5.5v-6h3v6H19v-9.4l1.7 1.4 1.3-1.5z"/></svg>',
+  node:'<svg viewBox="0 0 24 24"><path d="M10 9h4v4h-4zM17.5 3.5h3v3h-3zM3.5 17.5h3v3h-3zM15.5 16.5h3v3h-3z"/><path d="M13.6 9.4 18.3 5.7l.9 1.1-4.7 3.7zM10.4 12.6 5.7 18.3l-1.1-.9 4.7-5.7zM13.4 12.5l3.4 4.4-1.1.8-3.4-4.4z"/></svg>',
   info:'<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm-1.3 6h2.6v8h-2.6zm0-4h2.6v2.6h-2.6z"/></svg>',
   hanger:'<svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 1 3 3h-2a1 1 0 1 0-1 1 1 1 0 0 0-1 1v1.4l9.5 6.4A2 2 0 0 1 19.4 19H4.6a2 2 0 0 1-1.1-3.6L11 9.4V8a3 3 0 0 1 1-2.2V6a1 1 0 0 0 0-.1A3 3 0 0 1 12 3zm0 8.2-7.4 5 .1-.2H19.3L12 11.2z"/></svg>'
 };
@@ -483,8 +490,9 @@ function renderTop(){
     (ci?`<img class="t-clsbg" src="${ci.s}" alt="">`:'')+
     (O.img?`<img class="t-art" src="${esc(O.img)}" alt="" onerror="this.remove()">`:`<div class="t-noimg">${esc(c.name.charAt(0))}</div>`)+
     // 上部ボタン（参考画像の ⓘ と ハンガー の位置）
-    `<button class="tb tb-info" title="プロフィール" onclick="openDetail()">${TSVG.info}</button>`+
-    `<button class="tb tb-wide" title="コーデ" ${hasOutfit?'':'disabled'} onclick="openOutfit()">${TSVG.hanger}</button>`+
+    // 上部中央：左＝情報（プロフィール）、右＝コーデ（参考画像のノード／ハンガーのボタン）
+    `<div class="t-topbtns"><button class="tb" title="情報" onclick="openDetail()">${TSVG.node}</button><i></i>`+
+    `<button class="tb" title="コーデ" ${hasOutfit?'':'disabled'} onclick="openOutfit()">${TSVG.hanger}</button></div>`+
     `<div class="t-left">`+
       `<div class="t-ab">${L.map(([k,l])=>`<div><b>${l}</b><span>${c.ab[k]==null?'-':c.ab[k]}</span></div>`).join('')}</div>`+
       (c.furigana?`<div class="t-en">${esc(c.furigana)}</div>`:'')+
@@ -496,12 +504,15 @@ function renderTop(){
       `</div>`+
     `</div>`+
     // SAN（LVの位置）
-    `<div class="t-right"><div class="t-san" style="--p:${pct.toFixed(1)}"><span class="lab">SAN</span><span class="val">${c.sanNow}</span></div><div class="t-sanmax">/${c.sanMax}</div></div>`+
+    `<div class="t-right"><div class="t-sanbox"></div><div class="t-san" style="--p:${pct.toFixed(1)}"><span class="lab">SAN</span><span class="val">${c.sanNow}</span></div><div class="t-sanmax">/${c.sanMax}</div></div>`+
     // HP・MP（昇進・潜在の位置）
     `<div class="t-st t-st1"><span class="sv">${c.sub.HP}</span><span class="sl">HP</span></div>`+
     `<div class="t-st t-st2"><span class="sv">${c.sub.MP}</span><span class="sl">MP</span></div>`+
     // 職分（モジュールの位置）
-    (brI?`<div class="t-branch"><div class="t-brin"><img src="${brI.s}" alt=""><span>${esc(brI.n)}</span></div><div class="t-brd">${esc(brI.d)}</div></div>`:'')+
+    ((brI||c.tokucho.length)?`<div class="t-branch">`+
+      (brI?`<div class="t-brin"><img src="${brI.s}" alt=""><span>${esc(brI.n)}</span></div><div class="t-brd">${esc(brI.d)}</div>`:'')+
+      (c.tokucho.filter(t=>t.l).length?`<div class="t-tk">${c.tokucho.filter(t=>t.l).map(t=>`<span>${esc(t.l.replace(/^（[^）]*）/,''))}</span>`).join('')}</div>`:'')+
+    `</div>`:'')+
   `</div>`;
 }
 function fitTopName(){
