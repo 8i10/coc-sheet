@@ -276,7 +276,7 @@ function stageHTML(){
   const O=curOutfit();
   if(!O.img) return `<div class="noimg">${esc(D.name.charAt(0))}</div>`;
   // 情報・ボイス＝シートで設定したクロップ、それ以外＝画像の全景を中央
-  if(scr==='info'||scr==='voice') return `<img class="crop" src="${esc(O.img)}" alt="" style="--z:${O.crop.z};--x:${O.crop.x};--y:${O.crop.y}" onerror="this.remove()">`;
+  if(scr==='info'||scr==='voice'||scr==='rel'||scr==='secret') return `<img class="crop" src="${esc(O.img)}" alt="" style="--z:${O.crop.z};--x:${O.crop.x};--y:${O.crop.y}" onerror="this.remove()">`;
   return `<img class="full" src="${esc(O.img)}" alt="" onerror="this.remove()">`;
 }
 function headerHTML(){
