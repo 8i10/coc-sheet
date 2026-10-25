@@ -205,6 +205,8 @@ html.compact .rail{width:44px;gap:6px;margin-top:66px}
 html.compact .rail .ico{height:50px}
 html.compact .ph{font-size:14px;padding:4px 10px;margin-bottom:6px}
 html.compact .pt,html.compact .kv,html.compact .skgrid{font-size:13px;padding:0 10px 10px}
+html.compact .ph.memo{font-size:12px;padding:3px 10px;margin-bottom:4px}
+html.compact .pt.memo{font-size:11px;line-height:1.6}
 html.compact .abgrid{gap:4px;padding:0 10px 10px}
 html.compact .abgrid span{font-size:16px}
 html.compact #nameplate{left:14px;bottom:42px}
@@ -345,8 +347,8 @@ function body(k){
     // 基本情報の下に特徴表
     if(c.tokucho.length)h+=`<div class="ph">特徴表</div>`+c.tokucho.map(t=>`<div class="pt">${t.l?`<b>${esc(t.l)}</b>`:''}${t.l&&t.m?'\n':''}${esc(t.m)}</div>`).join('');
     // その下にメモ（自由メモ・その他メモ）
-    if(c.freeMemo.trim())h+=`<div class="ph">自由メモ</div><div class="pt">${esc(c.freeMemo)}</div>`;
-    h+=c.memos.map(m=>`<div class="ph">${esc(m.title||'メモ')}</div><div class="pt">${esc(m.body||'')}</div>`).join('');
+    if(c.freeMemo.trim())h+=`<div class="ph memo">自由メモ</div><div class="pt memo">${esc(c.freeMemo)}</div>`;
+    h+=c.memos.map(m=>`<div class="ph memo">${esc(m.title||'メモ')}</div><div class="pt memo">${esc(m.body||'')}</div>`).join('');
     return h;
   }
   if(k==='outfit'){
@@ -379,12 +381,12 @@ function body(k){
   }
   if(k==='secret'){
     return c.secrets.map((s,i)=>{
-      let h=`<div class="ph">${esc(s.title||'ネタバレ')}</div>`;
-      if(s.summary)h+=`<div class="pt">${esc(s.summary)}</div>`;
+      let h=`<div class="ph memo">${esc(s.title||'ネタバレ')}</div>`;
+      if(s.summary)h+=`<div class="pt memo">${esc(s.summary)}</div>`;
       const cs=(s.contents||[]).map((t,j)=>({t:(s.contentTitles||[])[j]||'',b:t||''})).filter(x=>x.t||x.b);
       if(!cs.length)return h;
       if(unlocked.has(i)){
-        h+=cs.map(x=>`<div class="pt">${x.t?`<b>${esc(x.t)}</b>\n`:''}${esc(x.b)}</div>`).join('')+`<div class="sec-lock"><button onclick="lockSecret(${i})">閉じる</button></div>`;
+        h+=cs.map(x=>`<div class="pt memo">${x.t?`<b>${esc(x.t)}</b>\n`:''}${esc(x.b)}</div>`).join('')+`<div class="sec-lock"><button onclick="lockSecret(${i})">閉じる</button></div>`;
       }else{
         h+=`<div class="sec-lock">${s.pass?`<span>PASS</span><input type="password" id="spass${i}" placeholder="パスワード" onkeydown="if(event.key==='Enter')unlockSecret(${i})">`:''}<button onclick="unlockSecret(${i})">解除</button></div>`;
       }
@@ -551,10 +553,15 @@ async function init(){
 }
 // スマホ縦持ちなら横向きに回転、低い画面はコンパクト表示
 function fitView(){
-  const w=window.innerWidth, h=window.innerHeight, app=document.getElementById('app');
+  let w=window.innerWidth, h=window.innerHeight; const app=document.getElementById('app');
   const rot = h>w && w<=760;
   document.documentElement.classList.toggle('rot',rot);
-  if(rot){ app.style.width=h+'px'; app.style.height=w+'px'; } else { app.style.width=''; app.style.height=''; }
+  // ノッチ・ステータスバー・ホームバー（セーフエリア）を避ける
+  let pr=document.getElementById('_safe_probe');
+  if(!pr){ pr=document.createElement('div'); pr.id='_safe_probe'; pr.style.cssText='position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)'; document.body.appendChild(pr); }
+  const cs=getComputedStyle(pr), st=parseFloat(cs.paddingTop)||0, sb=parseFloat(cs.paddingBottom)||0, sl=parseFloat(cs.paddingLeft)||0, sr=parseFloat(cs.paddingRight)||0;
+  if(rot){ app.style.top=st+'px'; app.style.left=sl+'px'; app.style.width=(h-st-sb)+'px'; app.style.height=(w-sl-sr)+'px'; } else { app.style.top=''; app.style.left=''; app.style.width=''; app.style.height=''; }
+  if(rot){ h=h-st-sb; w=w-sl-sr; }
   document.documentElement.classList.toggle('compact',(rot?w:h)<=520);
   // 画面（回転時はアプリ）の高さ・幅の1%（vh/vw の代わり）
   document.documentElement.style.setProperty('--u',((rot?w:h)/100)+'px');

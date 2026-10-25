@@ -119,9 +119,9 @@ html.rot #app{position:fixed;top:0;left:0;transform:rotate(90deg) translateY(-10
 .cdesc{margin-top:8px;width:100%;text-align:center;font-size:12px;color:var(--gold);background:linear-gradient(90deg,transparent,rgba(0,0,0,.45),transparent);padding:4px 8px;white-space:pre-wrap;word-break:break-word}
 #btns .usebtn{min-width:240px;border-radius:2px;background:#eceaf2}
 #btns .usebtn:disabled{opacity:.6;cursor:default}
-html.compact .cname{font-size:16px}
-html.compact .cpc{font-size:12px}
-html.compact .cdesc{font-size:10px;margin-top:4px}
+html.compact .cname{font-size:13.1px}
+html.compact .cpc{font-size:9.8px}
+html.compact .cdesc{font-size:8.2px;margin-top:4px}
 html.compact .cdots{margin:6px 0 2px}
 html.compact .cc.side.l{right:calc(50% + 46px)}
 html.compact .cc.side.r{left:calc(50% + 46px)}
@@ -133,29 +133,45 @@ html.compact #btns .usebtn{min-width:160px}
 /* 低い画面（スマホ横向き） */
 html.compact #hdr{left:14px;top:8px}
 html.compact #hdr .hic{width:28px;height:28px}
-html.compact #hdr .t2{font-size:12px}
+html.compact #hdr .t2{font-size:9.8px}
 html.compact #nav{left:26px;gap:12px}
-html.compact #nav button{font-size:12px;gap:8px}
+html.compact #nav button{font-size:9.8px;gap:8px}
 html.compact #nav button .ni{width:28px;height:28px}
 html.compact #nav button .ni svg{width:15px;height:15px}
 html.compact #panel{right:14px;top:32px;bottom:10px;width:240px}
-html.compact .p-name{font-size:18px}
+html.compact .p-name{font-size:14.8px}
 html.compact .p-name .pcls{width:26px;height:26px}
-html.compact .p-job{font-size:11px;padding:2px 8px}
+html.compact .p-job{font-size:9px;padding:2px 8px}
 html.compact .p-san{margin-top:6px}
-html.compact .p-san .v{font-size:17px}
+html.compact .p-san .v{font-size:13.9px}
 html.compact .p-tabs{margin:8px 0 4px}
-html.compact .p-tabs button{font-size:11px;padding:2px 0}
-html.compact .row{font-size:12px;padding:3px 2px}
-html.compact .row .rv{font-size:13px}
-html.compact .kv{font-size:11px;padding:4px 2px}
-html.compact .intro-h{margin:8px 0 4px;font-size:12px}
-html.compact .intro{font-size:11px}
+html.compact .p-tabs button{font-size:9px;padding:2px 0}
+html.compact .row{font-size:9.8px;padding:3px 2px}
+html.compact .row .rv{font-size:10.7px}
+html.compact .kv{font-size:9px;padding:4px 2px}
+html.compact .intro-h{margin:8px 0 4px;font-size:9.8px}
+html.compact .intro{font-size:9px}
 html.compact #btns{right:14px;bottom:8px;gap:8px}
-html.compact #btns button{min-width:70px;padding:4px 12px;font-size:11px}
-html.compact .vrow{padding:7px 8px;font-size:12px}
-html.compact #sub{right:calc(14px + 240px + 3%);font-size:13px;bottom:14%}
-html.compact #back{right:14px;top:8px;font-size:18px}
+html.compact #btns button{min-width:70px;padding:4px 12px;font-size:9px}
+html.compact .vrow{padding:7px 8px;font-size:9.8px}
+html.compact #sub{right:calc(14px + 240px + 3%);font-size:10.7px;bottom:14%}
+html.compact #back{right:14px;top:8px;font-size:14.8px}
+
+/* スマホ（compact）：文字を全体的に小さく */
+html.compact #hdr .hic{font-size:13.1px}
+html.compact #hdr .t1{font-size:9px}
+html.compact .p-name .star{font-size:14.8px}
+html.compact .p-san .lb{font-size:10.7px}
+html.compact .p-san .m{font-size:13.1px}
+html.compact .row .ri{font-size:9px}
+html.compact .p-more{font-size:9.8px}
+html.compact .sec-h{font-size:9.8px}
+html.compact .vtab span{font-size:9.8px}
+html.compact .vrow .vp{font-size:6.6px}
+html.compact .lockrow input{font-size:9.8px}
+html.compact .lockrow button{font-size:9.8px}
+html.compact .cc-own{font-size:9.8px}
+html.compact .story-b b{font-size:10.7px}
 </style>
 </head>
 <body>
@@ -418,10 +434,15 @@ async function init(){
   draw();
 }
 function fitView(){
-  const w=window.innerWidth, h=window.innerHeight, app=document.getElementById('app');
+  let w=window.innerWidth, h=window.innerHeight; const app=document.getElementById('app');
   const rot = h>w && w<=760;
   document.documentElement.classList.toggle('rot',rot);
-  if(rot){ app.style.width=h+'px'; app.style.height=w+'px'; } else { app.style.width=''; app.style.height=''; }
+  // ノッチ・ステータスバー・ホームバー（セーフエリア）を避ける
+  let pr=document.getElementById('_safe_probe');
+  if(!pr){ pr=document.createElement('div'); pr.id='_safe_probe'; pr.style.cssText='position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)'; document.body.appendChild(pr); }
+  const cs=getComputedStyle(pr), st=parseFloat(cs.paddingTop)||0, sb=parseFloat(cs.paddingBottom)||0, sl=parseFloat(cs.paddingLeft)||0, sr=parseFloat(cs.paddingRight)||0;
+  if(rot){ app.style.top=st+'px'; app.style.left=sl+'px'; app.style.width=(h-st-sb)+'px'; app.style.height=(w-sl-sr)+'px'; } else { app.style.top=''; app.style.left=''; app.style.width=''; app.style.height=''; }
+  if(rot){ h=h-st-sb; w=w-sl-sr; }
   document.documentElement.classList.toggle('compact',(rot?w:h)<=520);
   drawStars();
 }
