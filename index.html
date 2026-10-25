@@ -114,6 +114,16 @@ body.light #ctrlbar label{color:#555}
 #status_pop button:hover{background:var(--surface2)}
 #status_pop .pop-ic{display:inline-flex;width:22px;height:22px;border-radius:4px;background:#2b2b2d;align-items:center;justify-content:center;margin-right:8px;vertical-align:middle}
 #status_pop .pop-ic img{width:17px;height:17px;object-fit:contain}
+#status_pop button.cur{background:var(--surface2)}
+/* 職種→職分のサブメニュー */
+#branch_pop{position:fixed;z-index:100000;background:var(--surface);border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.35);padding:4px;display:none;width:220px}
+#branch_pop .bp-list{max-height:min(60vh,420px);overflow-y:auto}
+#branch_pop button{display:flex;align-items:center;width:100%;text-align:left;font-size:12px;padding:6px 10px;border:none;background:transparent;color:var(--text);cursor:pointer;border-radius:4px;white-space:nowrap}
+#branch_pop button:hover{background:var(--surface2)}
+#branch_pop .pop-ic{display:inline-flex;width:22px;height:22px;border-radius:4px;background:#2b2b2d;align-items:center;justify-content:center;margin-right:8px;flex:none}
+#branch_pop .pop-ic img{width:17px;height:17px;object-fit:contain}
+#branch_pop .bp-only{color:var(--muted,#888);font-size:11px;border-bottom:1px solid var(--border);border-radius:0;margin-bottom:2px}
+#branch_pop .bp-desc{margin-top:4px;padding:6px 8px;font-size:11px;line-height:1.55;background:var(--surface2);border-radius:4px;color:var(--text);min-height:3.2em;white-space:normal}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;z-index:100000;opacity:0;transition:opacity .2s;pointer-events:none}
 #toast.show{opacity:.95}
 /* 一括選択・見出し */
@@ -774,7 +784,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <span id="bulk_count" class="bulk-only">0件選択</span>
     <button class="bulk-only" onclick="bulkAddTags()">🏷 タグ付け</button>
     <button class="bulk-only" onclick="event.stopPropagation();bulkStatusPicker(this)">🏳 状態変更</button>
-    <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'ark_class')">🎴 職種設定</button>
+    <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'ark_class')">🎴 職種・職分設定</button>
     <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'hsr_elem')">✦ 属性設定</button>
     <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'hsr_path')">◎ 運命設定</button>
     <button class="bulk-only" onclick="clearSelection()">選択解除</button>
@@ -793,6 +803,7 @@ if (('standalone' in navigator) && navigator.standalone) {
 </div>
 
 <div id="status_pop"></div>
+<div id="branch_pop"></div>
 <div id="tag_editor_overlay">
   <div id="tag_editor">
     <div class="te-title" id="te_title">タグを編集</div>
@@ -1115,6 +1126,7 @@ function bulkStatusPicker(anchor){
 // 職種（アーク）・属性・運命（スタレ）を一括設定
 function bulkIconPicker(anchor,key){
   if(selectedIds.size===0){showToast('選択されていません');return;}
+  if(key==='ark_class'){ bulkClassPicker(anchor); return; }
   const def={
     ark_class:{label:'職種',icons:ARK_ICONS,order:ARK_ORDER},
     hsr_elem:{label:'属性',icons:HSR_ELEMS,order:HSR_ELEMS.map((_,i)=>i+1)},
@@ -1129,6 +1141,45 @@ function bulkIconPicker(anchor,key){
   pop.style.top=(r.bottom+4)+'px';
   pop.style.left=Math.max(6,Math.min(r.left,window.innerWidth-170))+'px';
   // 画面下にはみ出す場合は上に出す
+  const ph=pop.offsetHeight; if(r.bottom+4+ph>window.innerHeight) pop.style.top=Math.max(6,r.top-4-ph)+'px';
+}
+// 職種（マウスオーバー／タップ）→ 職分のサブメニュー → 選択で職種と職分をまとめて設定
+function bulkClassPicker(anchor){
+  const pop=document.getElementById('status_pop'), bp=document.getElementById('branch_pop');
+  pop.innerHTML=ARK_ORDER.map(v=>`<button data-v="${v}"><span class="pop-ic"><img src="${ARK_ICONS[v-1].s}" alt=""></span>${ARK_ICONS[v-1].n}<span style="margin-left:auto;padding-left:14px;color:#999">▸</span></button>`).join('')+`<button data-v="">未設定に戻す</button>`;
+  bp.style.display='none';
+  const apply=(cls,br)=>{
+    pop.style.display='none'; bp.style.display='none';
+    bulkApply(s=>{s.inputs=s.inputs||{}; s.inputs.ark_class=cls; s.inputs.ark_branch=br;},
+      cls?('{n}件を'+ARK_ICONS[cls-1].n+(br?'／'+ARK_BRANCHES[cls][br-1].n:'')+'に設定しました'):'{n}件の職種を未設定に戻しました');
+  };
+  const openSub=(btn)=>{
+    const v=btn.dataset.v; pop.querySelectorAll('button').forEach(b=>b.classList.toggle('cur',b===btn));
+    if(!v){ bp.style.display='none'; return; }
+    const list=ARK_BRANCHES[v]||[];
+    bp.innerHTML=`<div class="bp-list"><button class="bp-only" data-b="">${ARK_ICONS[v-1].n}（職分なし）に設定</button>`+
+      list.map((b,i)=>`<button data-b="${i+1}" title="${b.d.replace(/"/g,'&quot;')}"><span class="pop-ic"><img src="${b.s}" alt=""></span>${b.n}</button>`).join('')+
+      `</div><div class="bp-desc">職分にマウスを乗せると説明が表示されます</div>`;
+    const desc=bp.querySelector('.bp-desc');
+    bp.querySelectorAll('button[data-b]').forEach(b=>{
+      const i=parseInt(b.dataset.b)||0;
+      b.onmouseenter=()=>{ desc.textContent=i?(list[i-1].n+'：'+list[i-1].d):(ARK_ICONS[v-1].n+'のみを設定し、職分は未設定にします'); };
+      b.onclick=(ev)=>{ ev.stopPropagation(); apply(v,b.dataset.b); };
+    });
+    const r=btn.getBoundingClientRect();
+    bp.style.display='block';
+    let left=r.right+4; if(left+bp.offsetWidth>window.innerWidth-6) left=Math.max(6,r.left-bp.offsetWidth-4);
+    let top=r.top; if(top+bp.offsetHeight>window.innerHeight-6) top=Math.max(6,window.innerHeight-6-bp.offsetHeight);
+    bp.style.left=left+'px'; bp.style.top=top+'px';
+  };
+  pop.querySelectorAll('button').forEach(b=>{
+    b.onmouseenter=()=>openSub(b);
+    b.onclick=(ev)=>{ ev.stopPropagation(); if(!b.dataset.v){ apply('',''); return; } openSub(b); };
+  });
+  const r=anchor.getBoundingClientRect();
+  pop.style.display='block';
+  pop.style.top=(r.bottom+4)+'px';
+  pop.style.left=Math.max(6,Math.min(r.left,window.innerWidth-170))+'px';
   const ph=pop.offsetHeight; if(r.bottom+4+ph>window.innerHeight) pop.style.top=Math.max(6,r.top-4-ph)+'px';
 }
 async function bulkDelete(){
@@ -1472,7 +1523,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   document.addEventListener('click',e=>{
     const pop=document.getElementById('status_pop');
-    if(pop&&pop.style.display==='block'&&!pop.contains(e.target)&&!e.target.closest('.badge[data-id]'))pop.style.display='none';
+    const bp=document.getElementById('branch_pop');
+    if(pop&&pop.style.display==='block'&&!pop.contains(e.target)&&!(bp&&bp.contains(e.target))&&!e.target.closest('.badge[data-id]')){pop.style.display='none';if(bp)bp.style.display='none';}
   });
   const teChips=document.getElementById('te_chips');
   if(teChips)teChips.addEventListener('click',e=>{
