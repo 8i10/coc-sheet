@@ -600,7 +600,7 @@ body:not(.light) .card-top{ border:none !important; }
 #vm_toggle{margin-left:auto;font-size:16px;padding:4px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;cursor:pointer;line-height:1}
 #vm_toggle:hover{border-color:var(--accent)}
 /* ===== アークナイツ風グリッド（横スクロール・ウィンドウ縦に2PC） ===== */
-#grid.grid-ark{display:grid;grid-auto-flow:column;grid-template-columns:none;grid-template-rows:repeat(2,1fr);grid-auto-columns:calc((100dvh - 226px) * 0.235);gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:8px;-webkit-overflow-scrolling:touch;height:calc(100dvh - 220px);min-height:380px}
+#grid.grid-ark{display:grid;grid-auto-flow:column;grid-template-columns:none !important;grid-template-rows:repeat(2,1fr);grid-auto-columns:calc((100dvh - 226px) * 0.235);gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:8px;-webkit-overflow-scrolling:touch;height:calc(100dvh - 220px);min-height:380px}
 #grid.grid-ark .group-head{display:none}
 .ark-card{position:relative;height:100%;width:100%;border-radius:4px;overflow:hidden;background:#20202a;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.28);border:1px solid var(--border)}
 .ark-card:hover{box-shadow:0 3px 14px rgba(0,0,0,.45)}
