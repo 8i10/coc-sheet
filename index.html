@@ -112,6 +112,8 @@ body.light #ctrlbar label{color:#555}
 #status_pop{position:fixed;z-index:99999;background:var(--surface);border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.35);padding:4px;display:none}
 #status_pop button{display:block;width:100%;text-align:left;font-size:12px;padding:7px 14px;border:none;background:transparent;color:var(--text);cursor:pointer;border-radius:4px;white-space:nowrap}
 #status_pop button:hover{background:var(--surface2)}
+#status_pop .pop-ic{display:inline-flex;width:22px;height:22px;border-radius:4px;background:#2b2b2d;align-items:center;justify-content:center;margin-right:8px;vertical-align:middle}
+#status_pop .pop-ic img{width:17px;height:17px;object-fit:contain}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;z-index:100000;opacity:0;transition:opacity .2s;pointer-events:none}
 #toast.show{opacity:.95}
 /* 一括選択・見出し */
@@ -751,6 +753,10 @@ if (('standalone' in navigator) && navigator.standalone) {
     </select>
     <label class="ark-only" style="margin-left:4px">職業</label>
     <select id="cls_filter" class="ark-only" onchange="applyFilters()"></select>
+    <label class="hsr-only" style="margin-left:4px">属性</label>
+    <select id="elem_filter" class="hsr-only" onchange="applyFilters()"></select>
+    <label class="hsr-only" style="margin-left:4px">運命</label>
+    <select id="path_filter" class="hsr-only" onchange="applyFilters()"></select>
     <button id="vm_toggle" onclick="toggleViewMode()" title="表示切替（リスト／アーク風）">🎴</button>
   </div>
   <div id="bulkbar">
@@ -758,6 +764,9 @@ if (('standalone' in navigator) && navigator.standalone) {
     <span id="bulk_count" class="bulk-only">0件選択</span>
     <button class="bulk-only" onclick="bulkAddTags()">🏷 タグ付け</button>
     <button class="bulk-only" onclick="event.stopPropagation();bulkStatusPicker(this)">🏳 状態変更</button>
+    <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'ark_class')">🎴 職種設定</button>
+    <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'hsr_elem')">✦ 属性設定</button>
+    <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'hsr_path')">◎ 運命設定</button>
     <button class="bulk-only" onclick="clearSelection()">選択解除</button>
     <button class="bulk-only bulk-danger" onclick="bulkDelete()">🗑 削除</button>
   </div>
@@ -861,9 +870,16 @@ function applyFilters(){
   sortKey=document.getElementById('sort_key').value;
   const activeStatus=document.getElementById('status_filter').value;
   const activeCls=(document.getElementById('cls_filter')||{}).value||'';
+  const activeElem=(document.getElementById('elem_filter')||{}).value||'';
+  const activePath=(document.getElementById('path_filter')||{}).value||'';
   const q=(document.getElementById('search_box').value||'').trim().toLowerCase();
   let rows=allChars.filter(char=>{
     if(activeStatus && charStatus(char)!==activeStatus)return false;
+    if(viewMode==='hsr'){
+      const ii=getSheet(char).inputs||{};
+      const ok=(act,v)=>{ if(!act)return true; v=String(parseInt(v)||''); return act==='none'?v==='':v===act; };
+      if(!ok(activeElem,ii.hsr_elem)||!ok(activePath,ii.hsr_path))return false;
+    }
     if(viewMode==='ark' && activeCls){ const ci=String(parseInt((getSheet(char).inputs||{}).ark_class)||''); if(activeCls==='none'?ci!=='':ci!==activeCls)return false; }
     if(activeTags.size){const tg=charTags(char);if(![...activeTags].some(t=>tg.includes(t)))return false;}
     if(excludeTags.size){const tg=charTags(char);if([...excludeTags].some(t=>tg.includes(t)))return false;}
@@ -1085,6 +1101,25 @@ function bulkStatusPicker(anchor){
   pop.style.display='block';
   pop.style.top=(r.bottom+4)+'px';
   pop.style.left=Math.max(6,Math.min(r.left,window.innerWidth-150))+'px';
+}
+// 職種（アーク）・属性・運命（スタレ）を一括設定
+function bulkIconPicker(anchor,key){
+  if(selectedIds.size===0){showToast('選択されていません');return;}
+  const def={
+    ark_class:{label:'職種',icons:ARK_ICONS,order:ARK_ORDER},
+    hsr_elem:{label:'属性',icons:HSR_ELEMS,order:HSR_ELEMS.map((_,i)=>i+1)},
+    hsr_path:{label:'運命',icons:HSR_PATHS,order:HSR_PATHS.map((_,i)=>i+1)}
+  }[key];
+  const pop=document.getElementById('status_pop');
+  pop.innerHTML=def.order.map(v=>`<button data-v="${v}"><span class="pop-ic"><img src="${def.icons[v-1].s}" alt=""></span>${def.icons[v-1].n}</button>`).join('')+`<button data-v="">未設定に戻す</button>`;
+  pop.querySelectorAll('button').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();const v=b.dataset.v;pop.style.display='none';
+    bulkApply(s=>{s.inputs=s.inputs||{};s.inputs[key]=v;}, '{n}件の'+def.label+'を設定しました');});
+  const r=anchor.getBoundingClientRect();
+  pop.style.display='block';
+  pop.style.top=(r.bottom+4)+'px';
+  pop.style.left=Math.max(6,Math.min(r.left,window.innerWidth-170))+'px';
+  // 画面下にはみ出す場合は上に出す
+  const ph=pop.offsetHeight; if(r.bottom+4+ph>window.innerHeight) pop.style.top=Math.max(6,r.top-4-ph)+'px';
 }
 async function bulkDelete(){
   if(selectedIds.size===0){showToast('選択されていません');return;}
@@ -1628,13 +1663,17 @@ let viewMode = (function(){ try{return localStorage.getItem('coc_view_mode')||'l
 // 職業（クラス）絞り込みの選択肢：先鋒,前衛,重装,狙撃,術師,医療,補助,特殊（値はark_class）
 const ARK_ORDER=[4,5,2,6,3,1,8,7];
 (function(){
-  const fill=()=>{ const sel=document.getElementById('cls_filter'); if(!sel||sel.options.length)return;
+  const fill=()=>{
+    const f2=(id,arr)=>{ const el=document.getElementById(id); if(!el||el.options.length)return; el.innerHTML='<option value="">すべて</option>'+arr.map((x,i)=>'<option value="'+(i+1)+'">'+x.n+'</option>').join('')+'<option value="none">未設定</option>'; };
+    f2('elem_filter',HSR_ELEMS); f2('path_filter',HSR_PATHS);
+    const sel=document.getElementById('cls_filter'); if(!sel||sel.options.length)return;
     sel.innerHTML='<option value="">すべて</option>'+ARK_ORDER.map(v=>'<option value="'+v+'">'+ARK_ICONS[v-1].n+'</option>').join('')+'<option value="none">未設定</option>'; };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fill); else fill();
 })();
 function _updVmIcon(){
   // 職業絞り込みはアーク風表示のときだけ出す
   document.querySelectorAll('.ark-only').forEach(el=>el.style.display=(viewMode==='ark')?'':'none');
+  document.querySelectorAll('.hsr-only').forEach(el=>el.style.display=(viewMode==='hsr')?'':'none');
   const b=document.getElementById('vm_toggle'); if(!b)return;
   // 現在の表示モードを示すアイコン（タップで切替）
   // 次に切り替わる表示のアイコン（リスト→アーク風→スタレ風→リスト）
