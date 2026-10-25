@@ -43,12 +43,14 @@ html.rot #app{position:fixed;top:0;left:0;transform:rotate(90deg) translateY(-10
 .ocard-nm{font-size:clamp(20px,2.6vw,34px);font-weight:700;letter-spacing:.04em;line-height:1.1;word-break:break-word;font-family:var(--font)}
 .ocard-sub{background:#111;color:#fff;font-size:10px;letter-spacing:.3em;text-align:center;margin:4px 0 6px}
 .ocard-desc{font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:9.6em;overflow:auto}
-.otabs{display:flex;gap:18px;padding:0 6px 6px;border-bottom:1px solid #9a9a9a;margin-bottom:14px;overflow-x:auto}
+.owrap{min-height:100%;display:flex;flex-direction:column;justify-content:center}
+.otabs{display:flex;gap:18px;padding:0 6px 6px;border-bottom:1px solid #9a9a9a;margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
+.otabs::-webkit-scrollbar,.othumbs::-webkit-scrollbar{display:none}
 .otabs button{background:none;border:none;border-bottom:3px solid transparent;padding:6px 2px;font:inherit;font-size:16px;color:#555;cursor:pointer;white-space:nowrap;font-family:var(--font)}
 .otabs button.on{color:#111;border-bottom-color:#111;font-weight:700}
 .ostrip{display:flex;align-items:center;gap:6px}
 .oarr{flex:none;background:none;border:none;font-size:20px;color:#333;cursor:pointer;padding:8px 4px}
-.othumbs{flex:1;display:flex;gap:6px;overflow-x:auto;justify-content:safe center;padding:4px 2px 10px;scrollbar-width:thin}
+.othumbs{flex:1;display:flex;gap:6px;overflow-x:auto;justify-content:safe center;padding:4px 2px 10px;scrollbar-width:none}
 .othumb{position:relative;flex:none;width:92px;height:clamp(150px,36vh,300px);container-type:size;overflow:hidden;background:#2a2a30;cursor:pointer;opacity:.55;transition:opacity .15s}
 .othumb.sel{opacity:1;outline:3px solid var(--acc);outline-offset:-3px;width:120px}
 .othumb img{position:absolute;left:calc(50% + var(--x,0)*1cqh);top:calc(50% + var(--y,0)*1cqh);height:calc(var(--z,100)*1cqh);width:auto;max-width:none;transform:translate(-50%,-50%);pointer-events:none}
@@ -278,12 +280,12 @@ function body(k){
   }
   if(k==='outfit'){
     const L=c.outfits;
-    return `<div class="otabs">${L.map((o,i)=>`<button class="${i===osel?'on':''}" onclick="selOutfit(${i})">${esc(o.name)}</button>`).join('')}</div>`+
+    return `<div class="owrap"><div class="otabs">${L.map((o,i)=>`<button class="${i===osel?'on':''}" onclick="selOutfit(${i})">${esc(o.name)}</button>`).join('')}</div>`+
       `<div class="ostrip"><button class="oarr" onclick="selOutfit(${(osel-1+L.length)%L.length})">◀</button><div class="othumbs">`+
       L.map((o,i)=>`<div class="othumb${i===osel?' sel':''}" onclick="selOutfit(${i})">${o.img?`<img src="${esc(o.img)}" alt="" style="--z:${o.crop.z};--x:${o.crop.x};--y:${o.crop.y}">`:''}${i===worn?'<span class="owear">着用中</span>':''}</div>`).join('')+
       `</div><button class="oarr" onclick="selOutfit(${(osel+1)%L.length})">▶</button></div>`+
       `<div class="obtnrow">${osel===worn?`<button class="obtn worn" disabled>着用中</button>`:`<button class="obtn" onclick="wearOutfit()">着替える</button>`}</div>`+
-      `<p class="hint" style="text-align:center">着替えると、立ち絵が差し替えられます</p>`;
+      `<p class="hint" style="text-align:center">着替えると、立ち絵が差し替えられます</p></div>`;
   }
   if(k==='voice'){
     return c.voices.map((v,i)=>`<button class="vbtn${playing===i?' playing':''}" onclick="playVoice(${i})"><span class="ic">${playing===i?'■':'▶'}</span><span class="tt">${esc(v.title||'(無題)')}</span><span class="bar" id="vbar${i}"></span></button>`).join('');
@@ -366,10 +368,17 @@ function openTab(k){
   if(k!=='voice'&&tab==='voice'&&k!==tab) stopVoice();
   const prev=tab; tab=k;
   // コーデタブの出入りはステージも描き直す
-  if(k==='outfit'||prev==='outfit'){ if(k==='outfit'&&prev!=='outfit')osel=worn; render(); return; }
+  if(k==='outfit'||prev==='outfit'){ if(k==='outfit'&&prev!=='outfit')osel=worn; render(); if(k==='outfit')requestAnimationFrame(centerOutfit); return; }
   const s=document.getElementById('side'); if(s)s.outerHTML=renderSide();
 }
-function selOutfit(i){ osel=i; render(); const t=document.querySelector('.othumb.sel'); if(t)t.scrollIntoView({block:'nearest',inline:'center'}); }
+// 選択中のコーデ（名前タブ・サムネ）を横方向の中央へ
+function centerOutfit(){
+  [['.othumbs','.othumb.sel'],['.otabs','.otabs button.on']].forEach(([w,e])=>{
+    const box=document.querySelector(w), el=document.querySelector(e); if(!box||!el)return;
+    const br=box.getBoundingClientRect(), er=el.getBoundingClientRect(); box.scrollLeft+=(er.left+er.width/2)-(br.left+br.width/2);
+  });
+}
+function selOutfit(i){ osel=i; render(); centerOutfit(); }
 function wearOutfit(){ worn=osel; try{ localStorage.setItem('ark_wear_'+D.id,String(worn)); }catch(_){} render(); }
 function render(){
   document.getElementById('main').innerHTML=renderStage()+renderSide();
