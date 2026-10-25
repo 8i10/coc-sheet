@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1c1c1e">
+<title>プロフィール</title>
+<link rel="manifest" href="./manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./offline.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@500;700&display=swap');
+:root{--ink:#111;--bar:#1c1c1e;--panel:#d9d9d9;--line:#b5b5b5;--acc:#e2aa46;--font:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;--ui:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI",sans-serif}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--ink);color:#eee;font-family:var(--ui);overscroll-behavior:none}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+/* スマホ縦持ち時は横向き（90°回転）で表示 */
+html.rot #app{position:fixed;top:0;left:0;transform:rotate(90deg) translateY(-100%);transform-origin:top left}
+#main{flex:1;display:flex;min-height:0}
+/* 左：立ち絵ステージ */
+#stage{position:relative;flex:1.3;min-width:0;background:linear-gradient(135deg,#e4e4e4,#a9a9a9);overflow:hidden}
+#stage img.art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}
+#stage .empty{position:absolute;inset:0;display:grid;place-items:center;color:#888;font-family:var(--font);font-size:min(30vw,260px);opacity:.25}
+#nameplate{position:absolute;left:24px;right:22px;bottom:62px;color:#fff;text-shadow:0 2px 8px #000a;pointer-events:none}
+#nameplate .role{display:flex;align-items:center;gap:8px}
+#nameplate .san{position:relative;flex:none;width:62px;height:62px;border-radius:50%;background:conic-gradient(#e2aa46 calc(var(--p,0)*1%),rgba(255,255,255,.16) 0);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;text-shadow:none}
+#nameplate .san::before{content:'';position:absolute;inset:4px;border-radius:50%;background:rgba(20,20,26,.92)}
+#nameplate .san span{position:relative}
+#nameplate .san .lab{font-size:10px;color:#e2aa46;font-weight:700;letter-spacing:.5px}
+#nameplate .san .val{font-size:27px;color:#fff;font-weight:700;margin-top:1px}
+#nameplate .cls{width:58px;height:58px;display:flex;align-items:center;justify-content:center;flex:none}
+#nameplate .cls img{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
+#nameplate .en{font-size:26px;margin-top:6px;letter-spacing:.04em}
+#nameplate .nm{font-size:clamp(34px,6vw,72px);font-family:var(--font);font-weight:700;line-height:1.1;word-break:break-word}
+#credit{position:absolute;left:0;bottom:0;display:flex;max-width:100%;pointer-events:none}
+.cr{display:flex;align-items:stretch;min-width:260px;max-width:100%;height:46px;background:rgba(28,28,30,.85);color:#fff;font-size:16px}
+.cr i{width:46px;display:grid;place-items:center;background:rgba(0,0,0,.55);flex:none}
+.cr i svg{width:22px;height:22px;fill:#ddd}
+.cr span{flex:1;display:grid;place-items:center;padding:0 18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stbadge{position:absolute;top:14px;right:14px;font-size:12px;font-weight:700;color:#fff;padding:3px 12px;border-radius:12px}
+/* 右：サイドパネル */
+#side{flex:1;min-width:320px;max-width:560px;background:radial-gradient(#0002 1px,transparent 1px) 0 0/14px 14px,var(--panel);color:#111;overflow:auto;padding:14px}
+#side.cards{display:flex;flex-direction:column;gap:clamp(14px,3vh,28px)}
+#side.open{display:flex;gap:10px;overflow:hidden}
+.card-tab{flex:none;display:flex;padding:0;background:#ffffff55;color:#111;border:2px solid #111;text-align:left;height:clamp(84px,15vh,140px);cursor:pointer;font:inherit}
+.card-tab:hover{background:#ffffffb0}
+.ico{display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:#2b2b2d;color:#fff;border:0;padding:14px 0 6px;width:56px;cursor:pointer;flex:none;font:inherit}
+.ico:hover{background:#444}
+.ico svg{width:22px;height:22px;fill:currentColor}
+.ico .plus{font-size:18px;line-height:1;color:#ccc}
+.ct-label{flex:1;display:grid;place-items:center;font-family:var(--font);font-size:clamp(20px,2.6vw,30px);letter-spacing:.12em}
+.vmain{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;animation:slide .2s ease-out}
+@keyframes slide{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.vhead{display:flex;align-items:stretch;height:96px;background:#2b2b2d;color:#fff;flex:none}
+.vhead .ico{background:transparent}
+.vh-line{flex:1;align-self:center;height:1px;background:#777;margin:0 14px}
+.vh-label{align-self:center;padding-right:22px;font-size:22px;font-family:var(--font);letter-spacing:.1em}
+.vbody{flex:1;overflow:auto;margin-top:12px;padding-right:4px}
+.rail{width:56px;flex:none;display:flex;flex-direction:column;gap:10px;margin-top:108px}
+.rail .ico{height:96px;box-shadow:0 2px 6px #0005}
+.ph{background:#555;color:#fff;padding:6px 14px;font-size:17px;margin-bottom:8px;font-family:var(--font);letter-spacing:.06em}
+.pt{white-space:pre-wrap;line-height:1.75;font-size:15px;padding:0 14px 16px;word-break:break-word}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;padding:0 14px 16px;font-size:15px}
+.kv dt{color:#555;font-weight:700}
+.kv dd{margin:0;word-break:break-word}
+.abgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 14px 16px}
+.abgrid div{background:#ececec;border:1px solid var(--line);text-align:center;padding:6px 2px}
+.abgrid b{display:block;font-size:11px;color:#555;letter-spacing:.06em}
+.abgrid span{font-size:22px;font-weight:700}
+.skgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding:0 14px 16px;font-size:15px}
+.skgrid div{display:flex;justify-content:space-between;border-bottom:1px dotted #999;padding:2px 0}
+.skgrid b{font-weight:700}
+.vbtn{position:relative;overflow:hidden;display:flex;align-items:stretch;width:100%;margin:0 0 10px;padding:0;background:#ececec;border:1px solid var(--line);color:#111;text-align:left;cursor:pointer;font:inherit}
+.vbtn:hover{background:#fff}
+.vbtn .ic{width:44px;flex:none;display:grid;place-items:center;background:#2b2b2d;color:#fff;font-size:14px}
+.vbtn .tt{flex:1;padding:12px 16px;font-size:16px;font-family:var(--font)}
+.vbtn .bar{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--acc)}
+.vbtn.playing{background:#fff;border-color:var(--acc)}
+.vbtn.playing .ic{background:var(--acc);color:#000}
+html.compact .vbtn{margin-bottom:6px}
+html.compact .vbtn .ic{width:34px}
+html.compact .vbtn .tt{padding:7px 10px;font-size:13px}
+.hint{color:#555;font-size:13px;padding:0 14px}
+#msg{padding:40px;text-align:center;line-height:1.8}
+/* 高さの低い画面（スマホ横向き） */
+html.compact #side{min-width:0;padding:10px}
+html.compact #side.cards{gap:8px}
+html.compact .card-tab{height:auto;flex:1;min-height:0}
+html.compact .ico{width:44px;padding:8px 0 4px}
+html.compact .ico svg{width:18px;height:18px}
+html.compact .ct-label{font-size:18px}
+html.compact .vhead{height:58px}
+html.compact .vh-label{font-size:17px;padding-right:14px}
+html.compact .vbody{margin-top:8px}
+html.compact .rail{width:44px;gap:6px;margin-top:66px}
+html.compact .rail .ico{height:58px}
+html.compact .ph{font-size:14px;padding:4px 10px;margin-bottom:6px}
+html.compact .pt,html.compact .kv,html.compact .skgrid{font-size:13px;padding:0 10px 10px}
+html.compact .abgrid{gap:4px;padding:0 10px 10px}
+html.compact .abgrid span{font-size:16px}
+html.compact #nameplate{left:14px;bottom:42px}
+html.compact #nameplate .san{width:42px;height:42px}
+html.compact #nameplate .san::before{inset:3px}
+html.compact #nameplate .san .lab{font-size:7px}
+html.compact #nameplate .san .val{font-size:17px}
+html.compact #nameplate .cls{width:38px;height:38px}
+html.compact #nameplate .cls img{width:34px;height:34px}
+html.compact #nameplate .en{font-size:15px;margin-top:3px}
+html.compact #nameplate .nm{font-size:34px}
+html.compact .cr{height:32px;min-width:180px;font-size:13px}
+html.compact .cr i{width:32px}
+html.compact .cr i svg{width:16px;height:16px}
+html.compact .stbadge{top:8px;right:8px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="main"><div id="msg">読み込み中…</div></div>
+</div>
+<script>
+const SUPABASE_URL = 'https://cicodhxebyqewfnngfwt.supabase.co/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpY29kaHhlYnlxZXdmbm5nZnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzM4NDYsImV4cCI6MjA5NTY0OTg0Nn0.huLOglTPbW1CcGDbDB_yf5ftqEkqmtJ1HBY9WTx9J8E';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const ARK_ICONS=[{"n":"補助","s":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK0AAACtCAMAAAD1cQ9xAAAAM1BMVEX////////////////////////////////////////////////////////////////////lEOhHAAAAEHRSTlMAMO+/jyBAEK9wUICfYM/fePXO1QAABgJJREFUeJztnNm2wiAMRW9ntdX6/1971Q4ECEkI1GEtzmuVbmnIBPXvr6ioqKioqKioqKioqKjoI6rqO1DdtNWniQjZsC99Gimszof9Ytrehy20mSSiHfqX3rP8fJ56vzFN2zSN7TFO5+H9tPdaRItdrI/GRe65E5G0F+qbX0c7/hTt6adopy+hvYpou0/SXpFrtAer+lXT22kxWHEs629vpkWvySPv+adoyWEyqtAep0J7nLLSzsdxwttkom2O44S3yUTbZsfrsNtkor3kRX22CGYryl5z0sLSoepzwD7NCw60JCeptK6G9l53/MeYQdb8oxGNpKc91znWXLvftRUUfFrafl4+e06DhRl0jSaJGWi7Zr9FWglsVycN17HQ0A7wHqcUWK84YcwhnnYY7UZfil/wCz/aHKJpr7Pz6ZsetkJuTppDJK0peIz4xRFS4w/2VNgcomg7tMGgXmhXHJYwhwjaAW3dPDTqYJGu/K5baiy7BgdXTi4Be3eCcSwtZrC7dJNLwuK8MtoB7TEZqdIFjvbB6yZ8ItqwEayajqF9VCr2YxPQdgFHA6WZ3DM3By/d4KLgaUWDqgLa0PID27gcrWRi7zft/olodJCVMrSsxT5Up2SNFzeQIzLj07TYVVdT4rbJyE7IvqWTTMumpLw498hsMslpAwEyVhVjvlloZ3325Yo23wy0tTKZweXm+JlpJSVqlLqw+abSZlhcvvqQ+abRJnlYSl4ZlYF276tkmmDYoMLM15TVzH4ZBjuaq1nm+FFDgAjjed8apI1c5PXm9VqBuyRUkBDWLj/s5MFqkHFZzcV6MjAaLGVVMu5anVkZMihUIvPb4TLO2Fe3GlCViPvDOBsE63JzkztJ7bCakuW1zMmsJFxT97r3fC43z6fL6rLpfpvslAAcC2n0ccLA1t61oZVVkaKyBay/mxYXwMqcIXZ0RtBItXFnneONhg3kEifJbAFc4d3SYPtgnlZLtm4gbnzRGwmL9+BipjfFduNggz24mOkFuJE98jhYSTEr2BUCPzlq2y8KNphJOtPLZy3GmqK2q03qwlYgtMFaYstE46+jYtpgMgHaXbIGa4uuaCptAB6MJVK4EoO1RMUKNazVGQ8aQ9jDEgoWYQmwFi7+bVGTDBPePUqCtXARb813cMLCvEOfmjRCXJeV746Rml3vYCKDOsMNGkOg9o2RFSzAg0pIxwEurBW1BmsLeDOlnw3j7rQR0YARMN9tbjPVZZublEWDU9/1rcCy520Ouiywbuks2zlZbiratti875gF9oVbrytYFg3MA66oLcf9py3Lrc0C+3hK/TKeLBpMMNcTTW89DsttcsDG3NivAIk+KuDN1xZfJEtfsGaAiDfTlsMics/bTFEg3Rb5Z9mBM4FEKUHdEsWJaHmmbpUtEnktrkqVDJJhp0RmBHxJLVqlc9qZUVleWIu2ZGSbxgn9fJEn8M5UBCXZNFabr2wyYnyPLFqo9h8kCTc+8pJboD6J24R9Kf7suyjG31AnueVt+E8RWFf08cBBwIoWw9YpMnR6+ZUbf/adz2PxJ23PHN6s47yiIqwx63cijcAI7xaSa0JzIJs8TRCK6uK35ql6SZXhhMfz6utdyIdDHw3mDrqz7kPgaVHhPII2aA7K5PGMDkamdlG0uDmoj44jS5cJNHG0aOqrznP9LXputyOW1m/7JGSNTljnE7p4Wsd8U144sxeaIC/U0FotwKT6DG4XSzJPFS3gTXzfbFsFwsRQSbvxJrzt8FIXw5pA+/dcb6oNXkvjfW7lTiWF1ntLUKOo35tGe4CaRfiPkNNSo2QU6WrEtGuG5x8pyaystO96V7rQHqBCe5wK7XHKQ3v5Kdrpl2j3NP9IUhyopi7Ck9hIVfp+WjDPFC36VugHaFvq4napR3sdH6CdqYvbJfzt4A/Qmo4FxYP1vd6VMVrqiYv7F7FG1VGvkRC0oKVM0SJdwMP/XOeva51HCitVitbt/NwTex1i4P48PrT+7xvs4JC0X6dCe5x+i9YPAbkPoWTV/p+L/Tv/5baoqKioqKioqKioqMjRP5JNxy9j7uanAAAAAElFTkSuQmCC"},{"n":"重装","s":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK0AAACtCAMAAAD1cQ9xAAAAM1BMVEX////////////////////////////////////////////////////////////////////lEOhHAAAAEHRSTlMAUN8wz0AQYO+AjyCfcK+/1cI7IgAACFpJREFUeJztnNu2syoMhWs9oFbF93/aXQ6SAEEFof8aYzOv2lrhE5MQEHy9qqqqqqqqqqqqqqqqqv6qmnebeGbbvfvkaoe0Wtk+NkknTvtX85B07mcZE9to2fc1/qy226VSmnf4XiiLP03pW+8S20TTbhTdvOJCl8hzQMO4790ntj5QZPOy7yld1BlO5d/zx4gqp91RTPMuorI0a9cSl3vbePu3CxvRvIOA3VOjkJYs45bxfjaf9X7zDtKEkj3sEBeldJfX/JktQh7ZvAo23cNMOfL2XkTednHvPhtjmreVlTzxMFOSqncK/qGfbXtVbAM2jIvmVVU887BDTNW4ocIY3yYlboUsC6zBzcstNVQFDz3skDZJMF5G+5N704c59K8RBfFBW1FCt0lL+wx3vvty7zgV06TAn/rO/eWplKdd0/reFGpeU9RLw3ZZjFZJuYG5fJrWNKzVV/euYUvBbR+Uh0X171diVokk7dGwwybDB9uY/sHrjm33l9ErPR2mcacVaiBoTcP2owp2EwTp1mveNy56YFNmWFuKdkQhyVissNODFmyHTUYKNy3NT1LvOB1ItSLQEp6uaHM61anYYQce7aAbDtH6uIflTr/gZRBBXVpzCNN6uGC8S6bOK6RhsnIVfKid4DIsWvem4/6iW8s18GfGrLJfZ5wLz9m4dcSmxd7IvHi2lPG3z2JXI5q22Uk5tFhMZ7JI7/wN3HshVtijewHXtNxJJaUye1zjsb7lDQzkC+e0IncfnZ/fOe3BpeKM/v0mrbh+t4HnQNVPad/zeb5wi9bzA6KryUC7NfTv0bTO0K0E7fKhf0+ifQ39tJAHstB6szZJMcGWHqPmp32jOLOOLEh0Rcv4jMxpRufk0excvhwPTKm04giEWP2/jGOHyaLVg1T+hBbSd7vs7LSHK3cpPe+MjjBU9laIdjU1fy0imnbCRxj8L6PZHuXjz/Jr+4yW/5b2tZNKoM1ptytJ+3VjNzu5pF3xkbkMbU/S9qHO7IRWBAJO/K8Abe/R0vNGd2nXH9OGjfMOLSqvFG2Pa6ZD2AntK0D7DleeStt4tJ8UWquhrXiTSYgCaNkrEMLu0g6/pBVfyaAQpuUWrSxaDXlyWgKmhZsvvpJB4ZwWOkBZNIfLyEu7oM+70y/doxXJC9ycUrQjKtKCIp8/hmmnEG3OPMFqAKvqSLsVR0wS1/2C9o2rjqS10gSOis46G8a9W5dG2/u0oznwJ2nNKdiwstLiEF6ENusDKF217HxMiE2gFQfMjCimzQl7VG0nYSJ4khFsO6U1X35Ly19nKeNNWpzo51ITR7uP3kIAKZENDBRtjnUUIN0CDH0+pQ2I49MxbdaO96jCTsL+X7QySVoL0A6I1mR8YxItzPUUGvK+Dkfe0OddOnJgJuyEFq4P0WZNag5CJwl7BWfCAsJzdn+f1o7DEnErQdtRtMEhegRtgfTWzOUjckUbmLc7od2sbyVpnSSsSaHl1rcf0oo66FnGgBaLVk6DqZFI5nU1M0U7vwIpY0jcOkEioo/5RKbjduV/j7a3aEXmFFyq+Fdorbn8qK7XtltR2FCElpG07elyUV+rRSvK0vE667AsNN/cmAWZ9ySgIN6icvPCBmjtiaJLyRQRDL04LXoeJyR74nW/KbnUEiyn2LDMJLXu2il5LPDc34NtLVhFy4rQ4hlcFAbYfVwXVtmFKivvIDJIq/dt3MB9u7AFhw5BWr30/dJ25YJ+OzY3/4B2l4tA7N0CnkaZwDh3AMWXnM/7pboQrbaGDzndocRFnPVWBL6grMwJo5WHep2tsoZQxqAatnV7EZXZLyVp5VNv/66fWYPagsK8Yxsq9vHWJ5pWuYPXTtoa/PWUx1YBImhMqNjsi9ytB0WDn9Xq2OA0oVqV76/JN1vWCtE6i6x8I1XWYIOpza6+FcC9V7S5YbVrjcbCCITFnjrX7U2Zh9nWrDO4QrTIfQnj7eym5IKe2lfEB7uM7B0vdJpmjT1hvMqn8PY5amhhLpjlX8N4sJk7D2vsiQgr45XoCGSPQLkX7Fk0gSJ7uMWpAGymJ4xXriMdJjl0cSOEvNZjUAN9W+rG81NBzITmIYzXrKmm3Av22rbEvSqEC9vDKONVztYTDYtCis+fWygvXM6MV2QGVNYAgQsuvIDNHkJeA/ePCv7kAyizaRXytcQXNNwVGpMZ36CMl5BpRbCR6y3YD4XQjBFSxusK1pyDPfHym7ZQVg2bsS5nwyBwgclm3JBxgrv5DBcjHbgusPwxe1IbENxLuL9Ut+WDwUUlv68lXsh4IfIGXp+AwdAsz6/2RUo08CvYTB+YHDV/GJwHJEYs2xZ0g8e5tcMR0KDpSOM1JG0oyrLsva9sS2uWFdDALH3jBcNmoSgrH75mTRqpzbloBmEhbrYCIzrozWlHVXbGcHbkIPavKHR2hCNhhMF57uTT5htJ6uzOj5AolBkI0kJMDCFefqMfw+d5j4YZNlARErJUNViQvx1vRCCSdvLFQjpvyONpuqulIyTqh01TKuMF8wSDCeSy2gOyvJ1iOfcClKOb//RfHZ/R9QT72uGijvuaaJMFofyWaB2wldPh13p+OXfFQiaLgKAf9myPhQ85hYwZAoMs5KpTR/HJZopJD6XFPHv9hyzihjlB7Mcd1ScuPRSX9mjaZrmbh6Ioa5KAPjY9FB7wYFTZ3M9DW68fThjRfD0g3Ra+3cL9PBTZ6Lj0iSOarwckR90pLgLSj6EiRzTrxtPi2PCOPI8aqkdPck2JrdtED5380U5859+vvxuxOdaQ78VUZWRZw68G4ekCa4h5keO/k55kLj7JlUmyp/jpjMEzofy2qqqqqqqqqqqqqqqqqqqq6l/qP6TUzdQD/paLAAAAAElFTkSuQmCC"},{"n":"術師","s":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK0AAACtCAMAAAD1cQ9xAAAAM1BMVEX////////////////////////////////////////////////////////////////////lEOhHAAAAEHRSTlMAEECfz7+vIO+AcDDfUGCPbpoFVwAABAtJREFUeJztnNuSgyAMQCteqbbr/3/tFgUBxUstkGQm56mzdWbPIISYYB8PhmEYhmEYhmGQU4hvKQBtxfglJaDsVduq/tCUdQ0q+2i7A8eubqSEu/eFlM/Vn3pPdxrDupZKsgVRdMyqwMRrK8dWgHgFKYbgOilqlLbGarNSSoS2T6Mk97/CY2uWUxP47tUhs32bZR8MSH2Fy7bRMXQnMBVVcEpDoe91v/f9HDH+cirt08+y75MrhnxGR+iEQH308y57iVQXQKZYlqe19TMZZ6qqqfuCEvSQe7ZOkFArbRuMIdi3HaslTBTNWMMpOhzYjp0NFO06R4Nhtq3Ux20G3u3GNSBm2+k+B54XwhscHMe2WHYFw+vYdoR+UvARR/MW3eA6e1nQtoIW9DizHaEFPVo7PcO2uILY7KTSgD5oiyYRn5idphzmTcW2mz6HdDHa6nQ8oIvSdpj32K3ubCsGFNZLINDbwEa3NZdh2CfawWjpR7O17vxXMeJ48C1Mdc6kh76urolMtwCnbm0xt3+eMBgezja6AWZbFM/pVnd38PRixDC4Vne3CqJtMcxct81QyjXTeGpbFFNh3WbY7g8mLEN7ag501YAisV3qBAe6DzS2dl311Y4snrHtnTDgNnFc1AXGFvZJQoxu1NJlpqp2keY6BWz1RoyeblvKcEN0SdVAdWeLCyW5GoPu5T3KbneAuuYOX9Dt4HWX+VifVhN7eF1b8TgvfsLrOvWZc137VAGk61aT8Ot6tS/0un6lDrvuZPtcYul5nwlUd7L97Lh/w9W4+wTU1bYf+ln4oD2tKeF034vtQwl3u+cUHOB0pWv74VWGDqysAJu7a9trQOnes4XSvWkLpKtsb5U0QHTlpS0hBITufVsIXWV7IWYFEdnzXWV7+8hM9vT8J9vsuipH+aGEnFlXZTW/dMLy6irbn/5Nm7POIO5tZQ45yyK/2+bUFbc3B0s+3Ri2rm75SnmCTETpKhVuWb1KN8AizulPXzfZ8EayzaQrYnVDPd1ULUsR7SiKV/VJpJvINpGuiNZUWp19S3JyW0Rr2K1P6qU4HBDPdt157VIEhnjN0HXnNcVciNi6Lcrkgxu10ewfdzovV35N3LZ4Pzi2Q/zB7eJGRq8Pf/fRf5/ot+svww4ckXdHStedvAR03XyMgK7TmiCh+6Sl++pI6fa0dJ21RkK3IaXrhAYSupKW7puWro1kJHR7qro43rc+oT09Q4+K8yP/qGDdpJSsmxDWTQnrpoR1U0JVl0QCSU23IaVrUxxiug2y38MJYnWx/XxPEGK68O/8fAVZXRLbmtO4xPHjY8c4uhQCr61AXnh1EJ6S1mSoKU2FZZcgIWveu43fbE9Er34CnMASYxiGYRiGYRgGL/+q4I9zCei54wAAAABJRU5ErkJggg=="},{"n":"先鋒","s":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK0AAACtCAMAAAD1cQ9xAAAAM1BMVEX////////////////////////////////////////////////////////////////////lEOhHAAAAEHRSTlMAIIAwQI+/31CfEO/PcGCvzmDPJQAABJVJREFUeJztnOuyqyAMRiteUGyt7/+0u2ovVpaWbiXWmXy/zuyhuoghCUHP6aRSqVQqlUqlUqlUKpVKpVKpVL+nxJi9Eb5Q2rZ7I3yjo9FmeyN8IaWNp6PRHimEKW08HY023xvhC7VtsTfCF1LaeDoarV13AZNuAxKipF1XMpa2FaTNVtGmxepH85WANg115LK6/Vg0XJe3+7nxH5Iq0FqmbnsJOsLJtG8lY1YFWis5D6yyEeWN1uU9QPL5Z5e7YYWr4+J1w+Zq+/tXH37iquLJKhysuwd66f6R2gfAB9O+zCrttV1yGOzTPO+/XEBmdswqXG2m/T0bVz3vvxgQkuKNtT27pdGbazCpHT3chVVzX4Qv1bJ+cKom91+KXqaeDm7kQHvZyf3t7KMtp0PlNx3JFGDOD7LCY/0Y6bZWOWW48rjk6rNKW7bxnm2NodZ5zt0NLXdm5SXu/MV1G2lEQxewcvBsgNU2u7NiWqKBtWzcQtYCvCA7w0ArmhGQ1cKaoaBlJbeMXlHy8EN/4LQi6CUbYclcbUGsGLRyycWF5iogezGraNDCGE+szuzOCgXUzV+Rdf9kAAVUW19+kxUdluLmD7CSH9ocWDFxybKiE1Dc/AFWQrV0xo8ZrvJZs2tAa+R/wqAFCDOsPld3wUi9mTwPrLQwwwHr0PeIUyiQXVvwQ87GwDqUGHE6SQR79u3CrPC002FgHWPZJVCZ1r4TIOt5qXKI0EmijARVIScNf5xrXgO33ju6soKM5C8OLrQmrFll8rc5bdH4yowxxSBA6DTNB2FFYerPuy5G+h/6HONL708QWVuv2Kb97sJVQ9WYkSjKnsejsdCCANv4lxnuUPWGNc0Gac2NL2/vMxhZjVkhaPn2j9CtvYwuDxspZIWyHGLgP910US9HgITE23PYRl78ScXY8D6LWXi2yEpVIUVi2GmslqtnWTFxkbNQ+V5HKb3Md6xUadETuMapyjvTQpuIAyxVL9T7itWrLbF4wao8uPdFzrKNcggEHGCprxlc6m6kwjcspk8KBN4hxJyzbCbPDthTpL0ZN3VFD8hTDAShWUOWNTgQ/AArLy7IsqHb85iaybLeuODteUQhg/UDAR0ySre+MBtQpQXOIs3KjWVgTSHJih4tnDjCEiuVsPFacqjx1n+R9UJzkv2UIAv1V3Rs2Rd6MA7A4YIz1HyEHllEYZKlBe7o8Ba7uvFEZ1yMgCNFj8UdvUkyU5jS8YKoF9DDpb5mpwzmJfrSCcBigO1F7i0auTxYKF4empjWFtK009f1lrKnG3vttWu7CdOWE9bFau81s9oM42pRWvee7Zcr/tfMnvYvRGnfcuhcILjrObNRcBOlHa+a+UBw190P3qqXXJL2HM56f8VyEjCMIO2z2R7ySlmfc6fZuPujVI3wCEhBJb+lgNHRRgAj3SsUek/OV3K+wJzWfafzjYY1vq5NIUfbmbZauUQysY+YLmb9as4O9e2e0saTk3+3fo2O9mW30sZSnDPRWDra/6RxJNr6ULSF0kaT0sZTfihacyjahnZrKpVKpVKpVCqVSqVSqVQqleqz/gBJasIVWi+HqgAAAABJRU5ErkJggg=="},{"n":"前衛","s":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK0AAACtCAMAAAD1cQ9xAAAAM1BMVEX////////////////////////////////////////////////////////////////////lEOhHAAAAEHRSTlMAEEDPn4DvIHAwv2BQj6/fZN0UEgAABDNJREFUeJzt3NmSqyAQBuCIO67v/7RnMLLaRJMSuj3V/81MYi6+omQRkNeLw+FwOBwOh8PhcH5PIUSBbbicolzX8ilchX0M9419CFdjH8G12Cdwxbo+iOtpyXN9LXluxdyEYW7KMDdlHs6t4WAzdQJuJNhKk0tcbKTNFS620ckFLjbRzTkXW+jllIsN9HPCbbB9QT5zK2xemI9F22LrwmhZiQ25FK3tsCGXorUCG3IpQVtViHd6VFQ0gVbqzwOqKpYdJ/XnijQ31NLmutq/m7alzXX7WPH3tyfNdWuZmnZS3JosN9Ru3EF/O2Lzghy0Hrch1u662mKlzvV6B0md62nFSpyrte+Jjok4V2v3h5rKIfYNOW6gJc7V2ll/QZqrtXY03hHmynfcp9uBMBcIc1OGuSkzNo/i9hCX2njXBuLSe5owcblmFwZzb4p7A9zKTbOamIjbJlo2TMPtUk26J+FKef6b35KCuybTJuCKhNr7ud263IY7xuPe0KtNaZcNXe4NnbBMvMh5Lze19l7umnwBGeT+2Min197JzaC9kZtDexu3zaK9i6vmXXNsQLuHq7RZlpVv4WbTwtwvNxbm0/7C3VY43c/5tD53vcIdgy0vSpttD4zLHS5xG/+yyNOC7fmaW/k1sc6qhblLfJJM+A1HZi3M/TCnt3jcKbP2W+7gNcsyt/Zbbulyl+zaCDc2Y9o6nd72fz7oOy7X7oaMPU7M29VJ/TtgaL/jdvbqjKL9iruvzv91au9NEJmpKjB3An+7/1Tum3YyS7eYcUJXT0YLjyD19f2WyC3dMqxQQO7s/SQ39B2YOwODhpqANsIFxjgDBe117uJcTjgjehKYexySCRLaCPc4aKhIaK9yBQ1thBt2a1S0F7kVEa3thP34vbBZBcDWxrh+tzZR0ca4Xrc2ktHGuG4/UdDRRrnOvIyko41xnYZXENKGpzMYrp2j28eNNN646mCuXSht928QjU4kqHWKcqak7UGt06mNlLSvCebaaZGFkraItAvmBxMlbayimeuClDZS0ex7l1vhk3mxsYXvBdNFVKS0duzi37mFe5mO9jWApWuAqlWgtNm0LwGtAap5kPxndIxS1rEyGpaDdtG3gmrk8mu3IVczRRbqjl4jrFHex99HiDJSZQ5e3SwUi311JWP0gLaMzIgH1c2ManucA3LM+HuBvUXtebF3Gttz8poaLK/CPU9iQT9zyGqaCqxwrePFP1zInacpO+h0AGGGDg164b6EX5egFsJ48Qs3eNZtRLjZQ2X3Ujil5fhoDlQ5UVFoFlSOw66lO3rbGqdbOAR6HJuHI3ikcAROWwPaDYwtC9OOEzRA1HUO7jSyZT92ZVAnyVXyA1R7O5QjWgpRz/Aj4nky3xFtd16KVLj9HGVIOGELTGNW8SStusW7ugZaXw6Hw+FwOBwOh8P5//MPE6vHlEm1V4MAAAAASUVORK5CYII="},{"n":"狙撃","s":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK0AAACtCAMAAAD1cQ9xAAAAM1BMVEX////////////////////////////////////////////////////////////////////lEOhHAAAAEHRSTlMAcIAQv++fQN9grzCPz1AgwHjUvAAABkxJREFUeJztnNmWqyAQRVtEnE3+/2sbBbRARqUSsxbn5Xb3VbMlNQL691dUVFRUVFRUVFRUVFRUVJRFFQmrqr9NqURp8w6KfZsSqG4rQrk6N+63EW3qh+/RVlU7pp5Tt2SidDZhZww+7XOZ+JyBLK8rp7f9dFjGlB1P1wjHp6GkvXQRJi+w5MbTRc6mN09LeiCSN33pXmO1uLx7Th7jFpu2pe5IxDVUSXa8ndNjsY47a0Ndkb9j8UaB6WUvtiMNG9DLFUNnEhfexMEosGQfy6Y6/rowux03QxUmFl8VAiuIWrOBMfaT3Zo71vuJxWnJaSao5TBSu52NPTtlKTHGnlAxbYdkDwr98emea/PUah1kZ5UlIveVdBgHS4P+biN24W7XHTLDvg4zqMJH8zE+uR6z3+SWHrJn3iPXRg/EOGnheBa4dasZUr3+V2bWvy0i8M/jQ9HFn7Nooztz6+zXEdciAMrYcq3tU5s2Ero1NL1ILhrtauJYFWMiraVW426qHbLmQqxqfKVNCI6LBbbT3Y3gGO6mRNrWQmucvt0QUoueSFuFaUfL33JppU1IPJPNEoxjkGkTDrfWDdX5mEfQvmyw70a30gGVNiHcWAOYmQ0JKi0NH6Xk6ja1EifRcVPEL02iD+4dsNzTQN+4Vgr5q/FNbUKDWnum6aDxN5jZIfpbc1jtiZY+gfblnbgF3z3BpI3Nkv5JElAkLpi0kUd67UCLLPX3aUc/rGZQHWJMiDquDq42gBQxsdw9bxptbS0QNKHPh/9F0zIXI5jow0b9i6V1wNKex5NauR+SrUJF0VphO6KMU+JGzUvcUwytDZbCfN2ZboalGFoLq57/enTDlV9jBO2pc+xOuVp4GuJKDttRQkeavZilwhTz6YirZI34J0xrFLXmvPQm0QonlPWJamXACdIasPaZxRHZcFtZhIdoTVjHYQ0ubSXNL0AbCSurSbRFPSKtrPVOfsTCygTxCVr3Z2iwDfWE/yVwNzeleicfrVZ/N/4yoEMd3AhalgArgzJW8p2DtBrsHCqv5cQu0kzoO0Srw4YXqd6YpvCW9aiDVu8VwrBiKQeTdruynTYZVhVqODXu6KXVYcNrlaveiG7W+mh12MggKsqwJi+mlI92bC7AqololBp3cdNeg1VBBCWdEWdM0GETtvOINJ2wDBsv4oq3l2FVjYuRH1y012FVVMCIuJOdVoP1bQmxCa/GpVZaHTZ17oV9lvYerGwlMYLCoPIpoNWSQjosYsStmdhaB2g12O7KFJwwXMwJpqOLhDsCo+qYk2SNm5HO1E473YZVMQzx8QFF22eARYy4UpIWhoPLsB+jBR7WXF/hEBdAWiFZVW2rG2ADyoXQpVRj222/zQyC5aUbsAgR7KVtRl3rJgqH9g6suEqTaWgrQrb9tMfNb77F4Aruje3p0lEz9ZHHBIH6i8heBNDe2UsvHDXXGt/hSMoWxPXJfiPzHViSNXzVB620LMm4rFUDpYmPNZiSczW5XOxYmZFdtLKMLKMhN7HciNW6Dlpx/3scyOLD8tbjNxQFdEzGbl671wU8JIwRjzr6JUuifA3vQbt+9XvFxYuCJeJBxzjlqxCOmFqDaMZhYfVFr0nebsYsdtC2rxnAHmNOL/co0sUyFgjHzrO5AbD7KJ8Xb6MlHTZnQ2YxMwjreHohRrImytqPBWBvXJlktwPLztlcsHJos3YMp00GbthexFDh7hMhvR+krlbcbHnBSgthdYuz7UvpWO/JqbxWzDxDY9BCWKNrtOz8Wp+YJJ4CjV1vPGNoPbB/9bBHfW4PSxthkK/crZhGy0slBn5+niAtb74Y+PmBghGsB2bwSFg4tgy4/erL7RawHmUQoNLq4GzioH7BfolAkpxvkdjv4duEQHUIFnX6KlWBTd/vj+yZjJV/8/8m1Bc0pMm/+f9htLYn7h5La3uY8aSnpIkxogPv8tan1xWEnWNe4vAhGbCdKgWFlvTX/2Cq1WFzl815ZW5MfjRs9Uuw7Idga/pLsEbzOjwZdjRgn/SquZPMnPCUXGWVWSKivVQqhwybTd0r9WHp0eCZcwa79OeALu3o+aB+J8yu+ilYmHGfDwteHfBwBxNSiewnYPeA++ikALQVYI+uDTTVvOt6vocVFRUVFRUVFRUVFRUVfVT/IuLhMxv2UCYAAAAASUVORK5CYII="},{"n":"医療","s":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK0AAACtCAMAAAD1cQ9xAAAAM1BMVEX////////////////////////////////////////////////////////////////////lEOhHAAAAEHRSTlMAcDCA71Bgn88Qr98gj0C/U/bciwAAA+FJREFUeJztnOuWqjAMhUcuIojS93/aA+rR3doLSErStfL9nHHG7Sa0aRL8+1MURVEURVEURVEURRHAqeJWsIW6abklbKA2NbeEDZSm9swtYQNdUd5eSlLbGzNwa1jP2Zgrt4b1DMaYYvaHcRZbTuDeFrWlhELfLGrNnVvHOuqHWDNx61jFy9pCzH1ZW4a5b2uNKSBrfFtbwrIA1hpz4laTAqw1pum55cSxrDXmxq0njmXtzMgtKErjqO24BcU4GxfJ5l6/1Ao299tayeZOHrVi89y7R6zcNddnrVhzvdaKNbfzq5Vp7ogKB+nmosCTZbRAczFqJ9tpgebigrAUGEWb22LULl5KNrfHDOGZGwg218prn6mBXHMr4zFSrLlo7fW/j2LNRRtb708FmYsLAlRoZJpb4WkMq8wizcU91zrZWFmZlEPEFNQ0hT4HH11Ykjxzo4rEmRuM2gVp5vbxZUqYuVhD8KxSsszF5MtbXRZlLkatt8svyVyMg0DhXpC5mIQHBiisbJLVXLzMwZ5IZPc4Fsxrg7MpVnWf01yMyXBKeIJXMaZiKCN2jeFD8eW51uIUG1IaIRbYzLUqoFHPJJiLauNdUgwZpkmxG1rbTBZOW29c/bly4WuJfHBWKrwMLJF7iap1GtJ4Q3JEbh8U+sCdXmM29xQU+sAdB8Ns4Xhze7eja/O9V9yiv82Mv9sUtJY3W3A7+w6+ASBcQ441dwzqfOIdrsLLceiUY+IW889W3ZOvyMTmqH2AB40jR9tCbccnoUwAr8iR5t7rCMGhNSvaxc8NWufJC7caL+0nMbM3FInPGFTBPU/i3OD3XJBgc2MLszxzo7mPNHPj5wtp5kaiVp65iUxNlrnh1UuiuYncx2Q/oZ0/6UDalyGpNu+oNqao6bnlwDjbh8zHyXCP1C83lqrN5D1BoFkycyjEnaISjVUe4haThL30tgVJfbo0gtp0acairBXTpFuDWpuNDJNo567u5nN7l2EDph9Eg+z3SqwXuwxEGQJ+fuJn7PHMQlTBylcsx/9M9jweOkB63+KDpHQZNJ6ICSMXFwTCSmamdBluCNIqcZakDq0lVWst4lT/dMil1io4ED0HbuW1Tmd/H1Z1hGhZiDfLyWhI1txEb4yOC8Eqlmg/k8rdrzZdHqJj98bTpt+Djt01ilQJlpTdifNBC8KLnZljvHFAz67997DV683voVuli9v0/Jo+Hx0FL37bgZ9p4nVIVIxpWW7qX8r7D7HT4V+Q0zY/yO0XsSxfATnO9k7bMoZq/pOmZpqUrWd7b1vee7zfOSdJ5ncX82CioiiKoiiKoiiKoiil8w8K/Ojy2/QypgAAAABJRU5ErkJggg=="},{"n":"特殊","s":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK0AAACtCAMAAAD1cQ9xAAAAM1BMVEX////////////////////////////////////////////////////////////////////lEOhHAAAAEHRSTlMAUIAQYM+/QO/fMJ+PcCCvftlSNwAAAwhJREFUeJzt3Om2giAUBWDnIbV4/6e9gxMKAtJwtvfu/a9S+Far6ABakjAMwzAMwzAMwzAMw/zLpFlU1gbizs/yGGyh4rK2ENlAGcOtpLSqppZaaqml9hLaptqkjNC2lTuv0za37Uv177NLRdCFaLPEnddp9z2N2mJ5vHmvQbW17VBqqaVWTOubEWBpVemegoFpbdHe8AtotTaovYK2v5TWXoOhalW7HSwHbK2q9FGy3zeKpnX3RO2/1lZ3WO2tzh5VOz0oq0eW3o8OlddW7kN7KG2Zeo7V5+jiWl/dv+FeQKtxr6BduZfQLty1AkLWzty1AoLWztxluJPXFmspVhtz7ok7F+/y2s2qrrHJOXFTRK1lSWPkTnMNNK0xY5u44zcNTqstOW+45R1Se8RtUkit2fY8kNWI2v30fb9rgqXdT99PcT+vtSzNBnMFtE9wJbTxXBGtao9GBkitUt1BzYCpVd2+AefetbTW4OYBXDmtUbQHcAW1Rs3g50pqz3NFtWq/qOPjymqNEsfDldWe5QprT3Kltee44tpTXHntGS6A9gQXQRvOhdAGczG0oVwQbSAXRRvGldc20xWvzb5XC1deW80XMAQUkBDaJG3CuPLa9ue4WxhXXjvumE03JXm4KNp5q9rgPiC1+fhZMNcZ9GURGG2SKT8XR5vPjx1cAO28IrZ8Qg3uAKSde1tM5pJesTsUQKttkxgLvAWcNteeM7jjzweQdrNhZuciaRsn915iaT1b2N+/wrhaVRr1eQestWxbrsHTuriAWgdXXtuarx1y5bW2F4+4mNojLqj2gIuqVc3d0h2s1sp5i7Y3unZgMsug8FFt0vtvl9Z6uw3dcrn5793Sj+y7AdsH9z3aOY4N/Zje3n2NKLXUUvvKuzMsPz6OPzYS1qrGuI8zcLwNTvHk+bsp4OYeZ/fVU0tvtzo0g/X8aO2ZOOYO586nllpq/4Q2e7KJz2qHK2mb/MkmYrQhMzBrsiebsE6J/VzPv04dRVum7WLOdyxEMgzDMAzDMAzDMAzDMEj5AuCIYAAXY+YZAAAAAElFTkSuQmCC"}];
+const SKMAP={"kaihi":"回避","kick":"キック","kumi":"組みつき","punch":"こぶし(パンチ)","atama":"頭突き","tousha":"投擲","ma":"武道(MA)","gun":"拳銃","smg":"サブマシンガン","sg":"ショットガン","mg":"マシンガン","rifle":"ライフル","firstaid":"応急手当","keylock":"鍵開け","kakusu":"隠す","hide":"隠れる","kikiimi":"聞き耳","sneak":"忍び歩き","photo":"写真術","psych":"精神分析","track":"追跡","climb":"登攀","lib":"図書館","meboshi":"目星","drive":"運転","mech":"機械修理","heavymach":"重機械操作","horse":"乗馬","swim":"水泳","make":"製作","operate":"操縦","jump":"跳躍","elec":"電気修理","navi":"ナビゲート","hensou":"変装","ii":"言いくるめ","shin":"信用","settoku":"説得","negiri":"値切り","kokugo":"母国語","gaikokugo":"外国語","ika":"医学","occult":"オカルト","chem":"化学","mythos":"クトゥルフ神話","art":"芸術","keiri":"経理","kouko":"考古学","pc":"コンピューター","shinri":"心理学","jinrui":"人類学","bio":"生物学","chishitsu":"地質学","denshi":"電子工学","tenmon":"天文学","hakubutsu":"博物学","butsuri":"物理学","law":"法律","yakugaku":"薬学","rekishi":"歴史"};
+const CS_SKILL_ORDER=["回避","キック","組みつき","こぶし(パンチ)","頭突き","投擲","武道(MA)","拳銃","サブマシンガン","ショットガン","マシンガン","ライフル","応急手当","鍵開け","隠す","隠れる","聞き耳","忍び歩き","写真術","精神分析","追跡","登攀","図書館","目星","運転","機械修理","重機械操作","乗馬","水泳","製作","操縦","跳躍","電気修理","ナビゲート","変装","言いくるめ","信用","説得","値切り","母国語","外国語","医学","オカルト","化学","クトゥルフ神話","芸術","経理","考古学","コンピューター","心理学","人類学","生物学","地質学","電子工学","天文学","博物学","物理学","法律","薬学","歴史"];
+const SEC_DEF=[['combat','戦闘技能',12],['search','探索技能',12],['action','行動技能',11],['talk','交渉技能',6],['know','知識技能',19]];
+const STD_SEC={}; (function(){let i=0;SEC_DEF.forEach(([k,,n])=>{for(let j=0;j<n;j++){STD_SEC[CS_SKILL_ORDER[i]]=k;i++;}});})();
+const ST_LABEL={alive:'生存',lost:'ロスト',permalost:'永久ロスト',retired:'引退',missing:'行方不明',dead:'継続不可',insane:'永久狂気'};
+const ST_COLOR={alive:'#1a7a45',lost:'#b03030',permalost:'#7a1111',retired:'#3a5a8a',missing:'#8a6000',dead:'#5e2b9e',insane:'#6a1a9a'};
+const SVG={
+  prof:'<svg viewBox="0 0 24 24"><path d="M9 2h6v2h3a1 1 0 0 1 1 1v8.3a5 5 0 0 0-2-.3V6h-1v1H8V6H7v14h5.3a5 5 0 0 0 .9 2H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3V2zm1 2v1h4V4h-4zM8 10h8v2H8v-2zm0 4h4v2H8v-2zm9 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-3.5 8a3.5 3.5 0 0 1 7 0h-7z"/></svg>',
+  stat:'<svg viewBox="0 0 24 24"><path d="M4 20V10h3v10H4zm6.5 0V4h3v16h-3zM17 20v-7h3v7h-3z"/></svg>',
+  skill:'<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 16.9 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2z"/></svg>',
+  voice:'<svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zm-7 9h2a5 5 0 0 0 10 0h2a7 7 0 0 1-6 6.9V21h3v2H8v-2h3v-3.1A7 7 0 0 1 5 11z"/></svg>',
+  memo:'<svg viewBox="0 0 24 24"><path d="M5 3h11l4 4v14H5V3zm2 2v14h11V8h-3V5H7zm2 5h7v2H9v-2zm0 4h7v2H9v-2z"/></svg>'
+};
+const TABS=[{k:'prof',label:'プロフィール',ic:SVG.prof},{k:'voice',label:'ボイス',ic:SVG.voice},{k:'stat',label:'能力値',ic:SVG.stat},{k:'skill',label:'技能',ic:SVG.skill},{k:'memo',label:'メモ',ic:SVG.memo}];
+// ボイス未設定ならボイスタブは出さない
+function tabs(){ return TABS.filter(t=>t.k!=='voice'||(D&&D.voices.length)); }
+let tab=null, D=null;
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function num(v){const n=parseInt(v);return isNaN(n)?null:n;}
+function fixDropbox(url){
+  if(!url)return'';
+  if(url.includes('dropbox.com')){let u=url.replace('www.dropbox.com','dl.dropboxusercontent.com').replace('dropbox.com','dl.dropboxusercontent.com');u=u.replace(/([?&])dl=[01]/,'$1raw=1');if(!/[?&]raw=1/.test(u))u+=(u.includes('?')?'&':'?')+'raw=1';return u;}
+  return url;
+}
+function dbBonus(t){ if(t<=12)return'-1D6'; if(t<=16)return'-1D4'; if(t<=24)return'0'; if(t<=32)return'+1D4'; if(t<=40)return'+1D6'; if(t<=56)return'+2D6'; if(t<=72)return'+3D6'; if(t<=88)return'+4D6'; return'+5D6'; }
+
+function build(row){
+  let sheet={}; try{sheet=JSON.parse(row.data)||{};}catch(e){}
+  const inp=sheet.inputs||{};
+  const ab={};
+  ['str','con','pow','dex','app','siz','int_v','edu'].forEach(a=>{
+    const b=num(inp[a]); const stem=a==='int_v'?'int':a;
+    ab[a]=b==null?null:b+(num(inp[stem+'_m'])||0)+(num(inp[stem+'_t'])||0);
+  });
+  const add=k=>(num(inp[k+'_m'])||0)+(num(inp[k+'_t'])||0);
+  const v=x=>x==null?0:x;
+  const sub={
+    HP:Math.ceil((v(ab.con)+v(ab.siz))/2)+add('hp'), MP:v(ab.pow)+add('mp'),
+    'アイデア':v(ab.int_v)*5+add('idea'), '幸運':v(ab.pow)*5+add('luck'), '知識':Math.min(99,v(ab.edu)*5+add('know')),
+    DB:dbBonus(v(ab.str)+v(ab.siz))
+  };
+  const sk=[]; let mythos=0;
+  (sheet.skills||[]).forEach(s=>{
+    if(!s||!s.key)return;
+    const isCustom=s.key.startsWith('custom_');
+    let nm=isCustom?(s.freeVal||'').trim():SKMAP[s.key];
+    if(!nm)return;
+    if(!isCustom && s.freeVal && s.freeVal.trim()) nm=nm+'('+s.freeVal.trim()+')';
+    let base=num(s.base)||0;
+    if(s.key==='kaihi')base=v(ab.dex)*2; else if(s.key==='kokugo')base=v(ab.edu)*5;
+    const pts=(num(s.job)||0)+(num(s.int)||0)+(num(s.grw)||0)+(num(s.oth)||0);
+    const total=base+pts;
+    if(SKMAP[s.key]==='クトゥルフ神話')mythos=total;
+    const sec=isCustom?((s.tbodyId||'').replace('tbody_','')||'know'):(STD_SEC[SKMAP[s.key]]||'know');
+    if(pts>0) sk.push({nm,total,sec,ord:CS_SKILL_ORDER.indexOf(SKMAP[s.key])});
+  });
+  const sanNow=num(inp.san_now);
+  return {
+    id:row.id, name:inp.pcname||row.char_name||'名無し', furigana:inp.furigana||'', job:inp.job||'',
+    status:inp.pc_status||'alive', cls:parseInt(inp.ark_class)||0,
+    img:inp.charImage?fixDropbox(inp.charImage):'',
+    ab, sub, sanNow:sanNow==null?(v(ab.pow)*5):sanNow, sanMax:99-mythos, sanInit:v(ab.pow)*5+add('san'),
+    prof:[['職業',inp.job],['年齢',inp.age],['性別',inp.gender],['身長',inp.height],['体重',inp.weight],['出身',inp.origin],['誕生日',inp.birthday],['髪の色',inp.hair],['瞳の色',inp.eye],['時代',inp.era]].filter(x=>x[1]&&String(x[1]).trim()),
+    freeMemo:inp.row1_memo||'',
+    voices:(()=>{ try{ const v=JSON.parse(inp.ark_voices||'[]'); return Array.isArray(v)?v.filter(x=>x&&x.url):[]; }catch(e){ return []; } })(),
+    scenarios:(sheet.scenarios||[]).filter(x=>x&&x.trim()),
+    sk, memos:(sheet.memos||[]).filter(m=>m&&(m.title||m.body)),
+    rels:(sheet.rels||[]).filter(r=>r&&(r.name||(r.rows||[]).some(x=>x.title||x.body)))
+  };
+}
+
+function renderStage(){
+  const c=D;
+  const clsHtml=(c.cls>=1&&c.cls<=ARK_ICONS.length)?`<span class="cls" title="${ARK_ICONS[c.cls-1].n}"><img src="${ARK_ICONS[c.cls-1].s}" alt=""></span>`:'';
+  return `<div id="stage">`+
+    (c.img?`<img class="art" src="${esc(c.img)}" alt="${esc(c.name)}" onerror="this.remove()">`:`<div class="empty">${esc(c.name.charAt(0))}</div>`)+
+    `<span class="stbadge" style="background:${ST_COLOR[c.status]||'#555'}">${ST_LABEL[c.status]||''}</span>`+
+    `<div id="nameplate"><div class="role"><div class="san" style="--p:${Math.max(0,Math.min(100,c.sanNow/99*100)).toFixed(1)}"><span class="lab">SAN</span><span class="val">${c.sanNow}</span></div>${clsHtml}</div>`+
+    (c.furigana?`<div class="en">${esc(c.furigana)}</div>`:'')+
+    `<div class="nm">${esc(c.name)}</div></div>`+
+    (c.job?`<div id="credit"><div class="cr"><i>${SVG.prof}</i><span>${esc(c.job)}</span></div></div>`:'')+
+    `</div>`;
+}
+function body(k){
+  const c=D;
+  if(k==='prof'){
+    let h='';
+    const lw=Math.max(0,...c.prof.map(([a])=>a.length));
+    h+=`<div class="ph">基本情報</div>`+(c.prof.length?`<div class="pt">${c.prof.map(([a,b])=>`【${a}${'　'.repeat(lw-a.length)}】${esc(b)}`).join('\n')}</div>`:`<p class="hint">登録されていません。</p>`);
+    if(c.scenarios.length)h+=`<div class="ph">通過シナリオ</div><div class="pt">${c.scenarios.map(esc).join('\n')}</div>`;
+    if(c.freeMemo.trim())h+=`<div class="ph">自由メモ</div><div class="pt">${esc(c.freeMemo)}</div>`;
+    return h;
+  }
+  if(k==='voice'){
+    return c.voices.map((v,i)=>`<button class="vbtn${playing===i?' playing':''}" onclick="playVoice(${i})"><span class="ic">${playing===i?'■':'▶'}</span><span class="tt">${esc(v.title||'(無題)')}</span><span class="bar" id="vbar${i}"></span></button>`).join('');
+  }
+  if(k==='stat'){
+    const L={str:'STR',con:'CON',pow:'POW',dex:'DEX',app:'APP',siz:'SIZ',int_v:'INT',edu:'EDU'};
+    let h=`<div class="ph">能力値</div><div class="abgrid">${Object.keys(L).map(a=>`<div><b>${L[a]}</b><span>${c.ab[a]==null?'-':c.ab[a]}</span></div>`).join('')}</div>`;
+    h+=`<div class="ph">副能力値</div><div class="abgrid"><div><b>SAN</b><span>${c.sanNow}</span></div>${Object.entries(c.sub).map(([a,b])=>`<div><b>${a}</b><span>${b}</span></div>`).join('')}</div>`;
+    h+=`<dl class="kv"><dt>初期SAN</dt><dd>${c.sanInit}</dd><dt>最大SAN</dt><dd>${c.sanMax}</dd></dl>`;
+    return h;
+  }
+  if(k==='skill'){
+    if(!c.sk.length)return `<p class="hint">ポイントを振った技能がありません。</p>`;
+    return SEC_DEF.map(([sk,lab])=>{
+      const list=c.sk.filter(s=>s.sec===sk).sort((a,b)=>(a.ord<0?999:a.ord)-(b.ord<0?999:b.ord));
+      if(!list.length)return'';
+      return `<div class="ph">${lab}</div><div class="skgrid">${list.map(s=>`<div><span>${esc(s.nm)}</span><b>${s.total}</b></div>`).join('')}</div>`;
+    }).join('');
+  }
+  if(k==='memo'){
+    let h=c.memos.map(m=>`<div class="ph">${esc(m.title||'メモ')}</div><div class="pt">${esc(m.body||'')}</div>`).join('');
+    if(c.rels.length){
+      h+=c.rels.map(r=>`<div class="ph">${esc(r.name||'関係')}</div>`+(r.rows||[]).filter(x=>x.title||x.body).map(x=>`<div class="pt">${x.title?`<b>${esc(x.title)}</b>\n`:''}${esc(x.body||'')}</div>`).join('')).join('');
+    }
+    return h||`<p class="hint">メモがありません。</p>`;
+  }
+  return '';
+}
+let audio=null, playing=-1;
+function stopVoice(){ if(audio){ try{audio.pause();}catch(_){} audio=null; } playing=-1; }
+function playVoice(i){
+  const was=playing; stopVoice();
+  if(was===i){ openTab(tab); return; }
+  const v=D.voices[i]; if(!v)return;
+  audio=new Audio(fixDropbox(v.url)); playing=i;
+  audio.ontimeupdate=()=>{ const b=document.getElementById('vbar'+i); if(b&&audio&&audio.duration) b.style.width=(audio.currentTime/audio.duration*100)+'%'; };
+  audio.onended=()=>{ stopVoice(); openTab(tab); };
+  audio.play().catch(()=>{ stopVoice(); openTab(tab); alert('再生できませんでした'); });
+  openTab(tab);
+}
+function icoBtn(t,cls,onclick){ return `<button class="ico ${cls||''}" title="${t.label}" onclick="${onclick}">${t.ic}<span class="plus">＋</span></button>`; }
+function renderSide(){
+  if(!tab){
+    return `<div id="side" class="cards">${tabs().map(t=>`<button class="card-tab" onclick="openTab('${t.k}')"><span class="ico">${t.ic}<span class="plus">＋</span></span><span class="ct-label">${t.label}</span></button>`).join('')}</div>`;
+  }
+  const T=tabs().find(x=>x.k===tab);
+  return `<div id="side" class="open"><div class="vmain"><div class="vhead">${icoBtn(T,'',"openTab(null)")}<span class="vh-line"></span><span class="vh-label">${T.label}</span></div><div class="vbody">${body(tab)}</div></div>`+
+    `<div class="rail">${tabs().filter(t=>t.k!==tab).map(t=>icoBtn(t,'',`openTab('${t.k}')`)).join('')}</div></div>`;
+}
+function openTab(k){ if(k!=='voice'&&tab==='voice'&&k!==tab) stopVoice(); tab=k; const s=document.getElementById('side'); if(s)s.outerHTML=renderSide(); }
+function render(){
+  document.getElementById('main').innerHTML=renderStage()+renderSide();
+  document.title=D.name+' - プロフィール';
+}
+
+async function init(){
+  const params=new URLSearchParams(location.search);
+  const id=params.get('id');
+  const msg=t=>{document.getElementById('main').innerHTML='<div id="msg">'+t+'</div>';};
+  if(!id){msg('IDが指定されていません');return;}
+  let row=null;
+  try{ const r=await db.from('character_sheets').select('*').eq('id',id).single(); if(!r.error&&r.data)row=r.data; }catch(e){}
+  if(!row){ try{ if(window.OCO){ const rec=await OCO.getOne(id); if(rec&&rec.data)row={id,char_name:rec.char_name,data:rec.data}; } }catch(_){} }
+  if(!row){msg('データが見つかりません');return;}
+  let sheet={}; try{sheet=JSON.parse(row.data)||{};}catch(e){}
+  if(sheet.share_rev && params.get('r')!==sheet.share_rev){
+    msg('このリンクは無効です。<br>閲覧URLが再生成された可能性があります。<br>最新のURLを共有者にご確認ください。');return;
+  }
+  D=build(row); render();
+}
+// スマホ縦持ちなら横向きに回転、低い画面はコンパクト表示
+function fitView(){
+  const w=window.innerWidth, h=window.innerHeight, app=document.getElementById('app');
+  const rot = h>w && w<=760;
+  document.documentElement.classList.toggle('rot',rot);
+  if(rot){ app.style.width=h+'px'; app.style.height=w+'px'; } else { app.style.width=''; app.style.height=''; }
+  document.documentElement.classList.toggle('compact',(rot?w:h)<=520);
+}
+window.addEventListener('resize',fitView);
+window.addEventListener('orientationchange',()=>setTimeout(fitView,200));
+fitView();
+init();
+</script>
+</body>
+</html>
