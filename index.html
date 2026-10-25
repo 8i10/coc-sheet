@@ -22,6 +22,8 @@
 <title>キャラクター一覧 - CoC6版</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Zen Kaku Gothic New','MS PGothic',sans-serif;font-size:12px;background:#d8d8d8;color:#111;min-height:100vh;padding-top:44px}
 
@@ -615,12 +617,14 @@ body:not(.light) .card-top{ border:none !important; }
 .ark-cls{position:absolute;top:0;left:0;z-index:3;width:34%;aspect-ratio:1;background:rgba(17,17,20,.82);display:flex;align-items:center;justify-content:center;clip-path:polygon(0 0,100% 0,100% 72%,72% 100%,0 100%);cursor:pointer}
 .ark-cls:hover{background:rgba(60,60,70,.9)}
 .ark-cls img{width:80%;height:80%;object-fit:contain;pointer-events:none}
-.ark-san .lab{font-size:8px;color:#e2aa46;font-weight:700;letter-spacing:.5px}
-.ark-san .val{font-size:21px;color:#fff;font-weight:700;margin-top:0}
+/* SAN数字：Novecento Sans（端末にインストール済み or ./fonts/novecento.woff2 を置いた場合に使用）→ 無ければ形の近いJost */
+@font-face{font-family:'ArkNum';font-weight:300 400;src:local('Novecento Sans Light'),local('NovecentoSans-Light'),local('Novecento sans wide Light'),local('NovecentosanswideLight'),url('./fonts/novecento.woff2') format('woff2'),url('./fonts/novecento.otf') format('opentype')}
+.ark-san .lab{font-family:'ArkNum','Jost',sans-serif;font-size:8px;color:#e2aa46;font-weight:400;letter-spacing:.5px}
+.ark-san .val{font-family:'ArkNum','Jost',sans-serif;font-size:22px;color:#fff;font-weight:300;margin-top:-1px;line-height:1}
 .ark-acts{margin-left:auto;display:flex;gap:4px}
 .ark-act{width:32px;height:32px;border-radius:3px;border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;background:rgba(40,40,52,.82);color:#fff}
 .ark-act:hover{background:var(--accent2)}
-.ark-name{margin-top:4px;color:#fff;font-size:14px;font-weight:700;text-align:right;text-shadow:0 1px 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ark-name{margin-top:4px;color:#fff;font-size:15px;font-weight:400;font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;letter-spacing:.02em;text-align:right;text-shadow:0 1px 3px #000;white-space:nowrap;overflow:hidden}
 </style>
 
 <!-- PWA: Safari スタンドアロンモード維持 -->
@@ -1306,14 +1310,26 @@ function copyViewUrl(id){
     navigator.clipboard.writeText(url).then(()=>showToast('閲覧URLをコピーしました')).catch(()=>fallbackCopy(url));
   }else fallbackCopy(url);
 }
-// アーク風閲覧URL（ark.html）をコピー
+// アーク風一覧：名前が入りきらない場合は文字サイズを縮めて収める
+function _fitArkNames(){
+  document.querySelectorAll('#grid.grid-ark .ark-name').forEach(el=>{
+    el.style.fontSize='';
+    let fs=parseFloat(getComputedStyle(el).fontSize)||15;
+    while(el.scrollWidth>el.clientWidth+1 && fs>7){ fs-=0.5; el.style.fontSize=fs+'px'; }
+  });
+}
+window.addEventListener('resize',()=>{ if(viewMode==='ark') _fitArkNames(); });
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ if(viewMode==='ark') _fitArkNames(); });
+// アーク風閲覧URL（ark.html）をコピーして開く
 function copyArkUrl(id){
   const char=allChars.find(c=>c.id===id);
   const rev=char?getSheet(char).share_rev:'';
   const url=new URL('ark.html?id='+id+(rev?'&r='+encodeURIComponent(rev):''), location.href).href;
+  // 先にコピー（フォーカスがあるうちに）→ 新しいタブで開く
   const ok=()=>showToast('アーク風閲覧URLをコピーしました');
   if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok).catch(()=>fallbackCopy(url));
   else fallbackCopy(url);
+  window.open(url,'_blank');
 }
 function fallbackCopy(url){
   const ta=document.createElement('textarea');ta.value=url;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
@@ -1625,6 +1641,7 @@ function renderCards(chars){
 
   if(viewMode==='ark'){
     chars.forEach(char=>grid.appendChild(makeArkCard(char)));
+    requestAnimationFrame(_fitArkNames);
   } else {
     let lastHead=null;
     chars.forEach(char=>{
@@ -1672,7 +1689,7 @@ function makeArkCard(char){
   const sanPct=Math.max(0,Math.min(100,(parseInt(sanNow)||0)/99*100));
   // クラスアイコン（シートのアーク風設定）
   const clsI=parseInt(inp.ark_class)||0;
-  const clsHtml=(clsI>=1&&clsI<=ARK_ICONS.length)?`<div class="ark-cls" title="${ARK_ICONS[clsI-1].n}（タップでアーク風閲覧URLをコピー）" onclick="event.stopPropagation();copyArkUrl('${char.id}')"><img src="${ARK_ICONS[clsI-1].s}" alt=""></div>`:'';
+  const clsHtml=(clsI>=1&&clsI<=ARK_ICONS.length)?`<div class="ark-cls" title="${ARK_ICONS[clsI-1].n}（タップでアーク風閲覧URLをコピーして開く）" onclick="event.stopPropagation();copyArkUrl('${char.id}')"><img src="${ARK_ICONS[clsI-1].s}" alt=""></div>`:'';
   const card=document.createElement('div');
   card.className='ark-card';
   card.dataset.id=char.id;
