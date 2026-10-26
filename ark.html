@@ -140,6 +140,9 @@ html.compact .abtxt{font-size:13px;gap:0 12px;padding:0 10px 10px}
 .skgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding:0 14px 16px;font-size:15px}
 .skgrid div{display:flex;justify-content:space-between;border-bottom:1px dotted #999;padding:2px 0}
 .skgrid b{font-weight:700}
+.abmb{display:none}
+html.compact .abtxt{display:none}
+html.compact .abmb{display:grid}
 .vbtn{position:relative;overflow:hidden;display:flex;align-items:stretch;width:100%;margin:0 0 10px;padding:0;background:#ececec;border:1px solid var(--line);color:#111;text-align:left;cursor:pointer;font:inherit}
 .vbtn:hover{background:#fff}
 .vbtn .ic{width:44px;flex:none;display:grid;place-items:center;background:#2b2b2d;color:#fff;font-size:14px}
@@ -402,8 +405,11 @@ function body(k){
   if(k==='stat'){
     const L={str:'STR',con:'CON',pow:'POW',dex:'DEX',app:'APP',siz:'SIZ',int_v:'INT',edu:'EDU'};
     const cell=(a,b)=>`<div>【${a}】${esc(String(b))}</div>`;
-    let h=`<div class="ph">能力値</div><div class="abtxt">${Object.keys(L).map(a=>cell(L[a],c.ab[a]==null?'-':c.ab[a])).join('')}</div>`;
-    h+=`<div class="ph">副能力値</div><div class="abtxt">${cell('SAN',c.sanNow)}${Object.entries(c.sub).map(([a,b])=>cell(a,b)).join('')}${cell('初期SAN',c.sanInit)}${cell('最大SAN',c.sanMax)}</div>`;
+    // スマホ（compact）は技能と同じ表記（.abmb）、PCは従来の表記（.abtxt）
+    const gcell=(a,b)=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`;
+    const abL=Object.keys(L).map(a=>[L[a],c.ab[a]==null?'-':c.ab[a]]), subL=Object.entries(c.sub);
+    let h=`<div class="ph">能力値</div><div class="abtxt">${abL.map(([a,b])=>cell(a,b)).join('')}</div><div class="skgrid abmb">${abL.map(([a,b])=>gcell(a,b)).join('')}</div>`;
+    h+=`<div class="ph">副能力値</div><div class="abtxt">${subL.map(([a,b])=>cell(a,b)).join('')}</div><div class="skgrid abmb">${subL.map(([a,b])=>gcell(a,b)).join('')}</div>`;
     // 技能（同じタブ内）
     if(!c.sk.length) return h+`<div class="ph">技能</div><p class="hint">ポイントを振った技能がありません。</p>`;
     return h+SEC_DEF.map(([sk,lab])=>{
