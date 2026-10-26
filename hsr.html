@@ -440,10 +440,10 @@ function fitView(){
   if(standalone&&h>w&&screen.height>h&&screen.width===w) h=screen.height;
   const rot = h>w && w<=760;
   document.documentElement.classList.toggle('rot',rot);
-  // ノッチ・ステータスバー・ホームバー（セーフエリア）を避ける
+  // ノッチ・ステータスバー・ホームバー（セーフエリア）を避け、左右（縦持ちの上下）の余白を同じにする
   let pr=document.getElementById('_safe_probe');
   if(!pr){ pr=document.createElement('div'); pr.id='_safe_probe'; pr.style.cssText='position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)'; document.body.appendChild(pr); }
-  const cs=getComputedStyle(pr), st=34, sb=34, sl=parseFloat(cs.paddingLeft)||0, sr=parseFloat(cs.paddingRight)||0;
+  const cs=getComputedStyle(pr), _m=Math.max(34,parseFloat(cs.paddingTop)||0,parseFloat(cs.paddingBottom)||0), st=_m, sb=_m, sl=parseFloat(cs.paddingLeft)||0, sr=parseFloat(cs.paddingRight)||0;
   if(rot){ app.style.top=st+'px'; app.style.left=sl+'px'; app.style.width=(h-st-sb)+'px'; app.style.height=(w-sl-sr)+'px'; } else { app.style.top=''; app.style.left=''; app.style.width=''; app.style.height=''; }
   if(rot){ h=h-st-sb; w=w-sl-sr; }
   document.documentElement.classList.toggle('compact',(rot?w:h)<=520);
