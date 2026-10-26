@@ -630,7 +630,8 @@ body:not(.light) .card-top{ border:none !important; }
 .ark-bgw::before{content:'';position:absolute;left:-30%;right:-30%;top:46%;height:26%;z-index:0;transform:rotate(-32deg);transform-origin:center;
   background:radial-gradient(circle,rgba(30,30,32,.38) 1px,transparent 1.5px) 0 0/5px 5px,linear-gradient(90deg,#7c7c80 0%,#c9c9cc 55%,#8a8a8e 100%);
   border-top:2px solid rgba(255,255,255,.75);box-shadow:0 -6px 0 -4px rgba(255,255,255,.25)}
-.ark-img{position:absolute;inset:0;z-index:1;background-size:cover;background-repeat:no-repeat}
+/* コマ画像：クロップはそのまま、全体を下にずらして上部に余白 */
+.ark-img{position:absolute;left:0;right:0;top:7%;bottom:-7%;z-index:1;background-size:cover;background-repeat:no-repeat}
 .ark-noimg{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;color:rgba(255,255,255,.6);text-shadow:0 0 8px rgba(0,0,0,.7)}
 .ark-status-dot{position:absolute;top:6px;right:6px;z-index:3;font-size:9px;font-weight:700;color:#fff;padding:1px 6px;border-radius:9px}
 .ark-overlay{position:absolute;left:0;right:0;bottom:0;z-index:2;background:linear-gradient(transparent,rgba(34,36,42,.82) 45%);padding:24px 6px 5px}
