@@ -1065,6 +1065,7 @@ body.light td.hdr{
 .ark-orow .ou{flex:1;min-width:160px}
 .ark-orow .od{flex-basis:100%;width:100%;min-height:36px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;padding:3px 4px;resize:vertical;font-family:inherit;text-align:left}
 .ark-odef{font-size:11px;font-weight:bold;padding:3px 0}
+.ark-orow .ark-osd,.ark-orow-def .ou{flex-basis:100%}
 .ark-crop-target{font-size:11px;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:2px 4px}
 .ark-crop-wrap{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
 .ark-crop-box{position:relative;width:180px;height:200px;container-type:size;overflow:hidden;background:linear-gradient(135deg,#e4e4e4,#a9a9a9);border:1px solid var(--border);cursor:grab;touch-action:none;user-select:none}
@@ -1516,6 +1517,7 @@ if (('standalone' in navigator) && navigator.standalone) {
           <div style="font-size:11px;margin:0 0 4px">コーデ（立ち絵が複数ある場合。デフォルトの立ち絵はアイコン画像）</div>
           <div class="ark-orow ark-orow-def">
             <span class="ark-odef">デフォルト</span>
+            <input type="text" id="ark_def_sd" class="ou" placeholder="SDキャラ画像URL（任意・未設定時は立ち絵クロップの顔アップ）">
             <textarea id="ark_def_desc" class="od" placeholder="デフォルトコーデの説明（任意）" rows="2"></textarea>
           </div>
           <input type="hidden" id="ark_outfits" value="">
@@ -5056,6 +5058,7 @@ function _arkRenderOutfits(){
     '<div class="ark-orow" data-i="'+i+'">'+
       '<input type="text" class="on" placeholder="コーデ名" value="'+_arkEsc(o.name)+'" data-k="name">'+
       '<input type="text" class="ou" placeholder="立ち絵URL（Dropbox共有リンク等）" value="'+_arkEsc(o.url)+'" data-k="url">'+
+      '<input type="text" class="ou ark-osd" placeholder="SDキャラ画像URL（任意）" value="'+_arkEsc(o.sd)+'" data-k="sd">'+
       '<button type="button" class="ark-vbtn" data-a="up" title="上へ"'+(i===0?' disabled':'')+'>▲</button>'+
       '<button type="button" class="ark-vbtn" data-a="down" title="下へ"'+(i===l.length-1?' disabled':'')+'>▼</button>'+
       '<button type="button" class="ark-vbtn" data-a="del" title="削除">×</button>'+

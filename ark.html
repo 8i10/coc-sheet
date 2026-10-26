@@ -56,6 +56,39 @@ html.rot #app{position:fixed;top:0;left:0;transform:rotate(90deg) translateY(-10
 .obtnrow{display:flex;justify-content:center;margin:14px 0 6px}
 .obtn{min-width:200px;padding:10px 20px;border:none;background:#2b2b2d;color:#fff;font:inherit;font-size:16px;cursor:pointer;letter-spacing:.1em}
 .obtn.worn{background:#5aa6d0;cursor:default}
+
+/* コーデ：左下の全身表示＋虫眼鏡 */
+.ofull{position:absolute;left:18px;bottom:76px;width:min(150px,24%);aspect-ratio:3/4;z-index:3}
+.ofull::before{content:'';position:absolute;left:-12px;top:-12px;width:62%;height:62%;background:#2b2b2d;clip-path:polygon(0 0,100% 0,100% 12px,12px 12px,12px 100%,0 100%)}
+.ofull::after{content:'';position:absolute;right:-12px;bottom:-12px;width:62%;height:62%;background:var(--oc,#6e6a6c);clip-path:polygon(100% 0,100% 100%,0 100%,0 calc(100% - 12px),calc(100% - 12px) calc(100% - 12px),calc(100% - 12px) 0)}
+.ofull .in{position:absolute;inset:0;background:repeating-linear-gradient(135deg,#e9e9e9 0 3px,#d6d6d6 3px 5px);overflow:hidden;container-type:size}
+.ofull img.sd{width:100%;height:100%;object-fit:contain;display:block}
+/* SD未設定時：立ち絵クロップ（顔アップ） */
+.ofull img.face{position:absolute;left:calc(50% + var(--x,0)*1cqh);top:calc(50% + var(--y,0)*1cqh);height:calc(var(--z,100)*1cqh);width:auto;max-width:none;transform:translate(-50%,-50%)}
+.ozoom{position:absolute;left:18px;bottom:14px;z-index:3;width:46px;height:46px;border:none;background:#fff;box-shadow:0 2px 8px #0005;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.ozoom svg{width:30px;height:30px;fill:#222}
+html.compact .ofull{left:12px;bottom:52px;width:min(96px,22%)}
+html.compact .ofull::before{left:-8px;top:-8px}
+html.compact .ofull::after{right:-8px;bottom:-8px}
+html.compact .ozoom{left:10px;bottom:8px;width:34px;height:34px}
+html.compact .ozoom svg{width:22px;height:22px}
+/* 立ち絵の詳細閲覧（拡大・縮小・移動） */
+#zv{position:fixed;inset:0;z-index:60;background:radial-gradient(#0001 1px,transparent 1px) 0 0/14px 14px,linear-gradient(135deg,#e4e4e4,#bdbdbd);overflow:hidden;touch-action:none;cursor:grab}
+#zv img{position:absolute;left:50%;top:50%;max-width:none;transform-origin:center;user-select:none;-webkit-user-drag:none;pointer-events:none}
+#zv .zback{position:absolute;left:16px;top:12px;z-index:2;width:130px;height:44px;border:none;background:#2b2b2d;box-shadow:0 3px 8px #0005;display:flex;align-items:center;padding-left:14px;cursor:pointer}
+#zv .zback svg{width:26px;height:26px;fill:#fff}
+html.compact #zv .zback{left:10px;top:8px;width:96px;height:34px}
+/* コーデ：右上部のバッジ */
+.vhead.ohead{position:relative;height:auto;background:transparent;justify-content:center;padding:0;margin-top:-14px}
+.vhead.ohead::after{content:'';position:absolute;top:0;left:calc(50% + 85px);right:-14px;height:5px;background:#fff}
+.obadge{width:170px;background:#fff;color:#111;text-align:center;padding:12px 0 30px;clip-path:polygon(0 0,100% 0,100% 74%,50% 100%,0 74%);filter:drop-shadow(0 2px 4px #0003)}
+.obadge .ob-sub{font-family:'Jost',sans-serif;font-size:10px;letter-spacing:.06em}
+.obadge .ob-num{font-family:'Jost',sans-serif;font-size:24px;font-weight:400;line-height:1.3;margin-top:6px}
+html.compact .vhead.ohead{margin-top:-10px}
+html.compact .vhead.ohead::after{left:calc(50% + 60px);right:-10px;height:3px}
+html.compact .obadge{width:120px;padding:7px 0 20px}
+html.compact .obadge .ob-sub{font-size:8px}
+html.compact .obadge .ob-num{font-size:17px;margin-top:2px}
 html.compact .othumb{width:60px;height:150px}
 html.compact .othumb.sel{width:76px}
 html.compact .otabs{margin-bottom:6px}
@@ -310,7 +343,7 @@ function build(row){
     status:inp.pc_status||'alive', cls:parseInt(inp.ark_class)||0, branch:parseInt(inp.ark_branch)||0,
     img:inp.charImage?fixDropbox(inp.charImage):'',
     crop:(()=>{ const f=(k,d)=>{ const v=parseFloat(inp[k]); return isNaN(v)?d:v; }; return {z:f('ark_img_z',100),x:f('ark_img_x',0),y:f('ark_img_y',0)}; })(),
-    defDesc:inp.ark_def_desc||'',
+    defDesc:inp.ark_def_desc||'', defSd:inp.ark_def_sd||'', pcColor:/^#[0-9a-f]{3,8}$/i.test(inp.txtcolor||'')?inp.txtcolor:'',
     extraOutfits:(()=>{ try{ const v=JSON.parse(inp.ark_outfits||'[]'); return Array.isArray(v)?v.filter(o=>o&&o.url):[]; }catch(e){ return []; } })(),
     ab, sub, sanNow:sanNow==null?(v(ab.pow)*5):sanNow, sanMax:99-mythos, sanInit:v(ab.pow)*5+add('san'),
     prof:[['職業',inp.job],['年齢',inp.age],['性別',inp.gender],['身長',inp.height],['体重',inp.weight],['出身',inp.origin],['誕生日',inp.birthday],['髪の色',inp.hair],['瞳の色',inp.eye],['時代',inp.era]].filter(x=>x[1]&&String(x[1]).trim()),
@@ -332,6 +365,7 @@ function renderStage(){
   const clsHtml=(c.cls>=1&&c.cls<=ARK_ICONS.length)?`<span class="cls" title="${ARK_ICONS[c.cls-1].n}"><img src="${ARK_ICONS[c.cls-1].s}" alt=""></span>`:'';
   return `<div id="stage"${om?' class="outfit-mode"':''}>`+
     (O.img?`<img class="art" src="${esc(O.img)}" alt="${esc(c.name)}" style="--z:${O.crop.z};--x:${O.crop.x};--y:${O.crop.y}" onerror="this.remove()">`:`<div class="empty">${esc(c.name.charAt(0))}</div>`)+
+    (om&&O.img?`<div class="ofull"${c.pcColor?` style="--oc:${c.pcColor}"`:''}><div class="in">${O.sd?`<img class="sd" src="${esc(O.sd)}" alt="">`:`<img class="face" src="${esc(O.img)}" alt="" style="--z:${O.crop.z};--x:${O.crop.x};--y:${O.crop.y}">`}</div></div><button class="ozoom" title="立ち絵を詳しく見る" onclick="openZoom()"><svg viewBox="0 0 24 24"><path d="M10 2a8 8 0 0 1 6.3 12.9l5.4 5.4-1.4 1.4-5.4-5.4A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm-1 2h2v3h3v2h-3v3H9v-3H6V9h3z"/></svg></button>`:'')+
     (om?`<div class="ocard"><div class="ocard-nm">${esc(O.name)}</div><div class="ocard-sub">OUTFIT</div>${O.desc?`<div class="ocard-desc">${esc(O.desc)}</div>`:''}</div>`:'')+
     `<span class="stbadge" style="background:${ST_COLOR[c.status]||'#555'}">${ST_LABEL[c.status]||''}</span>`+
     `<div id="nameplate"><div class="role"><div class="san" style="--p:${Math.max(0,Math.min(100,c.sanNow/99*100)).toFixed(1)}"><span class="lab">SAN</span><span class="val">${c.sanNow}</span></div>${clsHtml}</div>`+
@@ -436,7 +470,10 @@ function renderSide(){
     return `<div id="side" class="cards">${tabs().map(t=>`<button class="card-tab" onclick="openTab('${t.k}')"><span class="ico">${t.ic}<span class="plus">＋</span></span><span class="ct-label">${t.label}</span></button>`).join('')}</div>`;
   }
   const T=tabs().find(x=>x.k===tab);
-  return `<div id="side" class="open"><div class="vmain"><div class="vhead">${icoBtn(T,'',"openTab(null)")}<span class="vh-line"></span><span class="vh-label">${T.label}</span></div><div class="vbody">${body(tab)}</div></div>`+
+  const head=tab==='outfit'
+    ?`<div class="vhead ohead"><div class="obadge"><div class="ob-sub">${osel===0?'DEFAULT OUTFIT':'OUTFIT'}</div><div class="ob-num">${roman(osel+1)}</div></div></div>`
+    :`<div class="vhead">${icoBtn(T,'',"openTab(null)")}<span class="vh-line"></span><span class="vh-label">${T.label}</span></div>`;
+  return `<div id="side" class="open"><div class="vmain">${head}<div class="vbody">${body(tab)}</div></div>`+
     (()=>{ const R=tabs().filter(t=>t.k!==tab); return R.length?`<div class="rail">${R.map(t=>icoBtn(t,'',`openTab('${t.k}')`)).join('')}</div>`:''; })()+`</div>`;
 }
 function openTab(k){
@@ -455,6 +492,36 @@ function centerOutfit(){
     box.scrollLeft=el.offsetLeft+el.offsetWidth/2-box.clientWidth/2;
   });
 }
+function roman(n){ const t=[[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']]; let o=''; for(const [v,c] of t){ while(n>=v){ o+=c; n-=v; } } return o; }
+// 立ち絵の詳細閲覧（ドラッグで移動、ホイール・ピンチで拡大縮小、左上で戻る）
+function openZoom(){
+  const O=(D.outfits||[])[osel]; if(!O||!O.img)return;
+  closeZoom();
+  const z=document.createElement('div'); z.id='zv';
+  z.innerHTML=`<img src="${esc(O.img)}" alt=""><button class="zback" title="戻る" onclick="closeZoom()">${TSVG.back}</button>`;
+  document.getElementById('app').appendChild(z);
+  const img=z.querySelector('img'); let s=1, tx=0, ty=0, base=1;
+  const apply=()=>{ img.style.transform=`translate(-50%,-50%) translate(${tx}px,${ty}px) scale(${s})`; };
+  const fit=()=>{ const W=z.clientWidth, H=z.clientHeight, iw=img.naturalWidth||1, ih=img.naturalHeight||1; base=Math.min(W/iw,H/ih)*0.95; img.style.width=(iw*base)+'px'; img.style.height=(ih*base)+'px'; apply(); };
+  if(img.complete)fit(); else img.onload=fit;
+  const rot=()=>document.documentElement.classList.contains('rot');
+  // 画面座標の移動量をアプリ座標に変換（スマホ縦持ちの回転表示対応）
+  const conv=(dx,dy)=>rot()?[dy,-dx]:[dx,dy];
+  const zoomAt=(f)=>{ s=Math.max(0.5,Math.min(8,s*f)); apply(); };
+  z.addEventListener('wheel',e=>{ e.preventDefault(); zoomAt(e.deltaY<0?1.12:1/1.12); },{passive:false});
+  const P=new Map(); let lastDist=0;
+  z.addEventListener('pointerdown',e=>{ if(e.target.closest('.zback'))return; z.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(P.size===2){ const [a,b]=[...P.values()]; lastDist=Math.hypot(a.x-b.x,a.y-b.y); } });
+  z.addEventListener('pointermove',e=>{
+    if(!P.has(e.pointerId))return;
+    const prev=P.get(e.pointerId), cur={x:e.clientX,y:e.clientY}; P.set(e.pointerId,cur);
+    if(P.size===1){ const [dx,dy]=conv(cur.x-prev.x,cur.y-prev.y); tx+=dx; ty+=dy; apply(); }
+    else if(P.size===2){ const [a,b]=[...P.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); if(lastDist>0)zoomAt(d/lastDist); lastDist=d; }
+  });
+  const up=e=>{ P.delete(e.pointerId); lastDist=0; };
+  z.addEventListener('pointerup',up); z.addEventListener('pointercancel',up);
+  z.addEventListener('dblclick',()=>{ s=1; tx=0; ty=0; apply(); });
+}
+function closeZoom(){ const z=document.getElementById('zv'); if(z)z.remove(); }
 function selOutfit(i){ osel=i; render(); centerOutfit(); }
 function wearOutfit(){ worn=osel; try{ localStorage.setItem('ark_wear_'+D.id,String(worn)); }catch(_){} render(); }
 function render(){
@@ -550,7 +617,7 @@ async function init(){
   D=build(row);
   // コーデ一覧（0=デフォルト）
   const num2=(v,d)=>{ v=parseFloat(v); return isNaN(v)?d:v; };
-  D.outfits=[{name:'デフォルト',img:D.img,desc:D.defDesc,crop:D.crop}].concat(D.extraOutfits.map((o,i)=>({name:o.name||('コーデ'+(i+1)),img:fixDropbox(o.url),desc:o.desc||'',crop:{z:num2(o.z,100),x:num2(o.x,0),y:num2(o.y,0)}})));
+  D.outfits=[{name:'デフォルト',img:D.img,desc:D.defDesc,crop:D.crop,sd:D.defSd?fixDropbox(D.defSd):''}].concat(D.extraOutfits.map((o,i)=>({name:o.name||('コーデ'+(i+1)),img:fixDropbox(o.url),desc:o.desc||'',sd:o.sd?fixDropbox(o.sd):'',crop:{z:num2(o.z,100),x:num2(o.x,0),y:num2(o.y,0)}})));
   try{ const w=parseInt(localStorage.getItem('ark_wear_'+D.id)); if(w>=0&&w<D.outfits.length)worn=w; }catch(_){}
   osel=worn;
   render();
