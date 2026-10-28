@@ -21,6 +21,8 @@ html.rot #app{position:fixed;top:0;left:0;transform:rotate(90deg) translateY(-10
 #stage{position:relative;flex:1.3;min-width:0;background:linear-gradient(135deg,#e4e4e4,#a9a9a9);overflow:hidden;container-type:size}
 /* 立ち絵クロップ（シートで設定：ステージ高さ基準） */
 #stage img.art{position:absolute;left:calc(50% + var(--x,0)*1cqh);top:calc(50% + var(--y,0)*1cqh);height:calc(var(--z,100)*1cqh);width:auto;max-width:none;transform:translate(-50%,-50%)}
+/* コーデ画面：立ち絵は全身表示（クロップしない） */
+#stage.outfit-mode img.art{left:50%;top:50%;width:100%;height:100%;object-fit:contain;transform:translate(-50%,-50%)}
 #stage .empty{position:absolute;inset:0;display:grid;place-items:center;color:#888;font-family:var(--font);font-size:min(30vw,260px);opacity:.25}
 #nameplate{position:absolute;left:24px;right:22px;bottom:62px;color:#fff;text-shadow:0 2px 8px #000a;pointer-events:none}
 #nameplate .role{display:flex;align-items:center;gap:8px}
@@ -218,6 +220,42 @@ html.compact .vbtn .tt{padding:7px 10px;font-size:13px}
 /* 職分（参考：右下のモジュール欄） */
 .t-branch{position:absolute;left:70%;width:23.3%;bottom:4%;z-index:3;background:rgba(56,56,60,.9);padding:calc(var(--u,1vh)*1.6) 1.2%}
 .t-brin{display:flex;align-items:center;gap:calc(var(--uw,1vw)*1.4)}
+/* 最初の画面：右側をまとめてスクロール可能に（SAN・HP/MP・データアイコン・職分） */
+.t-rcol{position:absolute;left:70%;width:23.5%;top:12.5%;bottom:4%;z-index:3;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;scrollbar-width:none;overscroll-behavior:contain}
+.t-rcol::-webkit-scrollbar{display:none}
+.t-rcol .t-right{position:relative;left:auto;top:auto;width:100%;flex:none}
+.t-strow{position:relative;flex:none;display:flex;justify-content:space-between;margin-top:calc(var(--u,1vh)*6);height:calc(var(--u,1vh)*10)}
+.t-strow .t-st{position:relative;top:auto;left:auto;height:100%;width:48%}
+.t-dbox{flex:none;background:rgba(56,56,60,.9);padding:calc(var(--u,1vh)*1.2) 4%;margin-top:calc(var(--u,1vh)*2.4);margin-bottom:calc(var(--u,1vh)*1.6)}
+.t-dbox.open{padding-top:0}
+.t-dbox .t-phead{margin:0 -4.2% calc(var(--u,1vh)*1.2);width:108.4%;background:rgba(40,40,44,.95)}
+.t-dicons{display:flex;gap:6%}
+.t-dcell{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u,1vh)*.6)}
+.t-dcell span{font-size:clamp(9px,calc(var(--u,1vh)*1.9),15px);color:#eee;white-space:nowrap;letter-spacing:.02em}
+.t-dic{width:min(100%,calc(var(--u,1vh)*11));aspect-ratio:1;flex:none;border:none;background:rgba(26,26,30,.85);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;outline:2px solid transparent;outline-offset:-2px}
+.t-dic img{width:62%;height:62%;object-fit:contain;pointer-events:none}
+.t-dic.on{outline-color:#3aa0e8;background:rgba(60,60,66,.95)}
+.t-dic:hover{background:rgba(70,70,76,.95)}
+.t-dbox .t-pbody{padding:calc(var(--u,1vh)*1.4) 0 0}
+.t-pane{flex:none;margin-top:calc(var(--u,1vh)*1.6);background:rgba(40,40,44,.92);color:#eee}
+.t-phead{display:flex;align-items:center;gap:8px;width:100%;border:none;background:rgba(70,70,76,.9);color:#ddd;font:inherit;font-size:clamp(11px,calc(var(--u,1vh)*2.2),18px);padding:calc(var(--u,1vh)*.8) 10px;cursor:pointer;text-align:left;letter-spacing:.06em}
+.t-phead::before{content:'▲';font-size:.7em}
+.t-pbody{padding:calc(var(--u,1vh)*1.2) 10px calc(var(--u,1vh)*1.6);font-size:clamp(10px,calc(var(--u,1vh)*2),15px);line-height:1.65}
+.t-pbody .kv{display:flex;gap:8px;border-bottom:1px solid rgba(255,255,255,.12);padding:2px 0}
+.t-pbody .kv b{flex:none;color:#aaa;font-weight:400;min-width:4.5em}
+.t-pbody .kv span{flex:1;min-width:0;word-break:break-word;white-space:pre-wrap}
+.t-pbody .sg{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.t-pbody .sg div{display:flex;justify-content:space-between;border-bottom:1px dotted rgba(255,255,255,.25);padding:1px 0}
+.t-pbody .sg b{font-weight:700;color:#fff}
+.t-pbody .sh{color:#8fc6ef;margin:6px 0 2px;font-size:.92em}
+.t-pbody .sh:first-child{margin-top:0}
+.t-pbody .pl{white-space:pre-wrap;word-break:break-word}
+.t-pbody .tkh{display:inline-block;background:#f1f1f1;color:#1a1a1a;padding:0 6px;margin:6px 0 2px}
+.t-pbody .hint{color:#999;margin:0}
+.t-rcol .t-branch{position:relative;left:auto;bottom:auto;width:auto;flex:none;margin-top:auto;cursor:pointer}
+.t-rcol .t-brpane{margin-top:auto}
+.t-brmore{font-size:clamp(9px,calc(var(--u,1vh)*1.7),13px);color:#aaa;text-align:right;margin-top:4px}
+
 .t-brin img{width:calc(var(--u,1vh)*8);height:calc(var(--u,1vh)*8);object-fit:contain;opacity:.9}
 .t-brin span{font-size:clamp(14px,calc(var(--u,1vh)*2.8),26px);color:#fff;letter-spacing:.06em}
 #backbar{position:absolute;left:12px;top:10px;z-index:20;display:flex;background:rgba(40,40,42,.92)}
@@ -586,16 +624,49 @@ function renderTop(){
       `</div>`+
     `</div>`+
     // SAN（LVの位置）
+    `<div class="t-rcol">`+
     `<div class="t-right"><div class="t-sanbox"></div><div class="t-san" style="--p:${pct.toFixed(1)}"><span class="lab">SAN</span><span class="val">${c.sanNow}</span></div><div class="t-sanmax">/${c.sanMax}</div></div>`+
     // HP・MP（昇進・潜在の位置）
-    `<div class="t-st t-st1"><span class="sv">${c.sub.HP}</span><span class="sl">HP</span></div>`+
-    `<div class="t-st t-st2"><span class="sv">${c.sub.MP}</span><span class="sl">MP</span></div>`+
+    `<div class="t-strow"><div class="t-st t-st1"><span class="sv">${c.sub.HP}</span><span class="sl">HP</span></div>`+
+    `<div class="t-st t-st2"><span class="sv">${c.sub.MP}</span><span class="sl">MP</span></div></div>`+
+    // データアイコン（参考画像のスキルの位置）：パーソナルデータ／技能一覧／通過シナリオ
+    (()=>{ const op=topPane&&topPane!=='branch';
+      return `<div class="t-dbox${op?' open':''}">`+
+        (op?`<button class="t-phead" onclick="toggleTopPane(null)">${TOP_DATA.find(d=>d.k===topPane).t}</button>`:'')+
+        `<div class="t-dicons">${TOP_DATA.map(d=>`<div class="t-dcell"><button class="t-dic${topPane===d.k?' on':''}" title="${d.t}" onclick="toggleTopPane('${d.k}')"><img src="${d.ic}" alt=""></button>${op?`<span>${d.s}</span>`:''}</div>`).join('')}</div>`+
+        (op?`<div class="t-pbody">${topPaneBody(topPane)}</div>`:'')+
+      `</div>`; })()+
     // 職分（モジュールの位置）
-    ((brI||c.tokucho.length)?`<div class="t-branch">`+
-      (brI?`<div class="t-brin"><img src="${brI.s}" alt=""><span>${esc(brI.n)}</span></div><div class="t-brd">${esc(brI.d)}</div>`:'')+
+    // 職分（モジュールの位置）：クリックで職分の内容と特徴表の内容を開閉
+    ((brI||c.tokucho.length)?(topPane==='branch'
+      ?`<div class="t-pane t-brpane"><button class="t-phead" onclick="toggleTopPane(null)">職分・特徴表</button><div class="t-pbody">`+
+        (brI?`<div class="t-brin"><img src="${brI.s}" alt=""><span>${esc(brI.n)}</span></div><div class="sh">職分</div><div class="pl">${esc(brI.d)}</div>`:'')+
+        (c.tokucho.length?`<div class="sh">特徴表</div>`+c.tokucho.map(t=>`${t.l?`<div class="tkh">${esc(t.l)}</div>`:''}${t.m?`<div class="pl">${esc(t.m)}</div>`:''}`).join(''):'')+
+      `</div></div>`
+      :`<div class="t-branch" title="クリックで職分・特徴表の内容を表示" onclick="toggleTopPane('branch')">`+
+      (brI?`<div class="t-brin"><img src="${brI.s}" alt=""><span>${esc(brI.n)}</span></div>`:'')+
       (c.tokucho.filter(t=>t.l).length?`<div class="t-tk">${c.tokucho.filter(t=>t.l).map(t=>`<span>${esc(t.l.replace(/^（[^）]*）/,''))}</span>`).join('')}</div>`:'')+
-    `</div>`:'')+
+    `</div>`):'')+
+    `</div>`+
   `</div>`;
+}
+// 最初の画面：右側のデータ（タブのように開閉）
+const TOP_DATA=[{k:'pdata',t:'パーソナルデータ',s:'パーソナル',ic:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAABYlAAAWJQFJUiTwAAADGUlEQVR4nO2c3ZHaMBSFD5m8Lx1kS3AqWEogHZAOKMElbAfQwW4JpIJQAlQQqEB5kBgYVrbln6tj8PlmPMNYFtLqs2TpyuzMOQfB4xu7AlNHAshIABkJICMBZCSAjASQkQAyEkBGAshIABkJICMBZCSAjASQkQAyEkBGAshIAJkmAUsABwBOR6fjENqwklnNpvwSwEddZpHMLwCfsYQ6AQcAP4wqNDWOAF5jCVUC5gD+GVZoisxiJ/UQJlM3BOmNrWFRDxgjEkDme4+80S41YToN2eoBZCSAjASQkQAyEkBGAshIAJk+64AuLAEU4fMeFSHaKZFLwArAO4CXu/NnAGsA20z1GB05hqASwAZfGx/h3AZeQiorACfY7WKdQhlZ6BMNTQlFFAD+JtblJ/yw1MQJcZlDcobfE2lDp/ay7gFt7uw21z4N1gIWBteu4e9QKy7PpSxYD0FtI4SPHGEd5RAkGrAWcDS69mmwFrAzuvZpsBZQGly7Qr91QNZ5fhPWD2HA/7Gbhmt+I301PMQ6oMs8v4nRPoS38K/mxaaO55C2zVCPUZKjB9yywHW+v0O3cX+FeFwpFav4U6f2yiWgCMfr3fkDfPghJQQxdjq1l2U0dA5/p63Q/JLvEf6OfIcf4yeDVQ8o4GP9bd+uPsLvGTxijxjNEFTAj+19xugFHk/CKGZBfRsfIe8O152ze0pc5/TlTbmXtcEeX6eYsfR5+HxZG1SVZ4tzrupoIpZnl5AvlV1ivWLlrhvqtQ5HSnmpRxPRfEP2gAWAtwG/7w3twtmPyYBGtwl52rKNlFPepJfhXOGcO4Vze+fc/C5PLH0ePruQVkTKMu8BQz6ELbYKLUIGVtBnQVa/qHmUTRr6QuzPgN81GXLHgp6ZUawDREskgIwEkJEAMhJARgLI9FkH6F8ZDIB6ABkJICMBZCSATJ2ASb4sa0RlW9YJmOQvVoyobMs6AZ/wrw2qJ3TniJr/mAjUh6NFBvQQJiMBZCSAjASQkQAyEkBGAshIABkJICMBZCSAjASQkQAyEkBGAshIABkJICMBZCSAzH9eb7AtPq+psgAAAABJRU5ErkJggg=='},{k:'skill',t:'技能一覧',s:'技能',ic:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAABYlAAAWJQFJUiTwAAACzUlEQVR4nO2d0XHbMBBEVx7/WyUwFYjpICWoA8ud0R24BLsCSx2ohLgC5APMxJMRKeAIcI/kvhl9aAYnrbAiccB+cBdCgODxwBawdWQAGRlARgaQkQFkZAAZGUBGBpCRAWRkABkZQKaEAScA7wDCxl7v/W+fxG7CYVwD4A3AYaqIhXMBcARwtRRbDWgAnAE8WYpXyBeAFgYTrLegN2jyv/OEOCfZWAw4QbedWxxgWBOsBojbnHILLGuAIrRxdjmDc6+AfeZ4cQdtxMjMdQt6RewSfvfv94i987Phs2pQUl/WLQghhNxXDucQQjvyWU0/hkUNfVnzWfMKuAD4hX//qiH2iNv6uVvbWvqyroCaBvxA+s6wBfCZK2QitfRV7YJSeUXetvzc18yFG321DLBsy01beSNu9NUy4N59tVSNFTf6PBkwJ2701TKgMdTMuctuDDVV9NUy4DhTjRU3+mq2oT8Ru4cUGG1oLX0u2lAA6JB22e77sXPTwYG+mgYcEHeQ7ciYFpxdMOBEnw7jIrTDOAUy5XGzBogEZAAZGUBGBpCRAWQeZ/qeLbWheeRmmA4y15IoE4YyYWXCCSzuMM5N5jqAG33KhOvW3MVTJKlMuCBuMtcB3OhTJpyOMuGCuNGnTDiNxbWhgJPMdYQODvQpE1Ym7AJlwivCzRogEpABZGQAGRlARgaQUSYcUSZMQpkwlAkrE05gcYdxbjLXAdzoUyZct+YuniJJZcIFcZO5DuBGnzLhdJQJF8SNPmXCaSyuDQWcZK4jdHCgT5mwMmEXKBNeEW7WAJGADCBjMeCjuIr1kD03FgM6Q81W6HILrE/QOEPPEPifC8Zb2ptY14Aj4mM7ROQLxqMKqwFXRLcvxvo18feff7UUT+mCrv0Xv2CbC/MH4m83Tz4w7TFWogDaB5CRAWRkABkZQEYGkJEBZGQAGRlARgaQkQFkZACZPyPOQZB61eQvAAAAAElFTkSuQmCC'},{k:'scen',t:'通過シナリオ',s:'通過シナリオ',ic:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAABYlAAAWJQFJUiTwAAACkUlEQVR4nO2c0ZHaMBRFL5n9XzrIdhB3EJeQEighJWwJlEAJlODtgHRAOggVKB8Ss0tmMRK2fLWbc2Y08GGsa85IyIDeKoQg8PHFHeB/BwFmEGAGAWYQYAYBZhBgBgFmEGAGAWYQYAYBZhBgBgFmEGAGAWYQYAYBZh4W6mctqbtxzEHSnwWySA3lqSGgT62T9CTpW+Hrf0k6Kr4BQ2qfKc8Fqxl+lH+S9CO171NPdoUXSfvUjh8szzghhHvbJoQwhOUZUt+t58lqpSNgLelnao+TzE/nJGmbnreUZ6uCz44SAZ3i/Oe+0NY5KX7mHHIOLlmGbsWbn8OjXkfmTUpGAH+hK2OVcxA3YmYQYAYBZhBgBgFmEGAGAWYQYAYBZhBgBgFmEGAGAWYQYAYBZhBgBgFmEGAGAWYQYAYBZhBgBgFmEGAGAWYQYAYBZhBgBgFmEGAGAWYQYAYBZhBgBgFmEGAGAWYQYGapailSLHpxbQf5WuVFNKbSRJ4aAk6KO+oPbx5zt+6fy8j0bx6nbg5vLc8Fc23U/q1YOWSnzC36BXSSNorVT75mvqaFPFkbtUsqe7xXiWQXQujurRRyR+tSn9doJc+Qe46SEdBLek7PB5VVBZm7QtW5akvfaJ5nZRZ2mqNg07/0aqtCVWt5LqBiVv0840yY/1qrUNVanuYqZs297p5aMatWnmoVs9aKw+3Whba27l46z0lxGszro2C4bEaG4TGEsA11loBdOvexYFpw58mekko63r/T0a7SRY5d/G7kwlvJs889R+kUdF5dHFQ4183M1PuAWnk6va6OsrLUuA+AAvg62gwCzCDADALMIMAMAswgwAwCzCDADALMIMAMAswgwAwCzCDADALMIMDMXypz94FR2TDHAAAAAElFTkSuQmCC'}];
+let topPane=null;
+function toggleTopPane(k){
+  const col=document.querySelector('#top .t-rcol'), st=col?col.scrollTop:0;
+  topPane=(topPane===k)?null:k; render();
+  const n=document.querySelector('#top .t-rcol'); if(n){ n.scrollTop=st; const pn=n.querySelector(k==='branch'?'.t-brpane':'.t-dbox.open'); if(pn&&k){ const anchor=pn; const d=pn.offsetTop+pn.offsetHeight-(n.scrollTop+n.clientHeight); if(d>0)n.scrollTop+=Math.max(0,Math.min(d,anchor.offsetTop-n.scrollTop)); } }
+}
+function topPaneBody(k){
+  const c=D;
+  if(k==='pdata') return c.prof.length?c.prof.map(([a,b])=>`<div class="kv"><b>${esc(a)}</b><span>${esc(b)}</span></div>`).join(''):`<p class="hint">登録されていません。</p>`;
+  if(k==='skill'){
+    if(!c.sk.length)return `<p class="hint">ポイントを振った技能がありません。</p>`;
+    return SEC_DEF.map(([sk,lab])=>{ const list=c.sk.filter(s=>s.sec===sk).sort((a,b)=>(a.ord<0?999:a.ord)-(b.ord<0?999:b.ord)); if(!list.length)return''; return `<div class="sh">${lab}</div><div class="sg">${list.map(s=>`<div><span>${esc(s.nm)}</span><b>${s.total}</b></div>`).join('')}</div>`; }).join('');
+  }
+  if(k==='scen') return c.scenarios.length?`<div class="pl">${c.scenarios.map(esc).join('\n')}</div>`:`<p class="hint">通過シナリオがありません。</p>`;
+  return '';
 }
 function fitTopName(){
   const el=document.querySelector('#top .t-nm'); if(!el)return;
@@ -603,7 +674,7 @@ function fitTopName(){
   while(el.scrollWidth>el.clientWidth+1 && fs>14){ fs-=1; el.style.fontSize=fs+'px'; }
 }
 window.addEventListener('resize',()=>{ if(view==='top') requestAnimationFrame(fitTopName); });
-function goTop(){ stopVoice(); view='top'; tab=null; render(); }
+function goTop(){ stopVoice(); view='top'; tab=null; topPane=null; render(); }
 function openDetail(){ view='detail'; tab=null; render(); }
 function openOutfit(){ if((D.outfits||[]).length<2)return; view='detail'; tab='outfit'; osel=worn; render(); requestAnimationFrame(centerOutfit); }
 
