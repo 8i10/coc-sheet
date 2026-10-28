@@ -29,8 +29,9 @@ html.rot #app{position:fixed;top:0;left:0;transform:rotate(90deg) translateY(-10
 #nameplate .san{position:relative;flex:none;width:62px;height:62px;border-radius:50%;background:conic-gradient(#e2aa46 calc(var(--p,0)*1%),rgba(255,255,255,.16) 0);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;text-shadow:none}
 #nameplate .san::before{content:'';position:absolute;inset:4px;border-radius:50%;background:rgba(20,20,26,.92)}
 #nameplate .san span{position:relative}
-#nameplate .san .lab{font-family:'Jost',sans-serif;font-size:10px;color:#e2aa46;font-weight:400;letter-spacing:.5px}
-#nameplate .san .val{font-family:'Jost',sans-serif;font-size:28px;color:#fff;font-weight:300;margin-top:-1px;line-height:1}
+/* 最初の画面のSANと同じ表示 */
+#nameplate .san .lab{position:absolute!important;top:16%;left:0;right:0;text-align:center;font-family:'Jost',sans-serif;font-size:8px;color:#e2aa46;font-weight:400;letter-spacing:.05em}
+#nameplate .san .val{font-family:'Jost',sans-serif;font-size:35px;color:#fff;font-weight:500;margin-top:5px;letter-spacing:-.03em;line-height:1}
 #nameplate .cls{width:58px;height:58px;display:flex;align-items:center;justify-content:center;flex:none}
 #nameplate .cls img{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
 #nameplate .en{font-size:26px;margin-top:6px;letter-spacing:.04em}
@@ -286,8 +287,8 @@ html.compact .abgrid span{font-size:16px}
 html.compact #nameplate{left:14px;bottom:42px}
 html.compact #nameplate .san{width:42px;height:42px}
 html.compact #nameplate .san::before{inset:3px}
-html.compact #nameplate .san .lab{font-size:8px}
-html.compact #nameplate .san .val{font-size:18px}
+html.compact #nameplate .san .lab{font-size:6px}
+html.compact #nameplate .san .val{font-size:24px;margin-top:3px}
 html.compact #nameplate .cls{width:38px;height:38px}
 html.compact #nameplate .cls img{width:34px;height:34px}
 html.compact #nameplate .en{font-size:15px;margin-top:3px}
@@ -345,6 +346,8 @@ function fixDropbox(url){
   return url;
 }
 const tokuchoLabels=["（1-1）君は風邪を引かない","（1-2）大きな体","（1-3）素早い","（1-4）オシャレ","（1-5）天才","（1-6）強固な意志","（1-7）勉強家","（1-8）幸運のお守り","（1-9）一族伝来の宝物","（1-10）予期せぬ協力者","（2-1）手先が器用","（2-2）影が薄い","（2-3）親の七光り","（2-4）愛書家","（2-5）鋭い洞察力","（2-6）アウトドア派","（2-7）珍しい技能","（2-8）芸銃的才能","（2-9）バイリンガル","（2-10）前職","（3-1）天気予報士","（3-2）プロ・ドライバー","（3-3）飛ばし屋","（3-4）戦士","（3-5）銃火器の達人","（3-6）格闘センスの持ち主","（3-7）俊敏","（3-8）信頼のおける人","（3-9）スポーツ万能","（3-10）平凡な容姿","（4-1）目つきが悪い(D)","（4-2）方向音痴(D)","（4-3）異性が苦手（D)","（4-4）動物に嫌われる(D)","（4-5）不思議ちゃん(D)","（4-6）寄せ餌(D)","（4-7）眼鏡をかけている(D)","（4-8）大切なもの(D)","（4-9）暗黒の祖先(D)","（4-10）夜に弱い(D)","（5-1）動物に好かれる","（5-2）斜め上からの発想","（5-3）失敗は発明の母","（5-4）ペット","（5-5）おおらか","（5-6）異物への耐性","（5-7）潜水の名人","（5-8）大酒飲み","（5-9）ド根性","（5-10）受け身","（6-1）奇妙な幸運","（6-2）投擲の才能","（6-3）鋼の筋力","（6-4）実は生きていた","（6-5）急所を見抜く","（6-6）急速な回復力","（6-7）不屈の精神力","（6-8）マニア・コレクター","（6-9）行方不明の家族","（6-10）好意を寄せられている"];
+const tokuchoDescs=["君は難しいことなど考えず、元気いっぱいに育った。INT-1　CON+2","生まれつき大きな体に恵まれている。SIZ＋１","柔軟さと軽快さを併せ持っている。DEX+1　ただしSIZが9以下の場合、素早い上に小柄であるため、DEX+2","いつも身だしなみに気を使っている。APP+1","生まれつき頭の回転が速い。INT+1","何事にも動じない強靭な精神の持ち主だ。能力値POWおよびSANは変動しないが、現在正気度ポイントに＋５．ただし増加する上限は、最大正気度ポイント(99-(クトゥルフ神話))となる。","あなたは日々学ぶことに精進している。EDU+1.また、EDUによる年齢の下限は適用されない。","幸運のお守り（どんなものかはキーパーと相談して決める）を持っている。身に着けている限りPOW+1。もし手放したり紛失すれば不運を招きPOW-1。POWの増減により＜幸運＞は変化するが、正気度ポイントは変化しない。","絵画、本、武器。家具などの個人的な宝物で、探索者やキャンペーンにとって特別な価値をもつ品を所有している。宝物は、魔術的な力をもつアーティファクトかもしれない。","探索者には、いかなる理由か自分に忠誠を尽くし、援助に来るかもしれない協力者がいる。キーパーが協力者の正体を決める。また、協力者の影響力をD100ロールで決める。(数字が大きいほど影響力が高い）","任意の＜製作＞１つの基本成功率が50%となる。プレイヤーは分野を決めること。さらに＜機械修理＞および＜電気修理＞に+10%","生まれつき目立たない。＜忍び歩き＞および＜隠れる＞に+20%","名家の出身、または親が有名人かもしれない。＜信用＞に+20%","あらゆるジャンルの蔵書を持っている。＜図書館＞に+20%。さらに図書館に出かけなくても、自宅の書庫で＜図書館＞ロールが可能となる。","優れた感覚の持ち主であるため＜目星＞に+30%","暇さえあれば季節を問わず、野外活動に繰り出している。＜ナビゲート＞＜博物学＞＜追跡＞にそれぞれ+20%","探索者は【INT×5】%の日常生活には役立たないが特定の人を感心させるような技能を１つ、キーパーと相談した上で持つことができる。例：＜製作：プラモデル＞＜芸術：対戦格闘ゲーム＞＜ほかの言語：インターネットスラング＞など。","稽古事を小さい頃に倣っていたか、実用ブログなどで人気を博している。任意の＜芸術＞１つに【INT×3%】を加える。プレイヤーは音楽、著述などの専門分野の指定をする。","日本以外の国で生活したことがある。【EDU×５】%を、最大３つまでの＜ほかの言語＞技能に割り当てることが出来る。","以前は別の職に付いていたか、幼少期に何か得難い体験をしている。【EDU×３】%を前職としてプレイヤーが決めた、職業の技能に割り振ることができる。","外を見て＜アイデア＞ロールに成功すれば、短い期間【1d6+1】時間の正確な天気を予想できる。降水確率や風の向き、強さ、嵐の時間帯、雷の落下しやすい場所なども予測可能だ。","小さい頃から乗り物で遊んでいた。あらゆる＜運転＞技能の基本成功率は50%である。","空間把握能力に優れている。あらゆる＜操縦＞技能の基本成功率は50%である。","周囲の物はすべて武器だと考えている。あらゆる近接戦闘武器(肉体を使った技能はのぞく）の基本成功率は50%である。","銃火器とは何かの縁があり、普段から親しんでいる。火器技能5つ＜拳銃＞＜サブマシンガン＞＜ショットガン＞＜マシンガン＞＜ライフル＞の基本成功率は50%である。","幼い時から道場で教えられてきた。素手の戦闘技能３つ＜キック＞＜組付＞＜頭突き＞の基本成功率は50%である。","どんな時でも鋭く素早く状況を把握できる。＜回避＞の基本成功率は、通常の【DEX×2】ではなく【DEX×5】である。","探索者は自分の家族や友人などの仲間を見捨てたり粗末にせず、可能な限り助けようとする人間だ。その評判が今後も続く限り、任意のコミュニケーション技能3つにそれぞれ+10%","1つの技能に+20%、3つの技能に+10%、合計4つの任意の運動系技能にボーナスを加える。","平凡な顔のため、他人の印象に残りにくい。＜変装＞に+20%。加えて、1度しか会ったことのない相手ならば、相手が＜アイデア＞ロールに失敗すれば「よくある顔です」と言い訳するだけで、別人として誤魔化せる。","目つきが悪すぎて、知り合い以外から怖がられる。APP-1　更に＜信用＞-10%","＜ナビゲート＞の基本成功率が1%になる。加えて、経験ロールで成長させることはできない。","どうしても異性とうまく話ができない。異性に対する＜言いくるめ＞＜説得＞＜信用＞にそれぞれ-10%","独特のたたずまいのせいで、たいていの動物は探索者を見るなり威嚇してくる。","時折突拍子もない言動で周囲を騒がせることがある。別の世界から来た精神交換者か、妄想が生み出した人格がしばしば表面に出ているのかもしれない。","人間以外の怪物に好かれやすい。誘拐されれば殺されずに監禁されるか、もっとひどい目に遭うこともある。","探索者は常時眼鏡を必要とする。眼鏡を失えば、視覚に関連する技能はキーパーの判断で20%減少することもある。","他人には価値の無いものだが、大切な品物をいくつも身に着けている。失った時には1/1d8正気度ポイントを失う。","邪悪な一族、カルティスト、人肉嗜食者、もしくは超自然のクリーチャーの子孫である。d100をロールし、結果が大きいほど、より邪悪な存在になる。","夜には、すぐ眠くなる体質である。深夜0時を過ぎても活動しようとすれば、＜アイデア＞および＜知識＞ロールの成功の範囲がそれぞれ2分の1（端数切り上げ）となる。ただし、早起きは得意である。","独特のたたずまいのおかげか、たいていの動物がなついてくる。","狂気に陥った場合、探索者は独特の感性に寄り、原因となった恐怖に対して秘められた真実を見抜くことができる。キーパーはクライマックスで宇宙的恐怖の一端を教えてくれるだろう。ただしクライマックス以外の場面では何も教えてくれない可能性がある。","技能ロールに「96」以上の目を出して「失敗」した場合、ただちに特別な経験ロールを行う。失敗すれば0ポイント、成功すれば1ポイントの技能ポイントを得る。","探索者には、最愛の犬、猫、鳥などがいる。シナリオとシナリオの間、一緒に触れ合うことで、正気度ポイントを1d3ポイント増加させてもよい。ただし増加する上限は能力値SAN(99-クトゥルフ神話)のうち、どちらか低い方となる。","嫌な事をすぐに忘れられる。精神科クリニックや療養所などでの正気度ポイントの回復が+1増加する。","体内の免疫力が発達している。毒（POT）を抵抗表で競う際に、成功の範囲に+20%","長時間、息を止めていられる。窒息に対するCONロールの成功の範囲に+20%","酒にはめっぽう強く、酔いにくい。アルコールを毒のように扱う場合、探索者は全てのアルコール関連のPOTを2分の1（端数切り上げ）にする。","根性がある。あらゆる抵抗表を使用したロールで、成功する範囲に+5%","どんなときでも、きちんと受け身を取って被害を最小限に抑えることができる。ショックのCONロール（クトゥルフ神話TRPG61ページ）の成功の範囲に+20%","クトゥルフ神話の神性や怪物がランダムに目標を攻撃する際、その対象からは除外される。ただし単独で攻撃される場合や範囲攻撃の中にいた場合は、対象とする。","＜投擲＞で投げることのできる武器のダメージ・ボーナスは通常の2分の1ではなく、通常のダメージ・ボーナスとなる。","ダメージ・ボーナスが1段階向上する（\"例：ー1d4なら+0に、+0なら1d4に)ただしダメージ・ボーナスが1d6以上ある場合は、1段階向上する代わりにダメージ・ボーナスに更に+1","生き残るすべに長けている。死からの生還(クトゥルフ神話TRPG64ページ)のチャンスが通常の次ラウンド以内ではなく、5ラウンド以内に伸びる。","狩人の素質を持っている。貫通の確率は通常の５分の１ではなく、２分の１になる。ただし最大４０％である。","新陳代謝能力に優れている。耐久力を回復するロールの結果に＋１","気絶しても、次の各ラウンドの最初に【CON×２】ロールを行う。成功なら治療を受けずとも自分で目覚めて、そのラウンドから再び行動が可能となる。","コイン、本、昆虫、芸術、宝石、歴史的な遺物などを収集している。任意のコレクションを１つ決めること、その筋では有名人であり＜幸運＞ロールに成功すれば相手にも共感を得られて、感動を与えられるかもしれない。","探索者には行方不明の家族がおり、キャンペーンの間に現れるかもしれない。（例えば、海で遭難した、異国で死んだと思われている、他の親類に連れ去られた、等）","シナリオに登場する誰かに好意を持たれる。キーパーの裁量で、誰が、なぜ好きなのかを決定する。どれほど好意を寄せているかはD100ロールで決める（数字が大きいほど好き）"];
+function tokuchoDesc(v){ if(v===""||v==null||v==="ng")return ""; const i=parseInt(v,10); return (Number.isInteger(i)&&tokuchoDescs[i])||""; }
 function tokuchoLabel(v){ if(v===""||v==null)return ""; if(v==="ng")return "（×）採用不可"; const i=parseInt(v,10); return (Number.isInteger(i)&&tokuchoLabels[i])?tokuchoLabels[i]:""; }
 function dbBonus(t){ if(t<=12)return'-1D6'; if(t<=16)return'-1D4'; if(t<=24)return'0'; if(t<=32)return'+1D4'; if(t<=40)return'+1D6'; if(t<=56)return'+2D6'; if(t<=72)return'+3D6'; if(t<=88)return'+4D6'; return'+5D6'; }
 
@@ -389,7 +392,7 @@ function build(row){
     ab, sub, sanNow:sanNow==null?(v(ab.pow)*5):sanNow, sanMax:99-mythos, sanInit:v(ab.pow)*5+add('san'),
     prof:[['職業',inp.job],['年齢',inp.age],['性別',inp.gender],['身長',inp.height],['体重',inp.weight],['出身',inp.origin],['誕生日',inp.birthday],['髪の色',inp.hair],['瞳の色',inp.eye],['時代',inp.era]].filter(x=>x[1]&&String(x[1]).trim()),
     freeMemo:inp.row1_memo||'',
-    tokucho:[[inp.t1_sel,inp.t1_memo],[inp.t2_sel,inp.t2_memo]].map(([v,m])=>({l:tokuchoLabel(v),m:(m||'').trim()})).filter(x=>x.l||x.m),
+    tokucho:[[inp.t1_sel,inp.t1_memo],[inp.t2_sel,inp.t2_memo]].map(([v,m])=>({l:tokuchoLabel(v),d:tokuchoDesc(v),m:(m||'').trim()})).filter(x=>x.l||x.m),
     voices:(()=>{ try{ const v=JSON.parse(inp.ark_voices||'[]'); return Array.isArray(v)?v.filter(x=>x&&x.url):[]; }catch(e){ return []; } })(),
     scenarios:(sheet.scenarios||[]).filter(x=>x&&x.trim()),
     sk, memos:(sheet.memos||[]).filter(m=>m&&(m.title||m.body)),
@@ -409,7 +412,7 @@ function renderStage(){
     (om&&O.img?`<div class="ofull"${c.pcColor?` style="--oc:${c.pcColor}"`:''}><div class="in">${O.sd?`<img class="sd" src="${esc(O.sd)}" alt="">`:`<img class="face" src="${esc(O.img)}" alt="" style="--z:${O.crop.z};--x:${O.crop.x};--y:${O.crop.y}">`}</div></div><button class="ozoom" title="立ち絵を詳しく見る" onclick="openZoom()"><svg viewBox="0 0 24 24"><path d="M10 2a8 8 0 0 1 6.3 12.9l5.4 5.4-1.4 1.4-5.4-5.4A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm-1 2h2v3h3v2h-3v3H9v-3H6V9h3z"/></svg></button>`:'')+
     (om?`<div class="ocard"><div class="ocard-nm">${esc(O.name)}</div><div class="ocard-sub">OUTFIT</div>${O.desc?`<div class="ocard-desc">${esc(O.desc)}</div>`:''}</div>`:'')+
     `<span class="stbadge" style="background:${ST_COLOR[c.status]||'#555'}">${ST_LABEL[c.status]||''}</span>`+
-    `<div id="nameplate"><div class="role"><div class="san" style="--p:${Math.max(0,Math.min(100,c.sanNow/99*100)).toFixed(1)}"><span class="lab">SAN</span><span class="val">${c.sanNow}</span></div>${clsHtml}</div>`+
+    `<div id="nameplate"><div class="role"><div class="san" style="--p:${Math.max(0,Math.min(100,c.sanMax>0?c.sanNow/c.sanMax*100:0)).toFixed(1)}"><span class="lab">SAN</span><span class="val">${c.sanNow}</span></div>${clsHtml}</div>`+
     (c.furigana?`<div class="en">${esc(c.furigana)}</div>`:'')+
     `<div class="nm">${esc(c.name)}</div></div>`+
     `<div id="dialog"><span class="tag">VOICE</span><span id="dtext"></span></div>`+
@@ -641,7 +644,7 @@ function renderTop(){
     ((brI||c.tokucho.length)?(topPane==='branch'
       ?`<div class="t-pane t-brpane"><button class="t-phead" onclick="toggleTopPane(null)">職分・特徴表</button><div class="t-pbody">`+
         (brI?`<div class="t-brin"><img src="${brI.s}" alt=""><span>${esc(brI.n)}</span></div><div class="sh">職分</div><div class="pl">${esc(brI.d)}</div>`:'')+
-        (c.tokucho.length?`<div class="sh">特徴表</div>`+c.tokucho.map(t=>`${t.l?`<div class="tkh">${esc(t.l)}</div>`:''}${t.m?`<div class="pl">${esc(t.m)}</div>`:''}`).join(''):'')+
+        (c.tokucho.length?`<div class="sh">特徴表</div>`+c.tokucho.map(t=>`${t.l?`<div class="tkh">${esc(t.l)}</div>`:''}${t.d?`<div class="pl">${esc(t.d)}</div>`:''}${t.m?`<div class="pl">${esc(t.m)}</div>`:''}`).join(''):'')+
       `</div></div>`
       :`<div class="t-branch" title="クリックで職分・特徴表の内容を表示" onclick="toggleTopPane('branch')">`+
       (brI?`<div class="t-brin"><img src="${brI.s}" alt=""><span>${esc(brI.n)}</span></div>`:'')+
