@@ -3,7 +3,7 @@ const CACHE='coc-cs-v1';
 // アプリの中核ファイル（相対パス）。GitHub Pagesが落ちてもここから起動できる
 const SHELL=[
   './','./index.html','./sheet.html','./view.html','./status.html',
-  './placement.html','./counter.html','./manifest.json',
+  './placement.html','./counter.html','./manifest.json','./list-icons.v1.js',
   './icon-192.png','./icon-512.png','./icon-512-maskable.png',
   // 外部ライブラリ（CDN）: 初回オンライン時にキャッシュ
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
