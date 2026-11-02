@@ -1000,6 +1000,10 @@ html body.light .secret-item-header{ background:#5e5e5e !important; }
 /* 閲覧で非表示に設定した項目：グレーの四角で覆い、中央に「非表示」 */
 .vh-blur{position:relative;user-select:none;-webkit-user-select:none;pointer-events:none;min-height:28px}
 #row1_stats.vh-blur #stat_total_disp{visibility:hidden}
+html.vh-nopts .sticky-pt-block,html.vh-nopts #sp-pts-row,html.vh-nopts #sp-header-divider{display:none !important}
+.vh-cell{position:relative;user-select:none;-webkit-user-select:none}
+.vh-cell > *{visibility:hidden}
+.vh-cell::after{content:'非表示';position:absolute;inset:1px;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.3)),var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;border-radius:2px}
 .vh-blur::after{content:'非表示';position:absolute;left:var(--vh-l,0px);right:var(--vh-r,0px);bottom:var(--vh-b,0px);top:var(--vh-top,0px);z-index:5;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.3)),var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;border-radius:2px}
 </style>
 
@@ -1882,6 +1886,10 @@ function applyViewHide(sheet){
   const blur={vh_stats:'row1_stats',vh_skills:'skill_col',vh_jobref:'row2_job',vh_tokucho:'row2_tokucho',vh_combat:'combat_acc',vh_items:'items_acc',vh_kouisho:'ae_kouisho',vh_af:'ae_af',vh_spell:'ae_spell',vh_fute:'fute_inner',vh_scenario:'scenario_outer'};
   Object.entries(blur).forEach(([k,id])=>{ const el=document.getElementById(id); if(el&&off(k)){ el.classList.add('vh-blur'); el.setAttribute('inert',''); } });
   _vhLayout();
+  // 能力値を隠す時は上部の職業P・興味Pのバーも出さない
+  if(off('vh_stats')) document.documentElement.classList.add('vh-nopts');
+  // パーソナルデータの個別項目：値の欄をグレーで覆う
+  ['job','age','gender','origin','birthday','era'].forEach(id=>{ if(!off('vh_p_'+id))return; const el=document.getElementById(id); const td=el&&el.closest('td'); if(td){ td.classList.add('vh-cell'); el.setAttribute('tabindex','-1'); } });
   const hide=(el)=>{ if(el)el.style.display='none'; };
   if(off('vh_freememo')) hide(document.getElementById('row1_free_memo'));
   if(off('vh_rel')){ const b=document.getElementById('rel_acc'); hide(b&&b.parentElement); }
