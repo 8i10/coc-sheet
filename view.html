@@ -1000,7 +1000,7 @@ html body.light .secret-item-header{ background:#5e5e5e !important; }
 /* 閲覧で非表示に設定した項目：グレーの四角で覆い、中央に「非表示」 */
 .vh-blur{position:relative;user-select:none;-webkit-user-select:none;pointer-events:none;min-height:28px}
 #stats_scroll.vh-blur #stat_total_disp{visibility:hidden}
-.vh-blur::after{content:'非表示';position:absolute;left:0;right:0;bottom:0;top:var(--vh-top,0px);z-index:5;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.3)),var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;border-radius:2px}
+.vh-blur::after{content:'非表示';position:absolute;left:var(--vh-l,0px);right:var(--vh-r,0px);bottom:var(--vh-b,0px);top:var(--vh-top,0px);z-index:5;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.3)),var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;border-radius:2px}
 </style>
 
 <!-- PWA: Safari スタンドアロンモード維持 -->
@@ -1894,6 +1894,9 @@ function _vhLayout(){
     const q=VH_KEEP[el.id]; const k=q?el.querySelector(q):null;
     const top=k?Math.max(0,k.getBoundingClientRect().bottom-el.getBoundingClientRect().top):0;
     el.style.setProperty('--vh-top',top+'px');
+    // 枠の内側（余白の内側）に収める
+    const cs=getComputedStyle(el);
+    el.style.setProperty('--vh-l',cs.paddingLeft); el.style.setProperty('--vh-r',cs.paddingRight); el.style.setProperty('--vh-b',cs.paddingBottom);
   });
 }
 window.addEventListener('resize',()=>requestAnimationFrame(_vhLayout));
