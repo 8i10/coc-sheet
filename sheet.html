@@ -1048,7 +1048,7 @@ body.light td.hdr{
 .sheet-preview input,.sheet-preview textarea,.sheet-preview select{pointer-events:none !important}
 .sheet-preview #ark_section{display:none !important}
 .sheet-preview #vh_section,.sheet-preview .memo-vis{display:none !important}
-.vh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:2px 8px}
+.vh-grid{display:grid;grid-template-columns:repeat(4,max-content);gap:3px 18px}
 .vh-it{display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer}
 .memo-vis{display:inline-flex;align-items:center;gap:2px;font-size:9px;font-weight:normal;margin-right:3px;cursor:pointer;color:var(--text-muted)}
 .memo-vis input{margin:0}
@@ -1501,8 +1501,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <div class="section" id="vh_section">
       <div class="acc-header" onclick="toggleAcc('vh_outer')"><span>閲覧時の表示設定</span><span id="arr_vh_outer">▶</span></div>
       <div class="acc-body" id="vh_outer"><div style="padding:6px">
-        <div style="font-size:11px;margin-bottom:4px">チェックを外した項目は閲覧画面で隠します（能力値〜通過シナリオはグレーで覆って「非表示」、メモ類は表示しない）</div>
-        <div class="vh-grid"><label class="vh-it"><input type="checkbox" id="vh_stats" checked>能力値</label><label class="vh-it"><input type="checkbox" id="vh_skills" checked>技能値</label><label class="vh-it"><input type="checkbox" id="vh_jobref" checked>職業参照</label><label class="vh-it"><input type="checkbox" id="vh_tokucho" checked>特徴表</label><label class="vh-it"><input type="checkbox" id="vh_combat" checked>戦闘・武器</label><label class="vh-it"><input type="checkbox" id="vh_items" checked>所持品</label><label class="vh-it"><input type="checkbox" id="vh_kouisho" checked>後遺症</label><label class="vh-it"><input type="checkbox" id="vh_af" checked>AF</label><label class="vh-it"><input type="checkbox" id="vh_spell" checked>呪文</label><label class="vh-it"><input type="checkbox" id="vh_fute" checked>不定</label><label class="vh-it"><input type="checkbox" id="vh_scenario" checked>通過シナリオ</label><label class="vh-it"><input type="checkbox" id="vh_freememo" checked>自由メモ</label><label class="vh-it"><input type="checkbox" id="vh_rel" checked>人間関係</label><label class="vh-it"><input type="checkbox" id="vh_secret" checked>ネタバレメモ</label></div>
+                <div class="vh-grid"><label class="vh-it"><input type="checkbox" id="vh_stats" checked>能力値</label><label class="vh-it"><input type="checkbox" id="vh_skills" checked>技能値</label><label class="vh-it"><input type="checkbox" id="vh_jobref" checked>職業参照</label><label class="vh-it"><input type="checkbox" id="vh_tokucho" checked>特徴表</label><label class="vh-it"><input type="checkbox" id="vh_combat" checked>戦闘・武器</label><label class="vh-it"><input type="checkbox" id="vh_items" checked>所持品</label><span></span><span></span><label class="vh-it"><input type="checkbox" id="vh_kouisho" checked>後遺症</label><label class="vh-it"><input type="checkbox" id="vh_af" checked>AF</label><label class="vh-it"><input type="checkbox" id="vh_spell" checked>呪文</label><label class="vh-it"><input type="checkbox" id="vh_fute" checked>不定</label><label class="vh-it"><input type="checkbox" id="vh_freememo" checked>自由メモ</label><label class="vh-it"><input type="checkbox" id="vh_rel" checked>人間関係</label><label class="vh-it"><input type="checkbox" id="vh_secret" checked>ネタバレメモ</label><label class="vh-it"><input type="checkbox" id="vh_scenario" checked>通過シナリオ</label></div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:4px">その他メモは、各メモ右上の「閲覧」のチェックで1件ずつ設定できます</div>
       </div></div>
     </div>
