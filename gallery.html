@@ -147,7 +147,7 @@ function hasStatsAndSkills(s){
   const sk=(s.skills||[]).some(x=>x&&['job','int','grw','oth'].some(f=>parseInt(x[f])>0));
   return st&&sk;
 }
-const HIDE_TAGS=['取り込みのみ'];
+const HIDE_TAGS=['取り込みのみ','【取込のみ】','取込のみ'];
 const ST={alive:['生存','st-alive'],lost:['ロスト','st-dead'],permalost:['永久ロスト','st-dead'],dead:['継続不可','st-dead'],missing:['行方不明','st-missing'],retired:['引退','st-retired'],insane:['永久狂気','st-insane']};
 let characters=[], activeCat='all', tagOrder=[];
 
