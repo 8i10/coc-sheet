@@ -997,6 +997,10 @@ html body.light .sub-acc-header,
 html body.light .sub2-acc-header,
 html body.light .secret-item-header{ background:#5e5e5e !important; }
 #db_add:placeholder-shown{display:none}
+/* 閲覧で非表示に設定した項目：グレーの四角で覆い、中央に「非表示」 */
+.vh-blur{position:relative;user-select:none;-webkit-user-select:none;pointer-events:none;min-height:28px}
+.vh-blur > *{visibility:hidden}
+.vh-blur::after{content:'非表示';position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.3)),var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;border-radius:2px}
 </style>
 
 <!-- PWA: Safari スタンドアロンモード維持 -->
@@ -1871,6 +1875,17 @@ function showSaveMsg(){const el=document.getElementById('save_msg');el.style.dis
 
 
 // 閲覧モード初期化
+// 閲覧時の表示設定（シートの「閲覧時の表示設定」でチェックを外した項目）：能力値〜通過シナリオはグレーで覆い「非表示」、メモ類は表示しない
+function applyViewHide(sheet){
+  const inp=(sheet&&sheet.inputs)||{};
+  const off=k=>inp[k]===false;
+  const blur={vh_stats:'stats_scroll',vh_skills:'skill_col',vh_jobref:'row2_job',vh_tokucho:'row2_tokucho',vh_combat:'combat_acc',vh_items:'items_acc',vh_kouisho:'ae_kouisho',vh_af:'ae_af',vh_spell:'ae_spell',vh_fute:'fute_inner',vh_scenario:'scenario_outer'};
+  Object.entries(blur).forEach(([k,id])=>{ const el=document.getElementById(id); if(el&&off(k)){ el.classList.add('vh-blur'); el.setAttribute('aria-hidden','true'); el.setAttribute('inert',''); } });
+  const hide=(el)=>{ if(el)el.style.display='none'; };
+  if(off('vh_freememo')) hide(document.getElementById('row1_free_memo'));
+  if(off('vh_rel')){ const b=document.getElementById('rel_acc'); hide(b&&b.parentElement); }
+  if(off('vh_secret')){ const b=document.getElementById('secret_outer'); hide(b&&b.closest('.section')); }
+}
 async function initViewMode() {
   try {
   const params = new URLSearchParams(window.location.search);
@@ -1970,12 +1985,15 @@ async function initViewMode() {
     const wrap = document.getElementById('memo_rows');
     wrap.innerHTML = '';
     sheet.memos.forEach(m => {
+      if (m && m.hide) return; // 閲覧で非表示に設定されたメモ
       addMemoRow();
       const blk = wrap.lastElementChild; if (!blk) return;
       const ti = blk.querySelector('.memo-title'); if (ti) ti.value = m.title||m.t||'';
       const ta = blk.querySelector('.memo-body'); if (ta) { ta.value = m.body||m.b||''; autoResizeTA(ta); }
     });
   }
+
+  applyViewHide(sheet);
 
   // シナリオ復元
   if (sheet.scenarios && sheet.scenarios.length) {

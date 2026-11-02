@@ -1047,6 +1047,11 @@ body.light td.hdr{
 .md-spoiler.shown{background:rgba(128,128,128,.22);color:inherit}
 .sheet-preview input,.sheet-preview textarea,.sheet-preview select{pointer-events:none !important}
 .sheet-preview #ark_section{display:none !important}
+.sheet-preview #vh_section,.sheet-preview .memo-vis{display:none !important}
+.vh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:2px 8px}
+.vh-it{display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer}
+.memo-vis{display:inline-flex;align-items:center;gap:2px;font-size:9px;font-weight:normal;margin-right:3px;cursor:pointer;color:var(--text-muted)}
+.memo-vis input{margin:0}
 #ark_cls_picker,#hsr_elem_picker,#hsr_path_picker,#ark_branch_picker{display:flex;flex-wrap:wrap;gap:6px}
 .ark-cls-opt{width:44px;height:44px;border-radius:4px;border:2px solid transparent;background:#2b2b2d;color:#bbb;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-size:10px}
 .ark-cls-opt img{width:32px;height:32px;object-fit:contain}
@@ -1492,6 +1497,15 @@ if (('standalone' in navigator) && navigator.standalone) {
 
   <!-- 右側パネル -->
   <div class="right-panel" style="flex:1;min-width:0">
+    <!-- 閲覧時の表示設定（編集時のみ表示） -->
+    <div class="section" id="vh_section">
+      <div class="acc-header" onclick="toggleAcc('vh_outer')"><span>閲覧時の表示設定</span><span id="arr_vh_outer">▶</span></div>
+      <div class="acc-body" id="vh_outer"><div style="padding:6px">
+        <div style="font-size:11px;margin-bottom:4px">チェックを外した項目は閲覧画面で隠します（能力値〜通過シナリオはグレーで覆って「非表示」、メモ類は表示しない）</div>
+        <div class="vh-grid"><label class="vh-it"><input type="checkbox" id="vh_stats" checked>能力値</label><label class="vh-it"><input type="checkbox" id="vh_skills" checked>技能値</label><label class="vh-it"><input type="checkbox" id="vh_jobref" checked>職業参照</label><label class="vh-it"><input type="checkbox" id="vh_tokucho" checked>特徴表</label><label class="vh-it"><input type="checkbox" id="vh_combat" checked>戦闘・武器</label><label class="vh-it"><input type="checkbox" id="vh_items" checked>所持品</label><label class="vh-it"><input type="checkbox" id="vh_kouisho" checked>後遺症</label><label class="vh-it"><input type="checkbox" id="vh_af" checked>AF</label><label class="vh-it"><input type="checkbox" id="vh_spell" checked>呪文</label><label class="vh-it"><input type="checkbox" id="vh_fute" checked>不定</label><label class="vh-it"><input type="checkbox" id="vh_scenario" checked>通過シナリオ</label><label class="vh-it"><input type="checkbox" id="vh_freememo" checked>自由メモ</label><label class="vh-it"><input type="checkbox" id="vh_rel" checked>人間関係</label><label class="vh-it"><input type="checkbox" id="vh_secret" checked>ネタバレメモ</label></div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">その他メモは、各メモ右上の「閲覧」のチェックで1件ずつ設定できます</div>
+      </div></div>
+    </div>
     <!-- アークナイツ風表示用（編集時のみ表示） -->
     <div class="section" id="ark_section">
       <div class="acc-header" onclick="toggleAcc('ark_outer')"><span>アークナイツ風表示</span><span id="arr_ark_outer">▶</span></div>
@@ -1586,7 +1600,7 @@ if (('standalone' in navigator) && navigator.standalone) {
             <div class="memo-block" style="margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden;position:relative">
               <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
               <textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:var(--surface);resize:none;display:block" oninput="autoResizeTA(this)"></textarea>
-              <span style="position:absolute;top:2px;right:2px;display:flex;align-items:center;gap:1px"><button class="mv-btn" onclick="moveEntry(this,-1)" title="上へ">▲</button><button class="mv-btn" onclick="moveEntry(this,1)" title="下へ">▼</button><button class="del-btn" onclick="delRow(this)">✕</button></span>
+              <span style="position:absolute;top:2px;right:2px;display:flex;align-items:center;gap:1px"><label class="memo-vis" title="チェックを外すと閲覧画面に表示しません"><input type="checkbox" class="memo-vis-chk" checked>閲覧</label><button class="mv-btn" onclick="moveEntry(this,-1)" title="上へ">▲</button><button class="mv-btn" onclick="moveEntry(this,1)" title="下へ">▼</button><button class="del-btn" onclick="delRow(this)">✕</button></span>
             </div>
           </div>
           <button class="add-row-btn" onclick="addMemoRow()">＋追加</button>
@@ -2399,7 +2413,7 @@ function addMemoRow(){
   const w=document.createElement('div');
   w.className='memo-block';
   w.style.cssText='margin-bottom:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden;position:relative';
-  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:var(--surface);resize:none;display:block" oninput="autoResizeTA(this)"></textarea><span style="position:absolute;top:2px;right:2px;display:flex;align-items:center;gap:1px"><button class="mv-btn" onclick="moveEntry(this,-1)" title="上へ">▲</button><button class="mv-btn" onclick="moveEntry(this,1)" title="下へ">▼</button><button class="del-btn" onclick="delRow(this)">✕</button></span>';
+  w.innerHTML='<input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left"><textarea class="auto-h memo-body" placeholder="メモを入力..." style="width:100%;border:none;font-size:11px;padding:4px 6px;background:var(--surface);resize:none;display:block" oninput="autoResizeTA(this)"></textarea><span style="position:absolute;top:2px;right:2px;display:flex;align-items:center;gap:1px"><label class="memo-vis" title="チェックを外すと閲覧画面に表示しません"><input type="checkbox" class="memo-vis-chk" checked>閲覧</label><button class="mv-btn" onclick="moveEntry(this,-1)" title="上へ">▲</button><button class="mv-btn" onclick="moveEntry(this,1)" title="下へ">▼</button><button class="del-btn" onclick="delRow(this)">✕</button></span>';
   div.appendChild(w);
 }
 
@@ -2758,7 +2772,8 @@ function collectData(){
   document.querySelectorAll('#memo_rows .memo-block').forEach(blk=>{
     const t=blk.querySelector('.memo-title')?.value||'';
     const b=blk.querySelector('.memo-body')?.value||'';
-    memos.push({title:t,body:b});
+    const vis=blk.querySelector('.memo-vis-chk');
+    memos.push(vis&&!vis.checked?{title:t,body:b,hide:true}:{title:t,body:b});
   });
 
   // 通過シナリオ
@@ -2986,6 +3001,7 @@ function applyData(json){
       if(!blk)return;
       const ti=blk.querySelector('.memo-title');if(ti)ti.value=v.title||'';
       const ta=blk.querySelector('.memo-body');if(ta){ta.value=v.body||'';autoResizeTA(ta);}
+      const vc=blk.querySelector('.memo-vis-chk');if(vc)vc.checked=!v.hide;
     });
   }
 
