@@ -799,6 +799,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'ark_class')">🎴 職種・職分設定</button>
     <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'hsr_elem')">✦ 属性設定</button>
     <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'hsr_path')">◎ 運命設定</button>
+    <button class="bulk-only" onclick="event.stopPropagation();bulkGalleryPicker(this)">📇 紹介ページ設定</button>
     <button class="bulk-only" onclick="clearSelection()">選択解除</button>
     <button class="bulk-only bulk-danger" onclick="bulkDelete()">🗑 削除</button>
   </div>
@@ -1124,6 +1125,18 @@ function bulkAddTags(){
   renderTeChips();
   document.getElementById('tag_editor_overlay').classList.add('on');
   if(inp)setTimeout(()=>inp.focus(),50);
+}
+// 探索者紹介ページの掲載・出身シナリオ（通過シナリオ1行目）の掲載を一括設定
+function bulkGalleryPicker(anchor){
+  if(selectedIds.size===0){showToast('選択されていません');return;}
+  const pop=document.getElementById('status_pop');
+  const opts=[['gallery_pub',true,'紹介ページに載せる'],['gallery_pub',false,'紹介ページに載せない'],['gallery_first_scen',true,'出身シナリオを載せる'],['gallery_first_scen',false,'出身シナリオを載せない']];
+  pop.innerHTML=opts.map((o,i)=>`<button data-i="${i}">${o[2]}</button>`).join('');
+  pop.querySelectorAll('button').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();const [k,v,l]=opts[+b.dataset.i];pop.style.display='none';bulkApply(s=>{s.inputs=s.inputs||{};s.inputs[k]=v;}, '{n}件を「'+l+'」に設定しました');});
+  const r=anchor.getBoundingClientRect();
+  pop.style.display='block';
+  pop.style.top=(r.bottom+4)+'px';
+  pop.style.left=Math.max(6,Math.min(r.left,window.innerWidth-190))+'px';
 }
 function bulkStatusPicker(anchor){
   if(selectedIds.size===0){showToast('選択されていません');return;}
@@ -1935,10 +1948,10 @@ let _fcT=null;
 async function openGalleryPage(){
   try{
     const {data:{user}}=await db.auth.getUser(); if(!user){ showToast('ログインしてください'); return; }
-    const used=new Set((allChars||[]).filter(c=>((getSheet(c).inputs||{}).gallery_pub===true)).flatMap(c=>charTags(c)));
+    const used=new Set((allChars||[]).filter(c=>((getSheet(c).inputs||{}).gallery_pub!==false)).flatMap(c=>charTags(c)));
     const order=getTagOrder().filter(t=>used.has(t));
     const url=new URL('gallery.html?u='+encodeURIComponent(user.id)+(order.length?'&t='+encodeURIComponent(JSON.stringify(order)):''),location.href).href;
-    const n=(allChars||[]).filter(c=>(getSheet(c).inputs||{}).gallery_pub===true).length;
+    const n=(allChars||[]).filter(c=>(getSheet(c).inputs||{}).gallery_pub!==false).length;
     const done=()=>showToast('紹介ページのURLをコピーしました（掲載'+n+'人）');
     if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done).catch(()=>fallbackCopy(url)); else fallbackCopy(url);
     window.open(url,'_blank');

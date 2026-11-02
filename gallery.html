@@ -173,10 +173,11 @@ function calcDB(inp){
 function toChar(row){
   let s={}; try{ s=JSON.parse(row.data)||{}; }catch(e){}
   const inp=s.inputs||{};
-  if(inp.gallery_pub!==true)return null;
+  if(inp.gallery_pub===false)return null; // 初期設定は「載せる」
   const off=k=>inp[k]===false;
   const pos=(inp.charImagePos||'50% 30%').split(' ');
-  const scen=off('vh_scenario')?[]:(s.scenarios||[]).flatMap(x=>String(x||'').split('\n')).map(x=>x.trim()).filter(Boolean);
+  let scen=off('vh_scenario')?[]:(s.scenarios||[]).flatMap(x=>String(x||'').split('\n')).map(x=>x.trim()).filter(Boolean);
+  if(inp.gallery_first_scen===false)scen=scen.slice(1); // 出身シナリオ（1行目）を載せない
   return {
     id:row.id,
     name:inp.pcname||row.char_name||'',
