@@ -1049,6 +1049,11 @@ body.light td.hdr{
 .sheet-preview #ark_section{display:none !important}
 .sheet-preview #vh_section,.sheet-preview .memo-vis{display:none !important}
 .vh-prow{display:flex;flex-wrap:wrap;gap:3px 18px;margin-bottom:6px;padding-bottom:5px;border-bottom:1px dashed var(--border)}
+.gal-crop{margin:4px 0 8px;padding-bottom:8px;border-bottom:1px dashed var(--border)}
+.gal-crop-box{position:relative;width:180px;height:180px;flex:none;border:1px solid var(--border);background:#1a1a1f no-repeat;cursor:grab;touch-action:none;user-select:none;overflow:hidden}
+.gal-crop-box.dragging{cursor:grabbing}
+.gal-crop-none{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:#999;padding:8px}
+.gal-crop-box.has .gal-crop-none{display:none}
 .vh-grid{display:grid;grid-template-columns:repeat(4,max-content);gap:3px 18px}
 .vh-it{display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer}
 .memo-vis{display:inline-flex;align-items:center;gap:2px;font-size:9px;font-weight:normal;margin-right:3px;cursor:pointer;color:var(--text-muted)}
@@ -1500,9 +1505,21 @@ if (('standalone' in navigator) && navigator.standalone) {
   <div class="right-panel" style="flex:1;min-width:0">
     <!-- 閲覧時の表示設定（編集時のみ表示） -->
     <div class="section" id="vh_section">
-      <div class="acc-header" onclick="toggleAcc('vh_outer')"><span>閲覧時の表示設定</span><span id="arr_vh_outer">▶</span></div>
+      <div class="acc-header" onclick="toggleAcc('vh_outer');_galCropPaint()"><span>閲覧時の表示設定</span><span id="arr_vh_outer">▶</span></div>
       <div class="acc-body" id="vh_outer"><div style="padding:6px">
         <div style="display:flex;flex-wrap:wrap;gap:3px 18px;margin-bottom:6px"><label class="vh-it" style="font-weight:bold"><input type="checkbox" id="gallery_pub" checked>探索者紹介ページに載せる</label><label class="vh-it"><input type="checkbox" id="gallery_first_scen" checked>出身シナリオ（通過シナリオ1行目）を載せる</label></div>
+        <div class="gal-crop">
+          <div style="font-size:11px;margin-bottom:4px">探索者紹介ページ用クロップ（ドラッグで移動／ホイールかスライダーで拡大縮小。未調整の時はキャラ一覧のアイコンと同じ）</div>
+          <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+            <div id="gal_crop_box" class="gal-crop-box"><span class="gal-crop-none">立ち絵（アイコン画像URL）が未設定です</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;min-width:150px">
+              <label>拡大 <span id="gal_crop_zv">130</span>%</label>
+              <input type="range" id="gal_crop_zoom" min="50" max="600" value="130">
+              <button type="button" class="add-row-btn" style="margin:0" onclick="_galCropReset()">アイコンと同じに戻す</button>
+            </div>
+          </div>
+          <input type="hidden" id="gal_crop_s" value=""><input type="hidden" id="gal_crop_x" value=""><input type="hidden" id="gal_crop_y" value="">
+        </div>
                 <div class="vh-prow"><label class="vh-it"><input type="checkbox" id="vh_p_job" checked>職業</label><label class="vh-it"><input type="checkbox" id="vh_p_age" checked>年齢</label><label class="vh-it"><input type="checkbox" id="vh_p_gender" checked>性別</label><label class="vh-it"><input type="checkbox" id="vh_p_origin" checked>出身</label><label class="vh-it"><input type="checkbox" id="vh_p_birthday" checked>誕生日</label><label class="vh-it"><input type="checkbox" id="vh_p_era" checked>時代</label></div><div class="vh-grid"><label class="vh-it"><input type="checkbox" id="vh_stats" checked>能力値</label><label class="vh-it"><input type="checkbox" id="vh_skills" checked>技能値</label><label class="vh-it"><input type="checkbox" id="vh_jobref" checked>職業参照</label><label class="vh-it"><input type="checkbox" id="vh_tokucho" checked>特徴表</label><label class="vh-it"><input type="checkbox" id="vh_combat" checked>戦闘・武器</label><label class="vh-it"><input type="checkbox" id="vh_items" checked>所持品</label><span></span><span></span><label class="vh-it"><input type="checkbox" id="vh_kouisho" checked>後遺症</label><label class="vh-it"><input type="checkbox" id="vh_af" checked>AF</label><label class="vh-it"><input type="checkbox" id="vh_spell" checked>呪文</label><label class="vh-it"><input type="checkbox" id="vh_fute" checked>不定</label><label class="vh-it"><input type="checkbox" id="vh_freememo" checked>自由メモ</label><label class="vh-it"><input type="checkbox" id="vh_rel" checked>人間関係</label><label class="vh-it"><input type="checkbox" id="vh_secret" checked>ネタバレメモ</label><label class="vh-it"><input type="checkbox" id="vh_scenario" checked>通過シナリオ</label></div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:4px">その他メモは、各メモ右上の「閲覧」のチェックで1件ずつ設定できます</div>
       </div></div>
@@ -5153,6 +5170,65 @@ function copyArkViewURL(kind){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 // ===== /アークナイツ風表示設定 =====
+
+// ===== 探索者紹介ページ用クロップ（gal_crop_s=拡大率, gal_crop_x/y=表示位置%） =====
+let _galAr=1, _galArUrl='';
+function _galVals(){
+  const g=id=>document.getElementById(id);
+  const sv=parseFloat(g('gal_crop_s').value), xv=parseFloat(g('gal_crop_x').value), yv=parseFloat(g('gal_crop_y').value);
+  const iu=g('char_image_url');
+  return {
+    s:!isNaN(sv)?sv:((parseFloat((g('char_image_zoom')||{}).value)||130)/100),
+    x:!isNaN(xv)?xv:(parseFloat(iu&&iu.dataset.ox)||50),
+    y:!isNaN(yv)?yv:(parseFloat(iu&&iu.dataset.oy)||30)
+  };
+}
+function _galSet(v){
+  const g=id=>document.getElementById(id);
+  g('gal_crop_s').value=(+v.s).toFixed(3); g('gal_crop_x').value=Math.round(v.x); g('gal_crop_y').value=Math.round(v.y);
+  g('gal_crop_s').dispatchEvent(new Event('input',{bubbles:true}));
+  _galCropPaint();
+}
+function _galCropReset(){ ['gal_crop_s','gal_crop_x','gal_crop_y'].forEach(id=>document.getElementById(id).value=''); document.getElementById('gal_crop_s').dispatchEvent(new Event('input',{bubbles:true})); _galCropPaint(); }
+function _galCropPaint(){
+  const box=document.getElementById('gal_crop_box'); if(!box)return;
+  const raw=(document.getElementById('char_image_url')||{}).value||'';
+  const url=raw?fixDropboxUrl(raw):'';
+  const v=_galVals();
+  box.classList.toggle('has',!!url);
+  box.style.backgroundImage=url?`url("${url.replace(/"/g,'%22')}")`:'none';
+  box.style.backgroundSize=Math.round(v.s*100)+'%';
+  box.style.backgroundPosition=v.x+'% '+v.y+'%';
+  const zv=document.getElementById('gal_crop_zv'), zs=document.getElementById('gal_crop_zoom');
+  if(zv)zv.textContent=Math.round(v.s*100); if(zs&&document.activeElement!==zs)zs.value=Math.round(v.s*100);
+  if(url&&url!==_galArUrl){ _galArUrl=url; const im=new Image(); im.onload=()=>{ _galAr=(im.naturalHeight||1)/(im.naturalWidth||1); }; im.src=url; }
+}
+(function(){
+  const init=()=>{
+    const box=document.getElementById('gal_crop_box'); if(!box||box._galInit)return; box._galInit=true;
+    let drag=null;
+    box.addEventListener('pointerdown',e=>{ if(!box.classList.contains('has'))return; drag={x:e.clientX,y:e.clientY,v:_galVals()}; box.setPointerCapture(e.pointerId); box.classList.add('dragging'); });
+    box.addEventListener('pointermove',e=>{
+      if(!drag)return;
+      const W=box.clientWidth, H=box.clientHeight, v=drag.v, iw=v.s*W, ih=iw*_galAr;
+      const dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+      const nx=Math.abs(W-iw)>1?Math.max(0,Math.min(100,v.x+dx*100/(W-iw))):v.x;
+      const ny=Math.abs(H-ih)>1?Math.max(0,Math.min(100,v.y+dy*100/(H-ih))):v.y;
+      box.style.backgroundPosition=nx+'% '+ny+'%'; drag.nx=nx; drag.ny=ny;
+    });
+    const end=()=>{ if(!drag)return; box.classList.remove('dragging'); if(drag.nx!=null)_galSet({s:drag.v.s,x:drag.nx,y:drag.ny}); drag=null; };
+    box.addEventListener('pointerup',end); box.addEventListener('pointercancel',end);
+    box.addEventListener('wheel',e=>{ if(!box.classList.contains('has'))return; e.preventDefault(); const v=_galVals(); v.s=Math.max(0.5,Math.min(6,v.s+(e.deltaY<0?0.05:-0.05))); _galSet(v); },{passive:false});
+    const zs=document.getElementById('gal_crop_zoom');
+    zs.addEventListener('input',e=>{ e.stopPropagation(); const v=_galVals(); v.s=parseFloat(zs.value)/100; _galSet(v); });
+    _galCropPaint();
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+  const _o=applyData; applyData=function(){ const r=_o.apply(this,arguments); try{_galCropPaint();}catch(_){} return r; };
+  if(typeof previewCharImage==='function'){ const _p=previewCharImage; previewCharImage=function(){ const r=_p.apply(this,arguments); try{_galCropPaint();}catch(_){} return r; }; }
+})();
+// ===== /探索者紹介ページ用クロップ =====
+
 </script>
 </body>
 </html>

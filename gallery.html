@@ -147,6 +147,8 @@ function hasStatsAndSkills(s){
   const sk=(s.skills||[]).some(x=>x&&['job','int','grw','oth'].some(f=>parseInt(x[f])>0));
   return st&&sk;
 }
+// 紹介ページ用クロップ（シートで調整した値。未調整ならキャラ一覧のアイコンと同じ）
+function gnum(v,d){ const n=parseFloat(v); return isNaN(n)?d:n; }
 const HIDE_TAGS=['取り込みのみ','【取込のみ】','取込のみ'];
 const ST={alive:['生存','st-alive'],lost:['ロスト','st-dead'],permalost:['永久ロスト','st-dead'],dead:['継続不可','st-dead'],missing:['行方不明','st-missing'],retired:['引退','st-retired'],insane:['永久狂気','st-insane']};
 let characters=[], activeCat='all', tagOrder=[];
@@ -199,7 +201,7 @@ function toChar(row){
     birthday:off('vh_p_birthday')?'':(inp.birthday||''),
     status:inp.pc_status||'alive',
     image:fixDropbox(inp.charImage||''),
-    ox:parseFloat(pos[0])||50, oy:parseFloat(pos[1]||pos[0])||30, scale:parseFloat(inp.charImageScale)||1.3,
+    ox:gnum(inp.gal_crop_x,parseFloat(pos[0])||50), oy:gnum(inp.gal_crop_y,parseFloat(pos[1]||pos[0])||30), scale:gnum(inp.gal_crop_s,parseFloat(inp.charImageScale)||1.3),
     color:/^#[0-9a-f]{3,8}$/i.test(inp.txtcolor||'')?inp.txtcolor:'#7c9bb5',
     tags:(Array.isArray(s.tags)?s.tags:[]).filter(t=>!HIDE_TAGS.includes(t)),
     stats:off('vh_stats')?null:{STR:inp.str,CON:inp.con,POW:inp.pow,DEX:inp.dex,APP:inp.app,SIZ:inp.siz,INT:inp.int_v,EDU:inp.edu,DB:calcDB(inp)},
