@@ -18,6 +18,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./offline.js"></script>
+<script src="./share-card.v1.js"></script>
 <script src="./list-icons.v1.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Noto+Sans+JP:wght@400&family=Jost:wght@300;400&display=swap">
@@ -1461,11 +1462,18 @@ function openStatusPicker(id, anchor){
 function setStatus(id, st){ updateCharData(id, s=>{ s.inputs=s.inputs||{}; s.inputs.pc_status=st; }, '状態を変更しました'); }
 
 /* 閲覧URLコピー */
-function copyViewUrl(id){
-  const url=new URL(viewUrlFor(id), location.href).href;
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(url).then(()=>showToast('閲覧URLをコピーしました')).catch(()=>fallbackCopy(url));
-  }else fallbackCopy(url);
+// 閲覧URLをコピー：カード表示（左にアイコン・右にPC名）用のページを作成・更新し、そのURLをコピーする
+// （開くと今までの閲覧URLへ移動。GitHubトークン未設定でキャンセルした時は今までどおりの閲覧URLをコピー）
+async function copyViewUrl(id){
+  const plainCopy=()=>{ const url=new URL(viewUrlFor(id), location.href).href;
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(()=>showToast('閲覧URLをコピーしました')).catch(()=>fallbackCopy(url)); } else fallbackCopy(url); };
+  const char=allChars.find(c=>c.id===id);
+  if(!window.ShareCard||!char||!ShareCard.getToken(true)){ plainCopy(); return; }
+  const url=ShareCard.shareUrl(id);
+  try{ await navigator.clipboard.writeText(url); }catch(_){ fallbackCopy(url); }
+  showToast('カード付きURLを作成中…');
+  try{ await ShareCard.publish(id,getSheet(char),viewUrlFor(id)); showToast('カード付きの閲覧URLをコピーしました（反映まで1〜2分）'); }
+  catch(e){ console.warn(e); showToast('カード作成に失敗したため、閲覧URLをコピーしました'); plainCopy(); }
 }
 // アーク風一覧：名前が入りきらない場合は文字サイズを縮めて収める
 function _fitArkNames(nodes){

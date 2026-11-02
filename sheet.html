@@ -18,6 +18,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./offline.js"></script>
+<script src="./share-card.v1.js"></script>
 <title>CoC6版 キャラクターシート</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
@@ -3298,6 +3299,8 @@ async function saveToStorage() {
     // オフライン用ミラー更新＋保留分の同期
     try{ if(window.OCO){ await OCO.mirrorOne({id:currentCharId,char_name:name,data,updated_at:new Date().toISOString()}); OCO.flush(db); } }catch(_){}
     showSaveMsg();
+    // カード付き閲覧URLを作ったことがあるキャラは、保存のたびにカード（PC名・アイコン）を上書き更新
+    try{ if(window.ShareCard&&currentCharId&&ShareCard.published(currentCharId)&&ShareCard.hasToken()){ ShareCard.publish(currentCharId,JSON.parse(data),_viewPath()).catch(e=>console.warn('カード更新失敗',e)); } }catch(_){}
   } catch(e) {
     // サーバ到達不可 → オフライン保存にフォールバック
     const ok=await _saveOffline(name,data);
@@ -3306,15 +3309,31 @@ async function saveToStorage() {
   }
 }
 
-function copyViewURL() {
+function _viewPath(){ return 'view.html?id='+currentCharId+(_loadedShareRev?'&r='+encodeURIComponent(_loadedShareRev):''); }
+// 閲覧URLをコピー：カード表示（左にアイコン・右にPC名）用のページを作成・更新し、そのURLをコピーする
+// （開くと今までの閲覧URLへ移動。GitHubトークン未設定でキャンセルした時は今までどおりの閲覧URLをコピー）
+async function copyViewURL() {
   if (!currentCharId) {
     alert('先に保存してください');
     return;
   }
-  const url = 'https://8i10.github.io/coc-sheet/view.html?id=' + currentCharId;
-  navigator.clipboard.writeText(url).then(() => {
-    alert('閲覧URLをコピーしました！\n' + url);
-  });
+  const plain = 'https://8i10.github.io/coc-sheet/' + _viewPath();
+  const tok = window.ShareCard ? ShareCard.getToken(true) : '';
+  if (!tok) {
+    navigator.clipboard.writeText(plain).then(() => { alert('閲覧URLをコピーしました！\n' + plain); });
+    return;
+  }
+  const url = ShareCard.shareUrl(currentCharId);
+  try { await navigator.clipboard.writeText(url); } catch(_) {}
+  showSaveMsg('カード付きURLを作成中…');
+  try {
+    let d = collectData(); if (typeof d === 'string') d = JSON.parse(d);
+    await ShareCard.publish(currentCharId, d, _viewPath());
+    alert('カード付きの閲覧URLをコピーしました！\n' + url + '\n\n（カードの反映まで1〜2分かかります）');
+  } catch(e) {
+    alert('カード用ページの作成に失敗しました：' + e.message + '\n\n今までの閲覧URLをコピーします。\n' + plain);
+    try { await navigator.clipboard.writeText(plain); } catch(_) {}
+  }
 }
 
 async function loadFromStorage() {
