@@ -266,7 +266,7 @@ function fitNames(){
   const els=[...document.querySelectorAll('#grid .card-name')];
   els.forEach(el=>el.style.fontSize='');
   const m=els.map(el=>[el,el.scrollWidth,el.clientWidth,parseFloat(getComputedStyle(el).fontSize)||15]);
-  m.forEach(([el,sw,cw,fs])=>{ if(sw>cw+1&&cw>0) el.style.fontSize=Math.max(8,fs*cw/sw-0.3)+'px'; });
+  m.forEach(([el,sw,cw,fs])=>{ if(sw>cw+1&&cw>0) el.style.fontSize=Math.max(8,fs*cw/sw*0.96)+'px'; });
 }
 window.addEventListener('resize',()=>requestAnimationFrame(fitNames));
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>requestAnimationFrame(fitNames));
