@@ -999,8 +999,8 @@ html body.light .secret-item-header{ background:#5e5e5e !important; }
 #db_add:placeholder-shown{display:none}
 /* 閲覧で非表示に設定した項目：グレーの四角で覆い、中央に「非表示」 */
 .vh-blur{position:relative;user-select:none;-webkit-user-select:none;pointer-events:none;min-height:28px}
-.vh-blur > *{visibility:hidden}
-.vh-blur::after{content:'非表示';position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.3)),var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;border-radius:2px}
+#stats_scroll.vh-blur #stat_total_disp{visibility:hidden}
+.vh-blur::after{content:'非表示';position:absolute;left:0;right:0;bottom:0;top:var(--vh-top,0px);z-index:5;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.3)),var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;border-radius:2px}
 </style>
 
 <!-- PWA: Safari スタンドアロンモード維持 -->
@@ -1880,12 +1880,24 @@ function applyViewHide(sheet){
   const inp=(sheet&&sheet.inputs)||{};
   const off=k=>inp[k]===false;
   const blur={vh_stats:'stats_scroll',vh_skills:'skill_col',vh_jobref:'row2_job',vh_tokucho:'row2_tokucho',vh_combat:'combat_acc',vh_items:'items_acc',vh_kouisho:'ae_kouisho',vh_af:'ae_af',vh_spell:'ae_spell',vh_fute:'fute_inner',vh_scenario:'scenario_outer'};
-  Object.entries(blur).forEach(([k,id])=>{ const el=document.getElementById(id); if(el&&off(k)){ el.classList.add('vh-blur'); el.setAttribute('aria-hidden','true'); el.setAttribute('inert',''); } });
+  Object.entries(blur).forEach(([k,id])=>{ const el=document.getElementById(id); if(el&&off(k)){ el.classList.add('vh-blur'); el.setAttribute('inert',''); } });
+  _vhLayout();
   const hide=(el)=>{ if(el)el.style.display='none'; };
   if(off('vh_freememo')) hide(document.getElementById('row1_free_memo'));
   if(off('vh_rel')){ const b=document.getElementById('rel_acc'); hide(b&&b.parentElement); }
   if(off('vh_secret')){ const b=document.getElementById('secret_outer'); hide(b&&b.closest('.section')); }
 }
+// 見出し（STR〜知識の項目名・職業特記・技能表・特徴表）は残し、その下から覆う
+const VH_KEEP={stats_scroll:'thead',skill_col:':scope > div:first-child',row2_job:':scope > .hdr',row2_tokucho:':scope > .hdr'};
+function _vhLayout(){
+  document.querySelectorAll('.vh-blur').forEach(el=>{
+    const q=VH_KEEP[el.id]; const k=q?el.querySelector(q):null;
+    const top=k?Math.max(0,k.getBoundingClientRect().bottom-el.getBoundingClientRect().top):0;
+    el.style.setProperty('--vh-top',top+'px');
+  });
+}
+window.addEventListener('resize',()=>requestAnimationFrame(_vhLayout));
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>requestAnimationFrame(_vhLayout));
 async function initViewMode() {
   try {
   const params = new URLSearchParams(window.location.search);
