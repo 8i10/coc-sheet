@@ -1000,6 +1000,7 @@ html body.light .secret-item-header{ background:#5e5e5e !important; }
 /* 閲覧で非表示に設定した項目：グレーの四角で覆い、中央に「非表示」 */
 .vh-blur{position:relative;user-select:none;-webkit-user-select:none;pointer-events:none;min-height:28px}
 #stats_scroll.vh-blur #stat_total_disp{visibility:hidden}
+.vh-mini{display:inline-block;padding:0 6px;margin:0 2px;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.3)),var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;border-radius:2px;line-height:16px;user-select:none}
 .vh-blur::after{content:'非表示';position:absolute;left:var(--vh-l,0px);right:var(--vh-r,0px);bottom:var(--vh-b,0px);top:var(--vh-top,0px);z-index:5;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.3)),var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;border-radius:2px}
 </style>
 
@@ -1882,6 +1883,8 @@ function applyViewHide(sheet){
   const blur={vh_stats:'stats_scroll',vh_skills:'skill_col',vh_jobref:'row2_job',vh_tokucho:'row2_tokucho',vh_combat:'combat_acc',vh_items:'items_acc',vh_kouisho:'ae_kouisho',vh_af:'ae_af',vh_spell:'ae_spell',vh_fute:'fute_inner',vh_scenario:'scenario_outer'};
   Object.entries(blur).forEach(([k,id])=>{ const el=document.getElementById(id); if(el&&off(k)){ el.classList.add('vh-blur'); el.setAttribute('inert',''); } });
   _vhLayout();
+  // 能力値を隠す時はSAN・DBの値も隠す（項目名は残す）
+  if(off('vh_stats')) ['san_now','max_san','hutel_line','db','db_add'].forEach(id=>{ const el=document.getElementById(id); if(!el||(id==='db_add'&&!el.value))return; const m=document.createElement('span'); m.className='vh-mini'; m.textContent='非表示'; el.style.display='none'; el.after(m); });
   const hide=(el)=>{ if(el)el.style.display='none'; };
   if(off('vh_freememo')) hide(document.getElementById('row1_free_memo'));
   if(off('vh_rel')){ const b=document.getElementById('rel_acc'); hide(b&&b.parentElement); }
