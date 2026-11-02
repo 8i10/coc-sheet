@@ -800,6 +800,7 @@ if (('standalone' in navigator) && navigator.standalone) {
     <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'hsr_elem')">✦ 属性設定</button>
     <button class="bulk-only" onclick="event.stopPropagation();bulkIconPicker(this,'hsr_path')">◎ 運命設定</button>
     <button class="bulk-only" onclick="event.stopPropagation();bulkGalleryPicker(this)">📇 紹介ページ設定</button>
+    <button class="bulk-only" onclick="selectAllShown()">☑ 全選択</button>
     <button class="bulk-only" onclick="clearSelection()">選択解除</button>
     <button class="bulk-only bulk-danger" onclick="bulkDelete()">🗑 削除</button>
   </div>
@@ -1089,6 +1090,12 @@ function toggleSelect(id,card){
   if(selectedIds.has(id)){selectedIds.delete(id);card.classList.remove('sel');}
   else{selectedIds.add(id);card.classList.add('sel');}
   const cb=card.querySelector('.card-check'); if(cb)cb.checked=selectedIds.has(id);
+  updateBulkBar();
+}
+// 全選択：今表示されている（絞り込み後の）キャラをすべて選択
+function selectAllShown(){
+  (window._shownChars||[]).forEach(c=>selectedIds.add(c.id));
+  document.querySelectorAll('#grid .card, #grid .ark-card, #grid .hsr-card').forEach(card=>{ if(selectedIds.has(card.dataset.id)){ card.classList.add('sel'); const cb=card.querySelector('.card-check'); if(cb)cb.checked=true; } });
   updateBulkBar();
 }
 function clearSelection(){ selectedIds.clear(); updateBulkBar(); applyFilters(); }
@@ -1461,29 +1468,25 @@ function copyViewUrl(id){
   }else fallbackCopy(url);
 }
 // アーク風一覧：名前が入りきらない場合は文字サイズを縮めて収める
-function _fitArkNames(){
-  document.querySelectorAll('#grid.grid-ark .ark-name').forEach(el=>{
-    el.style.fontSize='';
-    let fs=parseFloat(getComputedStyle(el).fontSize)||15;
-    while(el.scrollWidth>el.clientWidth+1 && fs>7){ fs-=0.5; el.style.fontSize=fs+'px'; }
-  });
+function _fitArkNames(nodes){
+  const els=nodes?nodes.map(n=>n.querySelector('.ark-name')).filter(Boolean):[...document.querySelectorAll('#grid.grid-ark .ark-name')];
+  els.forEach(el=>{ el.style.fontSize=''; });
+  // まとめて測ってから、はみ出すものだけ比率で縮める（1件ずつの再計算を避ける）
+  const m=els.map(el=>[el,el.scrollWidth,el.clientWidth,parseFloat(getComputedStyle(el).fontSize)||15]);
+  m.forEach(([el,sw,cw,fs])=>{ if(sw>cw+1&&cw>0) el.style.fontSize=Math.max(7,Math.floor(fs*cw/sw*2)/2-0.5)+'px'; });
 }
 window.addEventListener('resize',()=>{ if(viewMode==='ark') _fitArkNames(); });
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ if(viewMode==='ark') _fitArkNames(); });
 // スタレ風一覧：枠に入りきらない文字は小さくして収める
-function _fitHsrRows(){
-  document.querySelectorAll('#grid.grid-hsr .hsr-row').forEach(el=>{
-    el.style.fontSize='';
-    let fs=parseFloat(getComputedStyle(el).fontSize)||10.5;
-    while(el.scrollWidth>el.clientWidth+1 && fs>5){ fs-=0.5; el.style.fontSize=fs+'px'; }
-  });
+function _fitHsrRows(nodes){
+  const q=(sel)=>nodes?nodes.flatMap(n=>[...n.querySelectorAll(sel)]):[...document.querySelectorAll('#grid.grid-hsr '+sel)];
+  const rows=q('.hsr-row'), names=q('.hsr-name');
+  rows.forEach(el=>{ el.style.fontSize=''; }); names.forEach(el=>{ el.style.fontSize=''; });
+  const mr=rows.map(el=>[el,el.scrollWidth,el.clientWidth,parseFloat(getComputedStyle(el).fontSize)||10.5]);
+  const mn=names.map(el=>{ const cs=getComputedStyle(el); return [el,el.scrollHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom),parseFloat(cs.fontSize)||12]; });
+  mr.forEach(([el,sw,cw,fs])=>{ if(sw>cw+1&&cw>0) el.style.fontSize=Math.max(5,Math.floor(fs*cw/sw*2)/2-0.5)+'px'; });
   // 名前：2行に収まらなければ縮める
-  document.querySelectorAll('#grid.grid-hsr .hsr-name').forEach(el=>{
-    el.style.fontSize='';
-    const cs=getComputedStyle(el), pad=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);
-    let fs=parseFloat(cs.fontSize)||12;
-    while(el.scrollHeight-pad>fs*1.25*2+1 && fs>5){ fs-=0.5; el.style.fontSize=fs+'px'; }
-  });
+  mn.forEach(([el,h,fs])=>{ const lim=fs*1.25*2+1; if(h>lim) el.style.fontSize=Math.max(5,Math.floor(fs*Math.sqrt(lim/h)*2)/2-0.5)+'px'; });
 }
 window.addEventListener('resize',()=>{ if(viewMode==='hsr') _fitHsrRows(); });
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ if(viewMode==='hsr') _fitHsrRows(); });
@@ -1670,7 +1673,8 @@ async function loadList(){
     allChars=list||[];
     buildTagFilter();
     applyFilters();
-    try{ if(window.OCO){ await OCO.mirrorList(list); OCO.flush(db); } }catch(_){}
+    // 端末ミラー（オフライン用）の保存は表示が終わってから行う
+    setTimeout(()=>{ try{ if(window.OCO){ OCO.mirrorList(list).then(()=>OCO.flush(db)).catch(()=>{}); } }catch(_){} },1500);
     _setOffline(false);
   }catch(e){
     // オフライン/サーバ到達不可 → 端末のミラーから表示
@@ -1794,6 +1798,7 @@ function toggleViewMode(){ setViewMode(viewMode==='list'?'ark':viewMode==='ark'?
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindWheel);
   else bindWheel();
 })();
+let _renderTok=0;
 function renderCards(chars){
   const grid=document.getElementById('grid');
   // 既存カード・見出しを削除（loading/empty/no_result以外）
@@ -1812,38 +1817,38 @@ function renderCards(chars){
     return;
   }
 
-  if(viewMode==='ark'){
-    const fr=document.createDocumentFragment();
-    chars.forEach(char=>fr.appendChild(makeArkCard(char)));
-    grid.appendChild(fr);
-    requestAnimationFrame(_fitArkNames);
-  } else if(viewMode==='hsr'){
-    const fr=document.createDocumentFragment();
-    chars.forEach(char=>fr.appendChild(makeHsrCard(char)));
-    grid.appendChild(fr); _lazyBg(grid);
-    requestAnimationFrame(_fitHsrRows);
-  } else {
-    let lastHead=null;
-    chars.forEach(char=>{
-      if(sortKey==='furigana'){
-        const hd=kanaHead((getSheet(char).inputs||{}).furigana);
-        if(hd!==lastHead){
-          const h=document.createElement('div');h.className='group-head';h.textContent=hd;
-          grid.appendChild(h);lastHead=hd;
+  // 少しずつ描画（最初の分をすぐ表示し、残りは次のフレームで追加）
+  window._shownChars=chars;
+  const tok=++_renderTok; let i=0, lastHead=null;
+  const CH=36;
+  const step=()=>{
+    if(tok!==_renderTok)return;
+    const fr=document.createDocumentFragment(); const nodes=[];
+    for(let n=0;n<CH&&i<chars.length;n++,i++){
+      const char=chars[i];
+      if(viewMode==='ark'){ const el=makeArkCard(char); fr.appendChild(el); nodes.push(el); }
+      else if(viewMode==='hsr'){ const el=makeHsrCard(char); fr.appendChild(el); nodes.push(el); }
+      else{
+        if(sortKey==='furigana'){
+          const hd=kanaHead((getSheet(char).inputs||{}).furigana);
+          if(hd!==lastHead){ const h=document.createElement('div');h.className='group-head';h.textContent=hd; fr.appendChild(h); lastHead=hd; }
         }
+        const el=makeCard(char); fr.appendChild(el); nodes.push(el);
       }
-      grid.appendChild(makeCard(char));
-    });
-    _lazyBg(grid);
-    // カードの高さに合わせて画像を正方形にする
-    requestAnimationFrame(()=>{
-      grid.querySelectorAll('.card-icon').forEach(icon=>{
-        const h=icon.offsetHeight||56;
-        icon.style.width=h+'px';
-        icon.style.flexShrink='0';
-      });
-    });
-  }
+    }
+    grid.appendChild(fr);
+    if(viewMode==='ark') _fitArkNames(nodes);
+    else if(viewMode==='hsr'){ _lazyBg(nodes); _fitHsrRows(nodes); }
+    else{
+      _lazyBg(nodes);
+      // カードの高さに合わせて画像を正方形にする（読み取り→書き込みをまとめて行う）
+      const icons=nodes.map(n=>n.querySelector('.card-icon')).filter(Boolean);
+      const hs=icons.map(ic=>ic.offsetHeight||56);
+      icons.forEach((ic,k)=>{ ic.style.width=hs[k]+'px'; ic.style.flexShrink='0'; });
+    }
+    if(i<chars.length) requestAnimationFrame(step);
+  };
+  step();
 
   // 件数表示
   const hint=document.getElementById('search_hint');
@@ -1963,7 +1968,7 @@ function filterCards(){
 // 画像は画面に近づいたカードから読み込む（data-bg → background-image）
 let _bgIO=null;
 function _lazyBg(root){
-  const els=root.querySelectorAll('[data-bg]');
+  const els=Array.isArray(root)?root.flatMap(n=>[...(n.matches&&n.matches('[data-bg]')?[n]:[]),...n.querySelectorAll('[data-bg]')]):root.querySelectorAll('[data-bg]');
   if(!('IntersectionObserver' in window)){ els.forEach(el=>{ el.style.backgroundImage=`url('${el.dataset.bg}')`; el.removeAttribute('data-bg'); }); return; }
   if(!_bgIO) _bgIO=new IntersectionObserver(ents=>ents.forEach(en=>{ if(!en.isIntersecting)return; const el=en.target; if(el.dataset.bg){ el.style.backgroundImage=`url('${el.dataset.bg}')`; el.removeAttribute('data-bg'); } _bgIO.unobserve(el); }),{rootMargin:'400px'});
   els.forEach(el=>_bgIO.observe(el));

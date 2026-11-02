@@ -3898,7 +3898,7 @@ function parseSpreadsheetHTML(html){
       // ふりがな
       if(v==='ふりがな' && !furigana){
         // 右隣のセルが値
-        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&t!=='ふりがな'){furigana=t;break;}}
+        for(let d=1;d<=3;d++){const t=row[ci+d]?.text||'';if(t&&t!=='ふりがな'){ if(!/^[（(]\s*[\d×]+\s*[-－ー]?\s*\d*\s*[）)]/.test(t)&&!['PC名','キャラクター名','ＰＣ名','職業','年齢','性別'].includes(t))furigana=t; break;}}
       }
       // PC名（テンプレにより「PC名」「キャラクター名」等のラベル差を許容。武器表ヘッダ「名前」とは衝突させない）
       if((v==='PC名'||v==='キャラクター名'||v==='ＰＣ名'||v==='キャラクター名：') && !pcname){

@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Noto+Serif+JP:wght@200;300;400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root { --bg:#0e0e10;--surface:#16161a;--border:#2a2a30;--text:#e8e6e0;--muted:#8a887e;--accent:#c9a96e;--accent-dim:rgba(201,169,110,0.15); }
+  :root { --bg:#0e0e10;--surface:#16161a;--border:#2a2a30;--text:#e8e6e0;--muted:#b4b2a8;--accent:#c9a96e;--accent-dim:rgba(201,169,110,0.15); }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--bg);color:var(--text);font-family:'Noto Serif JP',serif;min-height:100vh;overflow-x:hidden;}
   body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(201,169,110,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
@@ -46,10 +46,10 @@
   .st-retired{background:rgba(100,100,160,0.2);color:#8c8cc4;border:1px solid rgba(100,100,160,0.4);}
   .st-insane{background:rgba(140,90,160,0.2);color:#b48cc4;border:1px solid rgba(140,90,160,0.4);}
   .card-body{padding:1rem 1.25rem 1.25rem;}
-  .card-furigana{font-size:0.6rem;color:var(--muted);letter-spacing:0.18em;margin-bottom:0.12rem;}
-  .card-name{font-size:1.05rem;font-weight:300;letter-spacing:0.1em;margin-bottom:0.6rem;}
-  .card-meta{display:flex;gap:0.75rem;font-size:0.7rem;color:var(--muted);padding-bottom:0.6rem;border-bottom:1px solid var(--border);margin-bottom:0.6rem;min-height:1.6rem}
-  .card-quote{font-size:0.65rem;color:var(--muted);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:1em}
+  .card-furigana{font-size:0.58rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);letter-spacing:0.18em;margin-bottom:0.12rem;}
+  .card-name{font-size:0.95rem;font-weight:300;letter-spacing:0.06em;margin-bottom:0.6rem;white-space:nowrap;overflow:hidden}
+  .card-meta{display:flex;gap:0.75rem;font-size:0.66rem;color:var(--muted);padding-bottom:0.6rem;border-bottom:1px solid var(--border);margin-bottom:0.6rem;min-height:1.6rem}
+  .card-quote{font-size:0.62rem;color:var(--muted);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:1em}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity 0.2s;backdrop-filter:blur(4px);}
   .modal-overlay.open{opacity:1;pointer-events:all;}
   .modal{background:var(--surface);border:1px solid var(--border);max-width:720px;width:100%;max-height:90vh;overflow-y:auto;transform:translateY(16px);transition:transform 0.2s;position:relative;}
@@ -137,6 +137,17 @@ const SUPABASE_URL='https://cicodhxebyqewfnngfwt.supabase.co/';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpY29kaHhlYnlxZXdmbm5nZnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzM4NDYsImV4cCI6MjA5NTY0OTg0Nn0.huLOglTPbW1CcGDbDB_yf5ftqEkqmtJ1HBY9WTx9J8E';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const tokuchoLabels=["（1-1）君は風邪を引かない","（1-2）大きな体","（1-3）素早い","（1-4）オシャレ","（1-5）天才","（1-6）強固な意志","（1-7）勉強家","（1-8）幸運のお守り","（1-9）一族伝来の宝物","（1-10）予期せぬ協力者","（2-1）手先が器用","（2-2）影が薄い","（2-3）親の七光り","（2-4）愛書家","（2-5）鋭い洞察力","（2-6）アウトドア派","（2-7）珍しい技能","（2-8）芸銃的才能","（2-9）バイリンガル","（2-10）前職","（3-1）天気予報士","（3-2）プロ・ドライバー","（3-3）飛ばし屋","（3-4）戦士","（3-5）銃火器の達人","（3-6）格闘センスの持ち主","（3-7）俊敏","（3-8）信頼のおける人","（3-9）スポーツ万能","（3-10）平凡な容姿","（4-1）目つきが悪い(D)","（4-2）方向音痴(D)","（4-3）異性が苦手（D)","（4-4）動物に嫌われる(D)","（4-5）不思議ちゃん(D)","（4-6）寄せ餌(D)","（4-7）眼鏡をかけている(D)","（4-8）大切なもの(D)","（4-9）暗黒の祖先(D)","（4-10）夜に弱い(D)","（5-1）動物に好かれる","（5-2）斜め上からの発想","（5-3）失敗は発明の母","（5-4）ペット","（5-5）おおらか","（5-6）異物への耐性","（5-7）潜水の名人","（5-8）大酒飲み","（5-9）ド根性","（5-10）受け身","（6-1）奇妙な幸運","（6-2）投擲の才能","（6-3）鋼の筋力","（6-4）実は生きていた","（6-5）急所を見抜く","（6-6）急速な回復力","（6-7）不屈の精神力","（6-8）マニア・コレクター","（6-9）行方不明の家族","（6-10）好意を寄せられている"];
+
+// ふりがな：特徴表など別の値が入っていたら使わない
+function cleanFurigana(v){ v=String(v||'').trim(); if(!v)return ''; if(/^[（(]\s*[\d×]+\s*[-－ー]?\s*\d*\s*[）)]/.test(v)||tokuchoLabels.includes(v))return ''; return v; }
+// 能力値・技能値が振られているか
+function hasStatsAndSkills(s){
+  const inp=s.inputs||{};
+  const st=['str','con','pow','dex','app','siz','int_v','edu'].some(k=>parseInt(inp[k])>0);
+  const sk=(s.skills||[]).some(x=>x&&['job','int','grw','oth'].some(f=>parseInt(x[f])>0));
+  return st&&sk;
+}
+const HIDE_TAGS=['取り込みのみ'];
 const ST={alive:['生存','st-alive'],lost:['ロスト','st-dead'],permalost:['永久ロスト','st-dead'],dead:['継続不可','st-dead'],missing:['行方不明','st-missing'],retired:['引退','st-retired'],insane:['永久狂気','st-insane']};
 let characters=[], activeCat='all', tagOrder=[];
 
@@ -174,6 +185,7 @@ function toChar(row){
   let s={}; try{ s=JSON.parse(row.data)||{}; }catch(e){}
   const inp=s.inputs||{};
   if(inp.gallery_pub===false)return null; // 初期設定は「載せる」
+  if(!hasStatsAndSkills(s))return null; // 能力値・技能値が振られていないPCは載せない
   const off=k=>inp[k]===false;
   const pos=(inp.charImagePos||'50% 30%').split(' ');
   let scen=off('vh_scenario')?[]:(s.scenarios||[]).flatMap(x=>String(x||'').split('\n')).map(x=>x.trim()).filter(Boolean);
@@ -181,7 +193,7 @@ function toChar(row){
   return {
     id:row.id,
     name:inp.pcname||row.char_name||'',
-    furigana:inp.furigana||'',
+    furigana:cleanFurigana(inp.furigana),
     age:off('vh_p_age')?'':(inp.age||''),
     occupation:off('vh_p_job')?'':(inp.job||''),
     birthday:off('vh_p_birthday')?'':(inp.birthday||''),
@@ -189,7 +201,7 @@ function toChar(row){
     image:fixDropbox(inp.charImage||''),
     ox:parseFloat(pos[0])||50, oy:parseFloat(pos[1]||pos[0])||30, scale:parseFloat(inp.charImageScale)||1.3,
     color:/^#[0-9a-f]{3,8}$/i.test(inp.txtcolor||'')?inp.txtcolor:'#7c9bb5',
-    tags:Array.isArray(s.tags)?s.tags:[],
+    tags:(Array.isArray(s.tags)?s.tags:[]).filter(t=>!HIDE_TAGS.includes(t)),
     stats:off('vh_stats')?null:{STR:inp.str,CON:inp.con,POW:inp.pow,DEX:inp.dex,APP:inp.app,SIZ:inp.siz,INT:inp.int_v,EDU:inp.edu,DB:calcDB(inp)},
     profile:(s.memos||[]).filter(m=>m&&!m.hide&&((m.title||'').trim()||(m.body||'').trim())).map(m=>({t:(m.title||'').trim(),b:(m.body||'').trim()})),
     traits:off('vh_tokucho')?[]:[[inp.t1_sel,inp.t1_memo],[inp.t2_sel,inp.t2_memo]].map(([v])=>tokucho(v)).filter(Boolean),
@@ -244,8 +256,18 @@ function renderGrid(){
       </div></div>`;
   }).join('');
   g.querySelectorAll('.card').forEach(el=>el.onclick=()=>openModal(el.dataset.id));
+  requestAnimationFrame(fitNames);
 }
 
+// PC名：1行に収まらなければ文字を小さくする
+function fitNames(){
+  const els=[...document.querySelectorAll('#grid .card-name')];
+  els.forEach(el=>el.style.fontSize='');
+  const m=els.map(el=>[el,el.scrollWidth,el.clientWidth,parseFloat(getComputedStyle(el).fontSize)||15]);
+  m.forEach(([el,sw,cw,fs])=>{ if(sw>cw+1&&cw>0) el.style.fontSize=Math.max(8,fs*cw/sw-0.3)+'px'; });
+}
+window.addEventListener('resize',()=>requestAnimationFrame(fitNames));
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>requestAnimationFrame(fitNames));
 function openModal(id){
   const c=characters.find(x=>x.id===id); if(!c)return;
   const st=ST[c.status]||ST.alive;
