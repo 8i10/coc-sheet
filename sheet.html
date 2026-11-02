@@ -3719,7 +3719,7 @@ function doCocofolicaCopy(){
   const cocoJSON = {
     kind: 'character',
     data: {
-      name: pcname,
+      name: String(pcname).replace(/\u3000/g,' '), // 全角スペースは半角に
       initiative: c.dex,
       externalUrl: '',
       iconUrl: iconUrl,

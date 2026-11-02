@@ -2335,7 +2335,7 @@ function _buildCocoJSON(sheet) {
     kind: 'character',
     formatVersion: 1,
     data: {
-      name: pcname,
+      name: String(pcname).replace(/\u3000/g,' '), // 全角スペースは半角に
       initiative: stats.dex,
       externalUrl: '',
       iconUrl: iconUrl,
