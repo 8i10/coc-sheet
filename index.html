@@ -709,6 +709,7 @@ if (('standalone' in navigator) && navigator.standalone) {
   </div>
 </div>
 <div id="index_menu" style="display:none">
+  <div class="menu-item" onclick="openGalleryPage();closeMenu()"><span>📇</span> 探索者紹介ページ（URLコピー）</div>
   <div class="menu-item" onclick="openBirthdayList();closeMenu()"><span>🎂</span> 誕生日一覧</div>
   <div class="menu-item" onclick="location.href='placement.html';closeMenu()"><span>🗺</span> 配置図</div>
   <div class="menu-sep"></div>
@@ -1930,6 +1931,19 @@ function tokuchoLabel(v){
 }
 // 検索は入力が止まってから絞り込む（1文字ごとの再描画を避ける）
 let _fcT=null;
+// 探索者紹介ページ：シートで「探索者紹介ページに載せる」にチェックしたキャラだけを公開表示（URLを知っていれば誰でも閲覧可）
+async function openGalleryPage(){
+  try{
+    const {data:{user}}=await db.auth.getUser(); if(!user){ showToast('ログインしてください'); return; }
+    const used=new Set((allChars||[]).filter(c=>((getSheet(c).inputs||{}).gallery_pub===true)).flatMap(c=>charTags(c)));
+    const order=getTagOrder().filter(t=>used.has(t));
+    const url=new URL('gallery.html?u='+encodeURIComponent(user.id)+(order.length?'&t='+encodeURIComponent(JSON.stringify(order)):''),location.href).href;
+    const n=(allChars||[]).filter(c=>(getSheet(c).inputs||{}).gallery_pub===true).length;
+    const done=()=>showToast('紹介ページのURLをコピーしました（掲載'+n+'人）');
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done).catch(()=>fallbackCopy(url)); else fallbackCopy(url);
+    window.open(url,'_blank');
+  }catch(e){ console.warn(e); showToast('URLを作成できませんでした'); }
+}
 function filterCards(){
   clearTimeout(_fcT); _fcT=setTimeout(applyFilters,180);
 }
