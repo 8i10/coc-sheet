@@ -2242,7 +2242,7 @@ function _jobChoiceRender(){
   if(info){
     if(info.choice)lines.push(info.choice);
     info.ors.forEach(o=>lines.push('いずれか1つ: '+o));
-    if(info.extra.length)lines.push('技能表にない職業技能: '+info.extra.join('、'));
+    if(info.extra.length)lines.push(info.extra.join('、'));
   }
   if(!lines.length){ box.style.display='none'; box.innerHTML=''; return; }
   box.style.display='';
