@@ -238,12 +238,15 @@ function portraitHTML(c,big){
     :`<div class="${big?'modal-portrait-placeholder':'card-portrait-placeholder'}"><span class="placeholder-monogram"${big?' style="font-size:5rem;opacity:0.15"':''}>${esc(c.name?c.name.charAt(0):'?')}</span></div>`;
 }
 
+
+// 五十音順の読み：ふりがながかなならふりがな、そうでなければPC名（カタカナはひらがなにそろえる）
+function yomi(c){ const f=(c.furigana||'').trim(); const isKana=f&&/^[぀-ヿー・＝=\s　]+$/.test(f); return toHira(isKana?f:(c.name||f)); }
 function renderGrid(){
   const q=(document.getElementById('searchInput').value||'').trim().toLowerCase();
   let list=characters;
   if(activeCat!=='all')list=list.filter(c=>c.tags.includes(activeCat));
   if(q)list=list.filter(c=>c.name.toLowerCase().includes(q)||c.furigana.toLowerCase().includes(q)||c.sessions.some(s=>s.toLowerCase().includes(q)));
-  list=[...list].sort((a,b)=>toHira(a.furigana||a.name).localeCompare(toHira(b.furigana||b.name),'ja'));
+  list=[...list].sort((a,b)=>yomi(a).localeCompare(yomi(b),'ja'));
   const g=document.getElementById('grid');
   if(!list.length){ g.innerHTML=`<div class="msg">${characters.length?'該当する探索者がいません':'掲載中の探索者がいません'}</div>`; return; }
   g.innerHTML=list.map((c,i)=>{
