@@ -2224,7 +2224,8 @@ function _jobSkillInfo(name){
   const d=ver==='6'?JOB_SKILLS[name]:null; if(!d)return null;
   const keys=[], ors=[], extra=[];
   d.f.forEach(it=>{
-    if(/ or /.test(it)){ ors.push(it.split(/ or /).map(x=>x.trim()).join('／')); return; }
+    // 「A or B」：選択技能の候補に同じものが入っている時は重複して出さない
+    if(/ or /.test(it)){ if(!(d.c&&d.c.includes(it)))ors.push(it.split(/ or /).map(x=>x.trim()).join('／')); return; }
     const k=_jobSkillKey(it);
     if(k)keys.push(k); else extra.push(it);
   });
