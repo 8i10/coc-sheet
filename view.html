@@ -1001,6 +1001,14 @@ html body.light .secret-item-header{ background:#5e5e5e !important; }
 .vh-blur{position:relative;user-select:none;-webkit-user-select:none;pointer-events:none;min-height:28px}
 #row1_stats.vh-blur #stat_total_disp{visibility:hidden}
 html.vh-nopts .sticky-pt-block,html.vh-nopts #sp-pts-row,html.vh-nopts #sp-header-divider{display:none !important}
+/* その他メモ：一番最初のメモの「一人称〜三人称」「台詞例」 */
+.memo-prof{padding:4px 6px 0;font-size:11px;background:var(--surface)}
+.memo-prof .mp-h{font-weight:bold;margin:2px 0}
+.memo-prof .mp-row{display:flex;gap:4px;margin-bottom:4px}
+.memo-prof .mp-row span{flex:1;min-width:0;word-break:break-word}
+.memo-prof .mp-row i{font-style:normal;color:var(--text-muted,#999)}
+.memo-prof .mp-lines{white-space:pre-wrap;word-break:break-word;line-height:1.6;min-height:1em}
+.memo-prof .mp-rule{border:none;border-top:1px solid var(--border);margin:6px 0 0}
 .vh-cell{position:relative;user-select:none;-webkit-user-select:none}
 .vh-cell > *{visibility:hidden}
 .vh-cell::after{content:'非表示';position:absolute;inset:1px;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.3)),var(--hdr-bg,#444);color:var(--hdr-text,#fff);font-size:11px;border-radius:2px}
@@ -2019,6 +2027,21 @@ async function initViewMode() {
       const ta = blk.querySelector('.memo-body'); if (ta) { ta.value = m.body||m.b||''; autoResizeTA(ta); }
     });
   }
+  // 一番最初のメモの「一人称〜三人称」「台詞例」
+  (function(){
+    const I = sheet.inputs||{}, g = k => String(I[k]||'').trim();
+    const p1=g('memo_p1'), p2=g('memo_p2'), p3=g('memo_p3'), ln=g('memo_lines');
+    if (!(p1||p2||p3||ln)) return;
+    if (sheet.memos && sheet.memos[0] && sheet.memos[0].hide) return; // 最初のメモを閲覧で非表示にしている
+    const wrap = document.getElementById('memo_rows'); if (!wrap) return;
+    let blk = wrap.querySelector('.memo-block');
+    if (!blk) { addMemoRow(); blk = wrap.querySelector('.memo-block'); if (!blk) return; }
+    const e = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const d = document.createElement('div'); d.className = 'memo-prof';
+    d.innerHTML = '<div class="mp-h">■一人称、二人称、三人称</div><div class="mp-row"><span>'+e(p1)+'</span><i>｜</i><span>'+e(p2)+'</span><i>｜</i><span>'+e(p3)+'</span></div>'+
+      '<div class="mp-h">■台詞例</div><div class="mp-lines">'+e(ln)+'</div><hr class="mp-rule">';
+    const ti = blk.querySelector('.memo-title'); if (ti) ti.after(d); else blk.prepend(d);
+  })();
 
   applyViewHide(sheet);
 
