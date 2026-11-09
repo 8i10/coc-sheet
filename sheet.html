@@ -1063,7 +1063,8 @@ body.light td.hdr{
 .memo-prof{padding:4px 6px 0;font-size:11px;background:var(--surface)}
 .memo-prof .mp-h{font-weight:bold;font-size:11px;margin:2px 0}
 .memo-prof .mp-row{display:flex;align-items:center;gap:4px;margin-bottom:4px}
-.memo-prof .mp-row input{flex:1;min-width:0;border:1px solid var(--border);border-radius:2px;font-size:11px;padding:2px 4px;background:var(--surface);color:var(--text);outline:none}
+.memo-prof .mp-row input{flex:2.5;min-width:0;border:1px solid var(--border);border-radius:2px;font-size:11px;padding:2px 4px;background:var(--surface);color:var(--text);outline:none}
+.memo-prof .mp-row #memo_p3{flex:5}
 .memo-prof textarea{width:100%;border:1px solid var(--border);border-radius:2px;font-size:11px;padding:3px 4px;background:var(--surface);color:var(--text);resize:none;display:block;outline:none;min-height:36px}
 .memo-prof .mp-rule{border:none;border-top:1px solid var(--border);margin:6px 0 0}
 #ark_cls_picker,#hsr_elem_picker,#hsr_path_picker,#ark_branch_picker{display:flex;flex-wrap:wrap;gap:6px}
@@ -1627,7 +1628,7 @@ if (('standalone' in navigator) && navigator.standalone) {
               <input type="text" class="memo-title" placeholder="表題..." style="width:100%;border:none;border-bottom:1px solid var(--border);font-size:11px;font-weight:bold;padding:3px 6px;background:#f8f8f8;outline:none;text-align:left">
               <div class="memo-prof" id="memo_prof">
                 <div class="mp-h">■一人称、二人称、三人称</div>
-                <div class="mp-row"><input type="text" id="memo_p1" placeholder="一人称"><span>｜</span><input type="text" id="memo_p2" placeholder="二人称"><span>｜</span><input type="text" id="memo_p3" placeholder="三人称"></div>
+                <div class="mp-row"><input type="text" id="memo_p1" placeholder="一人称"><input type="text" id="memo_p2" placeholder="二人称"><input type="text" id="memo_p3" placeholder="三人称"></div>
                 <div class="mp-h">■台詞例</div>
                 <textarea id="memo_lines" class="auto-h" placeholder="台詞例を入力..." oninput="autoResizeTA(this)"></textarea>
                 <hr class="mp-rule">

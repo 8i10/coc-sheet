@@ -1005,8 +1005,8 @@ html.vh-nopts .sticky-pt-block,html.vh-nopts #sp-pts-row,html.vh-nopts #sp-heade
 .memo-prof{padding:4px 6px 0;font-size:11px;background:var(--surface)}
 .memo-prof .mp-h{font-weight:bold;margin:2px 0}
 .memo-prof .mp-row{display:flex;gap:4px;margin-bottom:4px}
-.memo-prof .mp-row span{flex:1;min-width:0;word-break:break-word}
-.memo-prof .mp-row i{font-style:normal;color:var(--text-muted,#999)}
+.memo-prof .mp-row span{flex:2.5;min-width:0;word-break:break-word}
+.memo-prof .mp-row span.p3{flex:5}
 .memo-prof .mp-lines{white-space:pre-wrap;word-break:break-word;line-height:1.6;min-height:1em}
 .memo-prof .mp-rule{border:none;border-top:1px solid var(--border);margin:6px 0 0}
 .vh-cell{position:relative;user-select:none;-webkit-user-select:none}
@@ -2038,7 +2038,7 @@ async function initViewMode() {
     if (!blk) { addMemoRow(); blk = wrap.querySelector('.memo-block'); if (!blk) return; }
     const e = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const d = document.createElement('div'); d.className = 'memo-prof';
-    d.innerHTML = '<div class="mp-h">■一人称、二人称、三人称</div><div class="mp-row"><span>'+e(p1)+'</span><i>｜</i><span>'+e(p2)+'</span><i>｜</i><span>'+e(p3)+'</span></div>'+
+    d.innerHTML = '<div class="mp-h">■一人称、二人称、三人称</div><div class="mp-row"><span>'+e(p1)+'</span><span>'+e(p2)+'</span><span class="p3">'+e(p3)+'</span></div>'+
       '<div class="mp-h">■台詞例</div><div class="mp-lines">'+e(ln)+'</div><hr class="mp-rule">';
     const ti = blk.querySelector('.memo-title'); if (ti) ti.after(d); else blk.prepend(d);
   })();
