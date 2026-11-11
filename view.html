@@ -1233,7 +1233,7 @@ function getCur(){
 function calc(){
   const c=getCur();
   AB.forEach(a=>{const stem=a==='int_v'?'int':a;tx(stem+'_c',c[a]||0);});
-  const baseHP=Math.floor((c.con+c.siz)/2);
+  const baseHP=Math.ceil((c.con+c.siz)/2); // HPは端数切り上げ
   const baseMP=c.pow,baseSAN=c.pow*5,baseIDEA=c.int*5,baseLUCK=c.pow*5,baseKNOW=c.edu*5;
   tx('hp',baseHP||'');tx('mp',baseMP||'');tx('san0',baseSAN||'');tx('idea',baseIDEA||'');tx('luck',baseLUCK||'');tx('know',baseKNOW||'');
   tx('hp_c',baseHP+vn('hp_m')+vn('hp_t'));
