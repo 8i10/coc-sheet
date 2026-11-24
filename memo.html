@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script>
+/* ===== データの読み込み先（Cloudflare 移行）：GitHub の公開URLの代わりにこのサイト上のファイルを読む ===== */
+(function(){
+  var API_RE = /^https:\/\/api\.github\.com\/repos\/8i10\/EiThiophile\/contents\/([^?#]+)/i;
+  var RAW_RE = /^https:\/\/raw\.githubusercontent\.com\/8i10\/EiThiophile\/main\/([^?#]+)/i;
+  var orig = window.fetch.bind(window);
+  function hasAuth(init){
+    var h = init && init.headers; if(!h) return false;
+    if(typeof h.get === "function") return !!h.get("Authorization");
+    return !!(h.Authorization || h.authorization);
+  }
+  function editToken(){
+    try{ if(new URLSearchParams(location.search).get("edit") !== "1") return ""; return localStorage.getItem("gh_token_v1") || ""; }catch(e){ return ""; }
+  }
+  function b64(buf){ var s = "", a = new Uint8Array(buf); for(var i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); }
+  window.fetch = function(input, init){
+    var url = typeof input === "string" ? input : (input && input.url) || "";
+    var method = String((init && init.method) || (input && input.method) || "GET").toUpperCase();
+    var m;
+    if(method === "GET" && (m = RAW_RE.exec(url))){
+      var t = editToken();
+      if(t) return orig("https://api.github.com/repos/8i10/EiThiophile/contents/" + m[1] + "?ref=main&t=" + Date.now(),
+        {headers:{"Authorization":"token " + t, "Accept":"application/vnd.github.raw"}, cache:"no-store"});
+      return orig("/" + m[1] + "?t=" + Date.now(), {cache:"no-store"});
+    }
+    if(method === "GET" && !hasAuth(init) && (m = API_RE.exec(url))){
+      return orig("/" + m[1] + "?t=" + Date.now(), {cache:"no-store"}).then(function(r){
+        if(!r.ok) return new Response(JSON.stringify({message:"Not Found"}), {status:r.status, headers:{"Content-Type":"application/json"}});
+        return r.arrayBuffer().then(function(buf){
+          return new Response(JSON.stringify({content:b64(buf), encoding:"base64", sha:null}), {status:200, headers:{"Content-Type":"application/json"}});
+        });
+      });
+    }
+    return orig(input, init);
+  };
+})();
+/* 旧サイト（GitHub Pages）へのリンクを新ドメインに読み替える */
+(function(){
+  var OLD = /^https:\/\/(8i10\.github\.io\/EiThiophile|prof\.eithiophile\.workers\.dev)\//i;
+  function fix(root){
+    if(!root || !root.querySelectorAll) return;
+    if(root.tagName === "A" && OLD.test(root.getAttribute("href") || "")) root.setAttribute("href", root.getAttribute("href").replace(OLD, "https://eithiophile.com/"));
+    var a = root.querySelectorAll('a[href*="8i10.github.io/EiThiophile/"],a[href*="prof.eithiophile.workers.dev/"]');
+    for(var i = 0; i < a.length; i++) a[i].setAttribute("href", a[i].getAttribute("href").replace(OLD, "https://eithiophile.com/"));
+  }
+  function start(){
+    fix(document.body);
+    new MutationObserver(function(ms){ ms.forEach(function(m){ for(var i = 0; i < m.addedNodes.length; i++) fix(m.addedNodes[i]); }); })
+      .observe(document.body, {childList:true, subtree:true});
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();
+</script>
+<style>
+/* ===== GitHub保存（jiraiと同じ方式）：トークン入力ポップアップ ===== */
+.eth-tk-mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100000;align-items:center;justify-content:center;padding:18px;font-family:"Zen Kaku Gothic New",sans-serif}
+.eth-tk-mask.on{display:flex}
+.eth-tk-modal{background:#fff;border:1px solid #c2c2c2;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.18);width:100%;max-width:460px;padding:24px;color:#222;text-align:left;box-sizing:border-box}
+.eth-tk-modal h2{font-family:"Zen Kaku Gothic New",sans-serif;font-size:19px;margin:0 0 4px;letter-spacing:.05em;font-weight:700;color:#222;border:0;padding:0}
+.eth-tk-modal p{font-size:13px;color:#777;margin:6px 0 14px;line-height:1.6}
+.eth-tk-modal p.eth-tk-err{color:#8b0000;font-weight:700;margin:0 0 8px;display:none}
+.eth-tk-modal label{display:block;font-size:12px;color:#777;margin:12px 0 5px}
+.eth-tk-modal input{width:100%;box-sizing:border-box;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#222;background:#f5f5f5;border:1px solid #d4d4d4;border-radius:8px;padding:10px 11px}
+.eth-tk-note{font-size:11px;color:#999;margin-top:10px;line-height:1.6}
+.eth-tk-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.eth-tk-btn{font-family:"Zen Kaku Gothic New",sans-serif;font-size:13px;font-weight:500;color:#222;background:#fff;border:1px solid #d4d4d4;border-radius:8px;padding:7px 13px;cursor:pointer;white-space:nowrap}
+.eth-tk-btn:hover{border-color:#c2c2c2;background:#f0f0f0}
+.eth-tk-btn.primary{background:#8b0000;border-color:#8b0000;color:#fff}
+.eth-tk-btn.primary:hover{background:#a31414;border-color:#a31414}
+.eth-tk-btn.ghost{background:transparent}
+.eth-tk-hide{display:none !important}
+</style>
+<script>
+(function(){
+  var KEY = "gh_token_v1";
+  var mask = null, onSaved = null;
+  function get(){ try{ return localStorage.getItem(KEY) || localStorage.getItem("jirai_pat") || ""; }catch(e){ return ""; } }
+  function syncInput(t){
+    var el = document.getElementById("token");
+    if(el && el.tagName === "INPUT"){ el.value = t; try{ el.dispatchEvent(new Event("input", {bubbles:true})); el.dispatchEvent(new Event("change", {bubbles:true})); }catch(e){} }
+  }
+  function set(t){
+    try{ if(t) localStorage.setItem(KEY, t); else localStorage.removeItem(KEY); localStorage.removeItem("jirai_pat"); }catch(e){}
+    syncInput(t);
+  }
+  function build(){
+    if(mask) return;
+    mask = document.createElement("div");
+    mask.className = "eth-tk-mask";
+    mask.innerHTML =
+      '<div class="eth-tk-modal" role="dialog" aria-modal="true">' +
+        '<h2>同期設定</h2>' +
+        '<p class="eth-tk-err">トークンが無効です。もう一度入力してください。</p>' +
+        '<p>保存にはGitHubトークンが必要です。この端末にのみ保存されます。</p>' +
+        '<label>GitHub Token</label>' +
+        '<input type="password" placeholder="github_pat_xxxxxxxx" autocomplete="off">' +
+        '<div class="eth-tk-note">GitHub の Settings → Developer settings → Personal access tokens から発行。EiThiophile の Contents を「Read and write」にしてください。</div>' +
+        '<div class="eth-tk-foot">' +
+          '<button type="button" class="eth-tk-btn ghost" data-k="cancel">キャンセル</button>' +
+          '<button type="button" class="eth-tk-btn primary" data-k="save">保存</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(mask);
+    var inp = mask.querySelector("input");
+    mask.addEventListener("click", function(e){ if(e.target === mask) close(); });
+    mask.querySelector('[data-k="cancel"]').addEventListener("click", close);
+    mask.querySelector('[data-k="save"]').addEventListener("click", save);
+    inp.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); save(); } });
+  }
+  function close(){ if(mask) mask.classList.remove("on"); onSaved = null; }
+  function save(){
+    var v = mask.querySelector("input").value.trim();
+    set(v);
+    var cb = onSaved; close();
+    if(v && typeof cb === "function"){ try{ cb(v); }catch(e){} }
+  }
+  function open(cb, invalid){
+    build();
+    onSaved = (typeof cb === "function") ? cb : null;
+    mask.querySelector(".eth-tk-err").style.display = invalid ? "block" : "none";
+    var inp = mask.querySelector("input");
+    inp.value = get();
+    mask.classList.add("on");
+    setTimeout(function(){ try{ inp.focus(); }catch(e){} }, 30);
+  }
+  window.EthTok = { get:get, set:set, open:open };
+
+  /* トークンが無効（401/403）のときはポップアップを出す */
+  var _f = window.fetch;
+  window.fetch = function(input, init){
+    var url = typeof input === "string" ? input : (input && input.url) || "";
+    var method = String((init && init.method) || (input && input.method) || "GET").toUpperCase();
+    var self = this, args = arguments;
+    /* 大事故防止：保存する内容が今のデータより大きく減るときは確認する（読み込み失敗のまま空で上書きするのを防ぐ） */
+    if(method === "PUT" && /^https:\/\/api\.github\.com\/repos\/[^?]+\/contents\/[^?]+\.json(\?|$)/.test(url)){
+      return (async function(){
+        try{
+          var body = JSON.parse((init && init.body) || "{}");
+          var newSize = atob(String(body.content || "").replace(/\s/g, "")).length;
+          var hd = (init && init.headers) || {}, auth = "";
+          auth = (typeof hd.get === "function") ? (hd.get("Authorization") || "") : (hd.Authorization || hd.authorization || "");
+          var cur = await _f(url.split("?")[0] + "?ref=" + encodeURIComponent(body.branch || "main") + "&t=" + Date.now(),
+            {headers: auth ? {"Authorization": auth, "Accept": "application/vnd.github+json"} : {"Accept": "application/vnd.github+json"}, cache:"no-store"});
+          var oldSize = 0;
+          if(cur.ok){
+            var cj = await cur.json();
+            oldSize = Number(cj && cj.size) || 0;
+          }else{
+            /* GitHubから取れないときはサイト上の公開中ファイルで比べる */
+            var fm = /\/contents\/([^?]+)/.exec(url);
+            var sc = fm ? await _f("/" + fm[1] + "?t=" + Date.now(), {cache:"no-store"}) : null;
+            if(sc && sc.ok) oldSize = new TextEncoder().encode(await sc.text()).length;
+          }
+          {
+            if(oldSize > 300 && newSize < oldSize * 0.5){
+              var ok = confirm("保存しようとしている内容が、今のデータよりかなり少なくなっています。\n（今：約" + oldSize + "文字 → 保存後：約" + newSize + "文字）\n\nデータの読み込みに失敗している可能性があります。本当に保存しますか？");
+              if(!ok) return new Response(JSON.stringify({message:"保存を中止しました（データが大きく減るため）"}), {status:400, headers:{"Content-Type":"application/json"}});
+            }
+          }
+        }catch(e){}
+        return wrap(_f.apply(self, args));
+      })();
+    }
+    return wrap(_f.apply(this, arguments));
+    function wrap(p){
+    if(/^https:\/\/api\.github\.com\/repos\//.test(url)){
+      p.then(function(r){
+        if(r.status === 401 || (r.status === 403 && method !== "GET")){
+          if(document.body) open(null, true);
+        }
+      }, function(){});
+    }
+    return p;
+    }
+  };
+
+  function setup(){
+    var tk = document.getElementById("token");
+    if(tk && tk.tagName === "INPUT"){
+      /* 画面上の入力欄は使わず、ポップアップで入力する */
+      var wrap = (tk.parentElement && tk.parentElement.classList.contains("field")) ? tk.parentElement : tk;
+      wrap.classList.add("eth-tk-hide");
+      if(!tk.value) tk.value = get();
+      var btns = Array.prototype.slice.call(document.querySelectorAll("button"));
+      var saveBtn = null;
+      btns.forEach(function(b){ if(!saveBtn && /GitHubへ保存/.test(b.textContent)) saveBtn = b; });
+      if(saveBtn){
+        saveBtn.textContent = "☁ GitHubへ保存";
+        saveBtn.addEventListener("click", function(e){
+          if(!tk.value.trim() && !get()){
+            e.preventDefault(); e.stopImmediatePropagation();
+            open();
+          }else if(!tk.value.trim()){ tk.value = get(); }
+        }, true);
+      }
+      var anchor = saveBtn || document.getElementById("reloadBtn") || document.getElementById("loadBtn");
+      if(anchor && !document.getElementById("ethTkBtn")){
+        var s = document.createElement("button");
+        s.type = "button"; s.id = "ethTkBtn";
+        s.className = anchor.className.replace(/\bprimary\b/g, "") + (/\bghost\b/.test(anchor.className) ? "" : " ghost");
+        s.textContent = "⚙ 同期設定";
+        s.addEventListener("click", function(){ open(); });
+        anchor.parentNode.insertBefore(s, anchor.nextSibling);
+      }
+    }
+    /* 各ページ独自のトークン設定画面もこのポップアップに統一 */
+    if(!document.getElementById("tokenMask")){
+      window.openTokenModal = function(){ open(function(){ if(typeof window.loadFromGitHub === "function"){ try{ window.loadFromGitHub(); }catch(e){} } }); };
+    }
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", setup); else setup();
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ワンクッションメモ</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="EITHIOPHILE">
+<meta property="og:title" content="ワンクッションメモ">
+<meta property="og:description" content="EITHIOPHILE">
+<meta property="og:url" content="https://eithiophile.com/memo.html">
+<meta property="og:image" content="https://eithiophile.com/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<style>
+  :root{
+    --accent:#8b0000; --accent-dark:#6b0000; --text:#1a1a1a; --muted:#888;
+    --line:#d4d4d4; --bg:#f5f5f5; --card:#ffffff; --soft:#f3f3f3; --tint:#f7eaea;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;line-height:1.7;-webkit-text-size-adjust:100%;}
+  button,input,textarea,select{font-family:inherit;}
+
+  .page{max-width:1100px;margin:0 auto;padding:20px 16px 80px;}
+  .page-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .page-head h1{font-size:20px;margin:0;letter-spacing:.06em;}
+  .page-head .spacer{flex:1;}
+
+  .btn{border:1px solid var(--accent-dark);background:var(--accent);color:#fff;font-size:12px;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;}
+  .btn.ghost{background:#fff;color:var(--accent-dark);}
+  .btn.plain{background:#fff;color:#555;border-color:var(--line);}
+  .btn:disabled{opacity:.5;cursor:default;}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:14px;display:none;}
+  body.editmode .panel{display:block;}
+  .panel-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+  .panel input{flex:1 1 220px;border:1px solid var(--line);border-radius:5px;padding:6px 8px;font-size:12px;}
+  .status{font-size:12px;color:var(--accent-dark);margin-top:6px;}
+  .status:empty{display:none;}
+  .status.err{color:#b02a2a;}
+
+  .layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:18px;align-items:start;}
+
+  /* しおり */
+  .shiori{position:sticky;top:96px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 0 10px;max-height:calc(100vh - 116px);display:flex;flex-direction:column;}
+  .shiori-seg{display:flex;margin:0 10px 8px;border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+  .shiori-seg button{flex:1;border:none;background:#fff;color:#666;font-size:12px;font-weight:700;padding:5px 0;cursor:pointer;}
+  .shiori-seg button+button{border-left:1px solid var(--line);}
+  .shiori-seg button.on{background:var(--accent);color:#fff;}
+  .shiori-title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.12em;padding:0 14px 6px;background:none;border:none;text-align:left;display:flex;align-items:center;gap:8px;width:100%;cursor:default;}
+  .shiori-title .sh-cur,.shiori-title .sh-chev{display:none;}
+  .shiori-body{display:flex;flex-direction:column;min-height:0;flex:1;}
+  .search{margin:0 10px 8px;position:relative;}
+  .search input{width:100%;border:1px solid var(--line);border-radius:6px;padding:7px 10px 7px 30px;font-size:13px;background:var(--soft);}
+  .search::before{content:"🔍";position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;}
+  .shiori-list{overflow-y:auto;flex:1;}
+  .shiori-item{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;border-left:3px solid transparent;padding:7px 12px 7px 11px;font-size:13px;color:var(--text);cursor:pointer;line-height:1.45;}
+  .shiori-item:hover{background:var(--soft);}
+  .shiori-item.on{border-left-color:var(--accent);background:var(--tint);font-weight:700;}
+  .shiori-item .nm{flex:1;min-width:0;word-break:break-word;}
+  .shiori-item .ct{font-size:11px;color:var(--muted);font-weight:500;}
+  .shiori-empty{font-size:12px;color:var(--muted);padding:6px 14px;}
+
+  /* メモ */
+  .memo-list{display:flex;flex-direction:column;gap:14px;}
+  .focus-bar{display:none;font-size:13px;}
+  .focus-bar a{color:var(--accent-dark);}
+  body.focus .focus-bar{display:block;}
+  .memo{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;scroll-margin-top:110px;}
+  .memo-head{display:flex;align-items:flex-start;gap:10px;padding:12px 16px 10px;border-bottom:1px solid var(--line);background:#fcfcfc;}
+  .memo-scn{font-size:16px;font-weight:700;line-height:1.5;word-break:break-word;flex:1;min-width:0;}
+  .memo-scn a{color:inherit;text-decoration:none;border-bottom:1px dashed #b88;}
+  .memo-scn a:hover{color:var(--accent);}
+  .memo-meta{font-size:11px;color:var(--muted);white-space:nowrap;padding-top:3px;}
+  .badge{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;margin-right:6px;vertical-align:2px;}
+  .badge.pub{background:#eef3ee;color:#3d6b3d;border:1px solid #c6d9c6;}
+  .badge.pass{background:#f7eaea;color:var(--accent-dark);border:1px solid #e0bcbc;}
+  .memo-note{margin:12px 16px 0;font-size:11px;color:#444;white-space:pre-wrap;word-break:break-word;}
+  .cushion{padding:12px 16px 14px;}
+  .reveal-btn{width:100%;border:1px dashed #c9a5a5;background:var(--tint);color:var(--accent-dark);font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer;}
+  .reveal-btn:hover{background:#f2dcdc;}
+  .pass-box{border:1px dashed #c9a5a5;background:var(--tint);border-radius:6px;padding:6px 8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+  .pass-box .lbl{font-size:12px;font-weight:700;color:var(--accent-dark);}
+  .pass-box input{flex:1 1 180px;min-width:0;border:1px solid var(--line);border-radius:5px;padding:4px 8px;font-size:13px;background:#fff;}
+  .pass-box .btn{padding:4px 10px;}
+  .pass-err{width:100%;font-size:12px;color:#b02a2a;}
+  .pass-err:empty{display:none;}
+  .memo-body{padding:6px 16px 14px;}
+  .md .bl{height:.6em;}
+  .md details.tg{border:1px solid var(--line);border-radius:6px;margin:8px 0;background:#fff;}
+  .md details.tg > summary{cursor:pointer;padding:5px 10px;font-weight:700;font-size:14px;list-style:none;display:flex;align-items:center;gap:6px;}
+  .md details.tg > summary::-webkit-details-marker{display:none;}
+  .md details.tg > summary::before{content:"▶";font-size:9px;color:var(--accent-dark);transition:transform .15s;}
+  .md details.tg[open] > summary::before{transform:rotate(90deg);}
+  .md details.tg > .tg-body{padding:4px 12px 8px;border-top:1px solid #eee;}
+  .md details.tg > .tg-body > :first-child{margin-top:4px;}
+  .memo-note + .memo-body{margin:12px 16px 0;padding:10px 0 14px;border-top:1px solid var(--line);}
+  /* 伏字 */
+  .fuse{color:var(--accent-dark);letter-spacing:.05em;}
+  .fuse-open{background:#f6e7c8;border-radius:3px;padding:0 2px;}
+  .fuse-tool{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .fuse-tool .btn{font-size:11px;padding:3px 10px;}
+  body:not(.editmode) .memo-foot{display:none;}
+  .memo-foot{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;padding:8px 16px 12px;border-top:1px solid #eee;}
+  .memo-foot .btn{font-size:11px;padding:4px 10px;}
+  .edit-only{display:none!important;}
+  body.editmode .edit-only{display:inline-block!important;}
+  .empty{background:var(--card);border:1px dashed var(--line);border-radius:10px;padding:40px 16px;text-align:center;color:var(--muted);font-size:13px;}
+
+  /* マークダウン */
+  .md{font-size:11px;word-break:break-word;}
+  .md h1,.md h2,.md h3,.md h4,.md h5,.md h6{margin:14px 0 6px;line-height:1.45;}
+  .md h1{font-size:18px;} .md h2{font-size:15px;} .md h3{font-size:12px;} .md h4,.md h5,.md h6{font-size:11px;}
+  .md p{margin:8px 0;}
+  .md ul,.md ol{margin:8px 0;padding-left:1.6em;}
+  .md blockquote{margin:8px 0;padding:4px 12px;border-left:3px solid #c9a5a5;color:#555;background:#fafafa;}
+  .md code{background:#f1f1f1;border-radius:4px;padding:1px 5px;font-size:.92em;font-family:ui-monospace,Menlo,Consolas,monospace;}
+  .md pre{background:#f4f4f4;border:1px solid #e6e6e6;border-radius:6px;padding:10px 12px;overflow-x:auto;}
+  .md pre code{background:none;padding:0;}
+  .md hr{border:none;border-top:1px solid #ddd;margin:14px 0;}
+  .md a{color:var(--accent-dark);}
+  .md > :first-child{margin-top:4px;}
+
+  /* 編集モーダル */
+  .ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:3000;padding:20px 12px;overflow-y:auto;}
+  .ov.open{display:flex;}
+  .modal{background:#fff;border-radius:12px;width:100%;max-width:680px;margin:auto;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+  .modal-head{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid #eee;}
+  .modal-head h2{font-size:16px;margin:0;flex:1;}
+  .x{background:none;border:none;font-size:20px;color:#888;cursor:pointer;line-height:1;}
+  .modal-body{padding:14px 18px 18px;display:flex;flex-direction:column;gap:14px;}
+  .fl{font-size:12px;font-weight:700;margin-bottom:5px;display:block;}
+  .fl small{font-weight:500;color:var(--muted);}
+  .modal input[type=text],.modal textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:7px 10px;font-size:13px;background:#fafafa;color:var(--text);}
+  .modal textarea{resize:vertical;line-height:1.6;}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:8px;}
+  .seg button{border:none;background:#fff;color:#666;font-size:12px;font-weight:700;padding:6px 12px;cursor:pointer;}
+  .seg button+button{border-left:1px solid var(--line);}
+  .seg button.on{background:var(--accent);color:#fff;}
+  .pick-list{border:1px solid var(--line);border-radius:6px;max-height:210px;overflow-y:auto;margin-top:6px;}
+  .pick-item{display:block;width:100%;text-align:left;border:none;border-bottom:1px solid #f0f0f0;background:#fff;padding:7px 10px;font-size:13px;cursor:pointer;line-height:1.45;}
+  .pick-item:hover{background:var(--soft);}
+  .pick-item.on{background:var(--tint);font-weight:700;}
+  .pick-item small{color:var(--muted);font-weight:500;margin-left:6px;}
+  .picked{font-size:13px;margin-top:6px;}
+  .picked b{color:var(--accent-dark);}
+  .md-help{font-size:11px;color:var(--muted);margin-top:4px;}
+  .preview{border:1px dashed var(--line);border-radius:6px;padding:8px 12px;min-height:60px;background:#fff;}
+  .radio-row{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;}
+  .radio-row label{display:flex;align-items:center;gap:5px;cursor:pointer;}
+  .lock-note{font-size:12px;color:#555;background:var(--tint);border-radius:6px;padding:8px 10px;}
+  .modal-foot{display:flex;justify-content:flex-end;gap:8px;}
+
+  @media (max-width:760px){
+    .layout{grid-template-columns:minmax(0,1fr);}
+    .shiori{position:static;max-height:none;padding:0;min-width:0;}
+    .shiori-title{padding:8px 12px;cursor:pointer;letter-spacing:.06em;}
+    .shiori-title .sh-cur{display:block;flex:1;min-width:0;color:var(--text);font-weight:500;letter-spacing:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .shiori-title .sh-chev{display:block;font-size:9px;transition:transform .15s;}
+    .shiori.open .shiori-title .sh-chev{transform:rotate(180deg);}
+    .shiori:not(.open) .shiori-body{display:none;}
+    .shiori-body{padding-bottom:4px;}
+    .shiori-seg{margin:0 10px 6px;}
+    .shiori-seg button{padding:3px 0;}
+    .search{margin:0 10px 6px;}
+    .search input{padding:5px 10px 5px 28px;font-size:12px;}
+    .shiori-list{display:flex;overflow-x:auto;gap:6px;padding:0 10px 8px;}
+    .shiori-item{flex:0 0 auto;width:auto;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;white-space:nowrap;}
+    .shiori-item.on{border-color:var(--accent);}
+    .shiori-item .nm{white-space:nowrap;}
+    .memo-head{flex-direction:column;gap:2px;}
+  }
+</style>
+<style>
+/* ===== 共通ヘッダー（EITHIOPHILE） ===== */
+.eth-fix{position:sticky;top:0;z-index:1200}
+header.eth{background:#8b0000}
+.eth-inner{max-width:900px;margin:0 auto;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.eth-title{font-size:17px;font-weight:800;color:#ffffff;letter-spacing:.30em;font-family:Arial,Helvetica,sans-serif}
+.eth-navwrap{position:relative}
+.eth-navbtn{background:transparent;border:1px solid rgba(255,255,255,.6);border-radius:6px;padding:4px 11px;font-size:16px;line-height:1.2;cursor:pointer;color:#fff;font-family:inherit}
+.eth-navbtn:hover{background:rgba(255,255,255,.15)}
+.eth-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:1300;background:#ffffff;border:1px solid #d4d4d4;border-radius:8px;min-width:200px;max-height:70vh;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:6px}
+.eth-menu.open{display:block}
+.eth-mtab{display:block;width:100%;text-align:left;background:transparent;border:none;color:#222;padding:9px 12px;font-size:14px;cursor:pointer;white-space:nowrap;font-family:inherit;border-radius:6px}
+.eth-mtab:hover{background:#ececec}
+.eth-mtab.active{background:#8b0000;color:#fff;font-weight:700}
+.eth-tabbar{background:#ffffff;border-bottom:1px solid #d4d4d4;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.eth-tabbar-inner{max-width:900px;margin:0 auto;display:flex}
+.eth-tab{background:transparent;border:none;border-bottom:2px solid transparent;color:#777;padding:8px 16px;font-size:13px;cursor:pointer;white-space:nowrap;font-family:inherit}
+.eth-tab:hover{color:#222}
+.eth-tab.active{color:#222;font-weight:700;border-bottom-color:#8b0000}
+</style>
+</head>
+<body>
+<div class="eth-fix">
+  <header class="eth">
+    <div class="eth-inner">
+      <div class="eth-title">EITHIOPHILE</div>
+      <div class="eth-navwrap">
+        <button class="eth-navbtn" id="ethNavBtn" aria-label="メニュー">≡</button>
+        <div class="eth-menu" id="ethNavMenu"></div>
+      </div>
+    </div>
+  </header>
+  <nav class="eth-tabbar" id="ethTabbar" style="display:none"><div class="eth-tabbar-inner" id="ethTabbarInner"></div></nav>
+</div>
+
+<div class="page">
+  <div class="page-head">
+    <h1>ワンクッションメモ</h1>
+    <span class="spacer"></span>
+    <button class="btn edit-only" id="addBtn">＋ メモを書く</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-row">
+      <input type="password" id="token" autocomplete="off" placeholder="GitHubトークン（repo権限）">
+      <button class="btn ghost" id="reloadBtn">再読込</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="shiori">
+      <button type="button" class="shiori-title" id="shioriToggle"><span>しおり</span><span class="sh-cur" id="shioriCur"></span><span class="sh-chev">▼</span></button>
+      <div class="shiori-body">
+        <div class="shiori-seg" id="groupSeg"><button data-g="scn">シナリオ</button><button data-g="year">年</button></div>
+        <div class="search"><input type="search" id="q" placeholder="シナリオ名で検索…" autocomplete="off"></div>
+        <div class="shiori-list" id="shiori"></div>
+      </div>
+    </aside>
+    <main>
+      <div class="focus-bar" id="focusBar"><a href="memo.html" id="allLink">← すべてのメモを見る</a></div>
+      <div class="memo-list" id="list"></div>
+    </main>
+  </div>
+</div>
+
+<!-- 編集モーダル -->
+<div class="ov" id="ov">
+  <div class="modal">
+    <div class="modal-head"><h2 id="mTitle">メモを書く</h2><button class="x" id="mClose" aria-label="閉じる">✕</button></div>
+    <div class="modal-body">
+      <div>
+        <span class="fl">シナリオ</span>
+        <div class="seg" id="scnSeg"><button data-k="pick" class="on">卓履歴から選ぶ</button><button data-k="new">新規入力</button></div>
+        <div id="scnPick">
+          <input type="text" id="pickQ" placeholder="卓履歴のシナリオ名で検索…" autocomplete="off">
+          <div class="pick-list" id="pickList"></div>
+          <div class="picked" id="picked"></div>
+        </div>
+        <div id="scnNew" style="display:none">
+          <input type="text" id="newScn" placeholder="シナリオ名">
+        </div>
+      </div>
+      <div>
+        <label class="fl" for="fNote">注意書き <small>（ワンクッション前に表示・任意）</small></label>
+        <textarea id="fNote" rows="3" placeholder="例：〇〇のネタバレを含みます"></textarea>
+        <div class="fuse-tool"><button class="btn plain" id="fuseBtn" type="button">選択部分を伏字にする</button><span class="md-help" style="margin:0">[[ ]] で囲んだ部分は「○○」と表示され、開いた時に見えます</span></div>
+      </div>
+      <div>
+        <span class="fl">本文 <small>（マークダウン）</small></span>
+        <div class="seg" id="bodySeg"><button data-k="write" class="on">書く</button><button data-k="preview">プレビュー</button></div>
+        <div id="lockNote" class="lock-note" style="display:none">
+          本文はPASSで保護されています。本文や伏字のある注意書きを編集するには、PASSを入力して読み込んでください。
+          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+            <input type="text" id="unlockPass" placeholder="PASS" autocomplete="off" style="flex:1 1 160px">
+            <button class="btn" id="unlockBtn">読み込む</button>
+          </div>
+          <div class="pass-err" id="unlockErr"></div>
+        </div>
+        <textarea id="fBody" rows="12" placeholder="# 見出し&#10;**太字** *斜体* ~~取り消し~~ `コード`&#10;- リスト&#10;> 引用"></textarea>
+        <div class="preview md" id="preview" style="display:none"></div>
+        <div class="fuse-tool"><button class="btn plain" id="toggleBtn" type="button">トグルを挿入</button><span class="md-help" style="margin:0">:::見出し ～ ::: で囲んだ部分が開閉できるトグルになります</span></div>
+        <div class="md-help"># 見出し / **太字** / *斜体* / ~~取り消し線~~ / `コード` / ```コードブロック``` / &gt; 引用 / - リスト / 1. 番号リスト / [文字](URL) / --- 区切り線</div>
+      </div>
+      <div>
+        <span class="fl">公開範囲</span>
+        <div class="radio-row">
+          <label><input type="radio" name="vis" value="public" checked>誰でも（ワンクッション）</label>
+          <label><input type="radio" name="vis" value="pass">PASS付き</label>
+        </div>
+        <div id="passRow" style="display:none;margin-top:8px">
+          <input type="text" id="fPass" placeholder="PASS（ひらがな・漢字も使えます）" autocomplete="off">
+          <div class="md-help" id="passHelp"></div>
+        </div>
+      </div>
+      <div class="pass-err" id="mErr"></div>
+      <div class="modal-foot">
+        <button class="btn plain" id="mCancel">キャンセル</button>
+        <button class="btn" id="mSave">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const GH_REPO   = "8i10/EiThiophile";
+const GH_BRANCH = "main";
+const MEMO_FILE = "memo.json";
+const MEMO_API  = "https://api.github.com/repos/" + GH_REPO + "/contents/" + MEMO_FILE;
+const RAW_BASE  = "https://raw.githubusercontent.com/" + GH_REPO + "/" + GH_BRANCH + "/";
+const SITE_BASE = "https://eithiophile.com/";
+const GH_TOKEN_KEY = "gh_token_v1";
+const PARAMS = new URLSearchParams(location.search);
+const IS_EDIT = PARAMS.get("edit") === "1";
+const FOCUS_ID = PARAMS.get("m") || "";
+
+let MEMOS = [];
+let CARDS = null;          // 卓履歴（編集時のみ読み込み）
+let curScn = "";           // しおりで選択中（シナリオ名 または 年）
+let groupMode = "scn";     // しおりの分け方：scn=シナリオ / year=年
+try{ if(localStorage.getItem("memo_group") === "year") groupMode = "year"; }catch(e){}
+function groupKey(m){ return groupMode === "year" ? (m.createdAt ? new Date(m.createdAt).getFullYear() + "年" : "日付なし") : (m.scenario || "（シナリオ未設定）"); }
+const UNLOCKED = {};       // id → 復号済み本文（このページを開いている間だけ）
+const SHOWN = {};          // id → 表示中
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function setStatus(m, err){ const el = $("status"); el.textContent = m || ""; el.className = "status" + (err ? " err" : ""); }
+function fmtDate(t){ if(!t) return ""; const d = new Date(t); return d.getFullYear() + "/" + (d.getMonth()+1) + "/" + d.getDate(); }
+function newId(){ return "m" + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+/* ===== マークダウン（HTMLはすべてエスケープ） ===== */
+function mdInline(s){
+  const codes = [];
+  s = s.replace(/`([^`\n]+)`/g, function(_, c){ codes.push(c); return "\u0000" + (codes.length-1) + "\u0000"; });
+  s = esc(s);
+  s = s.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g, function(_, t, u){ return '<a href="' + u + '" target="_blank" rel="noopener">' + t + "</a>"; });
+  s = s.replace(/(^|[^"'>=])(https?:\/\/[^\s<]+)/g, function(_, p, u){ return p + '<a href="' + u + '" target="_blank" rel="noopener">' + u + "</a>"; });
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/__([^_\n]+)__/g, "<strong>$1</strong>");
+  s = s.replace(/~~([^~\n]+)~~/g, "<del>$1</del>");
+  s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
+  s = s.replace(/(^|[^_\w])_([^_\n]+)_(?![_\w])/g, "$1<em>$2</em>");
+  s = s.replace(/\u0000(\d+)\u0000/g, function(_, i){ return "<code>" + esc(codes[Number(i)]) + "</code>"; });
+  return s;
+}
+function mdRender(src){
+  const lines = String(src || "").replace(/\r\n?/g, "\n").split("\n");
+  const out = []; let i = 0;
+  function isBlockStart(l){ return /^:::/.test(l) || /^```/.test(l) || /^#{1,6}\s/.test(l) || /^>\s?/.test(l) || /^\s*[-*+]\s+/.test(l) || /^\s*\d+[.)]\s+/.test(l) || /^\s*([-*_])(\s*\1){2,}\s*$/.test(l); }
+  while(i < lines.length){
+    const l = lines[i];
+    if(/^```/.test(l)){
+      const buf = []; i++;
+      while(i < lines.length && !/^```/.test(lines[i])){ buf.push(lines[i]); i++; }
+      i++; out.push("<pre><code>" + esc(buf.join("\n")) + "</code></pre>"); continue;
+    }
+    if(/^:::\s*\S/.test(l)){
+      const title = l.replace(/^:::\s*/, "").replace(/^details(\s+|$)/, "").trim();
+      const buf = []; let depth = 1; i++;
+      while(i < lines.length){
+        if(/^:::\s*\S/.test(lines[i])) depth++;
+        else if(/^:::\s*$/.test(lines[i])){ depth--; if(depth === 0) break; }
+        buf.push(lines[i]); i++;
+      }
+      i++;
+      out.push('<details class="tg"><summary>' + mdInline(title || "詳細") + '</summary><div class="tg-body">' + mdRender(buf.join("\n")) + "</div></details>");
+      continue;
+    }
+    let m;
+    if((m = /^(#{1,6})\s+(.*)$/.exec(l))){ out.push("<h" + m[1].length + ">" + mdInline(m[2]) + "</h" + m[1].length + ">"); i++; continue; }
+    if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(l)){ out.push("<hr>"); i++; continue; }
+    if(/^>\s?/.test(l)){
+      const buf = [];
+      while(i < lines.length && /^>\s?/.test(lines[i])){ buf.push(lines[i].replace(/^>\s?/, "")); i++; }
+      out.push("<blockquote>" + mdRender(buf.join("\n")) + "</blockquote>"); continue;
+    }
+    if(/^\s*[-*+]\s+/.test(l) || /^\s*\d+[.)]\s+/.test(l)){
+      const ordered = /^\s*\d+[.)]\s+/.test(l), re = ordered ? /^\s*\d+[.)]\s+/ : /^\s*[-*+]\s+/;
+      const items = [];
+      while(i < lines.length && re.test(lines[i])){ items.push("<li>" + mdInline(lines[i].replace(re, "")) + "</li>"); i++; }
+      out.push((ordered ? "<ol>" : "<ul>") + items.join("") + (ordered ? "</ol>" : "</ul>")); continue;
+    }
+    if(!l.trim()){ if(out.length) out.push('<div class="bl"></div>'); while(i < lines.length && !lines[i].trim()) i++; continue; }
+    const buf = [];
+    while(i < lines.length && lines[i].trim() && !isBlockStart(lines[i])){ buf.push(mdInline(lines[i])); i++; }
+    out.push("<p>" + buf.join("<br>") + "</p>");
+  }
+  return out.join("");
+}
+
+/* ===== 伏字（注意書きの [[ ]]） ===== */
+const FUSE_RE = /\[\[([\s\S]*?)\]\]/g;
+function hasFuse(t){ return /\[\[[\s\S]*?\]\]/.test(t || ""); }
+function maskNote(t){ return String(t || "").replace(FUSE_RE, "[[]]"); }
+function noteHtml(t, open){
+  const src = String(t || ""); let out = "", last = 0, m;
+  FUSE_RE.lastIndex = 0;
+  while((m = FUSE_RE.exec(src))){
+    out += esc(src.slice(last, m.index));
+    out += (open && m[1]) ? '<span class="fuse-open">' + esc(m[1]) + "</span>" : '<span class="fuse">○○</span>';
+    last = FUSE_RE.lastIndex;
+  }
+  return out + esc(src.slice(last));
+}
+/* 復号した中身：{body, note}（旧形式は本文だけの文字列） */
+function parsePlain(text){
+  try{ const o = JSON.parse(text); if(o && o.v === 2) return { body:o.body || "", note:(o.note == null ? null : o.note) }; }catch(e){}
+  return { body:text, note:null };
+}
+
+/* ===== PASS（AES-GCM／PBKDF2。PASSそのものは保存しない） ===== */
+function normPass(p){ return String(p || "").normalize("NFKC").trim(); }
+function b64(buf){ let s = ""; new Uint8Array(buf).forEach(function(b){ s += String.fromCharCode(b); }); return btoa(s); }
+function unb64(s){ const bin = atob(s); const a = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) a[i] = bin.charCodeAt(i); return a; }
+async function deriveKey(pass, salt){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(normPass(pass)), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt:salt, iterations:150000, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function encryptText(text, pass){
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(pass, salt);
+  const data = await crypto.subtle.encrypt({name:"AES-GCM", iv:iv}, key, new TextEncoder().encode(text));
+  return { s:b64(salt), i:b64(iv), d:b64(data) };
+}
+async function decryptText(enc, pass){
+  const key = await deriveKey(pass, unb64(enc.s));
+  const data = await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(enc.i)}, key, unb64(enc.d));
+  return new TextDecoder().decode(data);
+}
+
+/* ===== 表示 ===== */
+function sortedMemos(){ return MEMOS.slice().sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); }); }
+function matchQ(m){ const q = $("q").value.trim().toLowerCase(); return !q || String(m.scenario||"").toLowerCase().indexOf(q) >= 0; }
+
+function renderShiori(){
+  const groups = [], idx = {};
+  sortedMemos().filter(matchQ).forEach(function(m){
+    const k = groupKey(m);
+    if(!(k in idx)){ idx[k] = groups.length; groups.push({name:k, n:0}); }
+    groups[idx[k]].n++;
+  });
+  let h = '<button class="shiori-item' + (curScn ? "" : " on") + '" data-scn=""><span class="nm">すべて</span><span class="ct">' + groups.reduce(function(a,g){return a+g.n;},0) + '</span></button>';
+  h += groups.map(function(g){
+    return '<button class="shiori-item' + (curScn === g.name ? " on" : "") + '" data-scn="' + esc(g.name) + '"><span class="nm">' + esc(g.name) + '</span><span class="ct">' + g.n + "</span></button>";
+  }).join("");
+  if(!groups.length) h += '<div class="shiori-empty">該当するメモがありません</div>';
+  $("shiori").innerHTML = h;
+  const qv = $("q").value.trim();
+  $("shioriCur").textContent = [curScn ? curScn : "すべて", qv ? "「" + qv + "」で検索中" : ""].filter(Boolean).join(" ／ ");
+  document.querySelectorAll("#groupSeg button").forEach(function(b){ b.classList.toggle("on", b.dataset.g === groupMode); });
+}
+
+function memoHtml(m){
+  const cardLink = (m.report || m.cardId) ? '<a href="report.html?q=' + encodeURIComponent(m.scenario || "") + '" title="卓履歴で検索">' + esc(m.scenario) + "</a>" : esc(m.scenario || "（シナリオ未設定）");
+  const shown = !!SHOWN[m.id];
+  const noteSrc = (shown && m.vis === "pass" && UNLOCKED[m.id] && UNLOCKED[m.id].note != null) ? UNLOCKED[m.id].note : m.note;
+  const badge = m.vis === "pass" ? '<span class="badge pass" title="PASS付き">🔒</span>' : '<span class="badge pub" title="ワンクッション">📝</span>';
+  let cushion;
+  if(SHOWN[m.id]){
+    const body = m.vis === "pass" ? UNLOCKED[m.id].body : m.body;
+    cushion = '<div class="memo-body md">' + mdRender(body) + "</div>" +
+      (m.vis === "pass" ? "" : '<div class="cushion" style="padding-top:0"><button class="btn plain" data-act="hide" data-id="' + m.id + '">▲ 隠す</button></div>');
+  }else if(m.vis === "pass"){
+    cushion = '<div class="cushion"><div class="pass-box"><span class="lbl">🔒 PASS</span>' +
+      '<input type="text" data-pass="' + m.id + '" placeholder="PASSを入力" autocomplete="off">' +
+      '<button class="btn" data-act="unlock" data-id="' + m.id + '">表示</button>' +
+      '<div class="pass-err" data-err="' + m.id + '"></div></div></div>';
+  }else{
+    cushion = '<div class="cushion"><button class="reveal-btn" data-act="show" data-id="' + m.id + '">▼ クリックで表示</button></div>';
+  }
+  return '<article class="memo" id="memo-' + m.id + '">' +
+    '<div class="memo-head"><div class="memo-scn">' + badge + cardLink + '</div><div class="memo-meta">' + fmtDate(m.createdAt) + "</div></div>" +
+    (noteSrc ? '<div class="memo-note">' + noteHtml(noteSrc, shown) + "</div>" : "") +
+    cushion +
+    '<div class="memo-foot">' +
+      '<button class="btn plain edit-only" data-act="copy" data-id="' + m.id + '">URLをコピー</button>' +
+      '<button class="btn ghost edit-only" data-act="edit" data-id="' + m.id + '">編集</button>' +
+      '<button class="btn plain edit-only" data-act="del" data-id="' + m.id + '">削除</button>' +
+    "</div></article>";
+}
+
+function renderList(){
+  let list = sortedMemos();
+  if(FOCUS_ID){ list = list.filter(function(m){ return m.id === FOCUS_ID; }); }
+  else{ list = list.filter(matchQ).filter(function(m){ return !curScn || groupKey(m) === curScn; }); }
+  $("list").innerHTML = list.length ? list.map(memoHtml).join("") :
+    '<div class="empty">' + (FOCUS_ID ? "このメモは見つかりませんでした。" : (MEMOS.length ? "該当するメモがありません。" : "まだメモがありません。")) + "</div>";
+}
+function render(){ renderShiori(); renderList(); }
+
+/* ===== 読み込み・保存 ===== */
+function ghToken(){ return ($("token").value.trim()) || (function(){ try{ return localStorage.getItem(GH_TOKEN_KEY) || ""; }catch(e){ return ""; } })(); }
+function ghHeaders(t){ const h = {"Accept":"application/vnd.github.v3+json","Content-Type":"application/json"}; if(t) h["Authorization"] = "token " + t; return h; }
+function encUtf8B64(str){ return btoa(unescape(encodeURIComponent(str))); }
+function decUtf8B64(s){ return decodeURIComponent(escape(atob(String(s).replace(/\n/g, "")))); }
+let memoSha = null;
+
+async function loadMemos(){
+  const t = IS_EDIT ? ghToken() : "";
+  let obj = null;
+  try{
+    if(t){
+      const r = await fetch(MEMO_API + "?ref=" + GH_BRANCH + "&t=" + Date.now(), {headers:ghHeaders(t), cache:"no-store"});
+      if(r.ok){ const j = await r.json(); memoSha = j.sha; obj = JSON.parse(decUtf8B64(j.content)); }
+      else if(r.status === 404){ obj = {memos:[]}; }
+      else throw new Error("HTTP " + r.status);
+    }else{
+      const r = await fetch(RAW_BASE + MEMO_FILE + "?t=" + Date.now(), {cache:"no-store"});
+      obj = r.ok ? await r.json() : {memos:[]};
+    }
+    MEMOS = Array.isArray(obj && obj.memos) ? obj.memos : [];
+  }catch(e){ setStatus("読み込みに失敗しました：" + e.message, true); }
+  render();
+  if(FOCUS_ID){ document.body.classList.add("focus"); }
+}
+
+/* ===== Xカード用の共有ページ（share/m_<id>.html） ===== */
+const SHARE_V = 3; // 3：カードにワンクッション／PASS付きを表示
+const SHARE_DIRTY = new Set();   // 作り直す共有ページ
+const SHARE_REMOVED = new Set(); // 消す共有ページ
+function memoShareUrl(m){ return SITE_BASE + "share/m_" + m.id + ".html"; }
+function buildMemoShareHtml(m){
+  const title = m.scenario || "ワンクッションメモ";
+  const dest = "../memo.html?m=" + encodeURIComponent(m.id);
+  return '<!DOCTYPE html>\n<html lang="ja">\n<head>\n<meta charset="UTF-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+    '<title>' + esc(title) + '｜EITHIOPHILE</title>\n' +
+    '<meta property="og:type" content="article">\n' +
+    '<meta property="og:site_name" content="EITHIOPHILE">\n' +
+    '<meta property="og:title" content="' + esc(title) + '">\n' +
+    '<meta property="og:description" content="' + (m.vis === "pass" ? "🔒 PASS付き" : "ワンクッション") + '">\n' +
+    '<meta property="og:url" content="' + esc(memoShareUrl(m)) + '">\n' +
+    '<meta property="og:image" content="' + SITE_BASE + 'favicon.png">\n' +
+    '<meta name="twitter:card" content="summary">\n' +
+    '<meta http-equiv="refresh" content="0; url=' + esc(dest) + '">\n' +
+    '</head>\n<body>\n<a href="' + esc(dest) + '">メモを開く</a>\n' +
+    '<script>location.replace(' + JSON.stringify(dest) + ');<\/script>\n</body>\n</html>\n';
+}
+async function ghFileSha(t, path){
+  try{ const r = await fetch("https://api.github.com/repos/" + GH_REPO + "/contents/" + path + "?ref=" + GH_BRANCH + "&t=" + Date.now(), {headers:ghHeaders(t), cache:"no-store"}); if(r.ok){ const j = await r.json(); return j.sha || null; } }catch(e){}
+  return null;
+}
+async function ghPutText(t, path, text){
+  const sha = await ghFileSha(t, path);
+  const body = { message:"update " + path, content:encUtf8B64(text), branch:GH_BRANCH }; if(sha) body.sha = sha;
+  const r = await fetch("https://api.github.com/repos/" + GH_REPO + "/contents/" + path, {method:"PUT", headers:ghHeaders(t), body:JSON.stringify(body)});
+  if(!r.ok){ const j = await r.json().catch(function(){ return {}; }); throw new Error("HTTP " + r.status + " " + (j.message || "")); }
+}
+async function ghDelete(t, path){
+  const sha = await ghFileSha(t, path); if(!sha) return;
+  await fetch("https://api.github.com/repos/" + GH_REPO + "/contents/" + path, {method:"DELETE", headers:ghHeaders(t), body:JSON.stringify({message:"delete " + path, sha:sha, branch:GH_BRANCH})});
+}
+async function syncShares(t){
+  const todo = MEMOS.filter(function(m){ return m.shareV !== SHARE_V || SHARE_DIRTY.has(m.id); });
+  for(let i = 0; i < todo.length; i++){
+    setStatus("共有カードを作成中…（" + (i+1) + "/" + todo.length + "）");
+    try{ await ghPutText(t, "share/m_" + todo[i].id + ".html", buildMemoShareHtml(todo[i])); todo[i].shareV = SHARE_V; SHARE_DIRTY.delete(todo[i].id); }
+    catch(e){ delete todo[i].shareV; }
+  }
+  const rm = Array.from(SHARE_REMOVED);
+  for(let i = 0; i < rm.length; i++){ try{ await ghDelete(t, "share/m_" + rm[i] + ".html"); SHARE_REMOVED.delete(rm[i]); }catch(e){} }
+}
+
+async function saveMemos(){
+  const t = ghToken();
+  if(!t){ EthTok.open(); return false; }
+  await syncShares(t);
+  setStatus("保存中…");
+  const payload = { type:"memo", version:1, updatedAt:new Date().toISOString(), memos:MEMOS };
+  async function put(sha){
+    const body = { message:"update " + MEMO_FILE, content:encUtf8B64(JSON.stringify(payload, null, 2)), branch:GH_BRANCH };
+    if(sha) body.sha = sha;
+    return fetch(MEMO_API, {method:"PUT", headers:ghHeaders(t), body:JSON.stringify(body)});
+  }
+  async function freshSha(){ try{ const r = await fetch(MEMO_API + "?ref=" + GH_BRANCH + "&t=" + Date.now(), {headers:ghHeaders(t), cache:"no-store"}); if(r.ok){ const j = await r.json(); return j.sha; } }catch(e){} return null; }
+  try{
+    let res = await put(memoSha || await freshSha());
+    if(res.status === 409 || res.status === 422){ res = await put(await freshSha()); }
+    const j = await res.json().catch(function(){ return {}; });
+    if(!res.ok) throw new Error("HTTP " + res.status + " " + (j.message || ""));
+    memoSha = j.content && j.content.sha;
+    try{ localStorage.setItem(GH_TOKEN_KEY, t); }catch(e){}
+    setStatus("保存しました。");
+    return true;
+  }catch(e){ setStatus("保存に失敗しました：" + e.message, true); return false; }
+}
+
+async function loadCards(){
+  if(CARDS) return CARDS;
+  $("pickList").innerHTML = '<div class="shiori-empty">卓履歴を読み込み中…</div>';
+  try{
+    const r = await fetch(RAW_BASE + "report.json?t=" + Date.now(), {cache:"no-store"});
+    const j = await r.json();
+    CARDS = (j.cards || []).map(function(c){ return {id:c.id, title:c.title || "", date:c.date || "", role:c.role || "", addedAt:Number(c.addedAt) || 0}; });
+  }catch(e){ CARDS = []; }
+  return CARDS;
+}
+
+/* ===== 編集 ===== */
+let ED = null; // {id|null, cardId, scenario, mode, unlocked, origVis}
+function setSeg(segId, k){ document.querySelectorAll("#" + segId + " button").forEach(function(b){ b.classList.toggle("on", b.dataset.k === k); }); }
+function setScnMode(k){ ED.mode = k; setSeg("scnSeg", k); $("scnPick").style.display = k === "pick" ? "" : "none"; $("scnNew").style.display = k === "new" ? "" : "none"; }
+function setBodyMode(k){ setSeg("bodySeg", k); const pv = k === "preview"; $("preview").style.display = pv ? "" : "none"; $("fBody").style.display = pv ? "none" : ""; if(pv) $("preview").innerHTML = mdRender($("fBody").value) || '<span style="color:#aaa">（本文なし）</span>'; }
+function visVal(){ const r = document.querySelector('input[name=vis]:checked'); return r ? r.value : "public"; }
+function updatePassUi(){
+  const isPass = visVal() === "pass";
+  $("passRow").style.display = isPass ? "" : "none";
+  const locked = ED.id && ED.origVis === "pass" && !ED.unlocked;
+  $("lockNote").style.display = locked ? "" : "none";
+  $("fBody").disabled = !!locked;
+  const old = ED.id ? MEMOS.find(function(x){ return x.id === ED.id; }) : null;
+  $("fNote").disabled = !!(locked && old && hasFuse(old.note));
+  $("passHelp").textContent = locked && isPass ? "本文を読み込まずに保存すると、本文とPASSはそのまま残ります。" : "閲覧する人はこのPASSで本文を開きます。PASSは保存されません（忘れると本文を開けなくなります）。";
+}
+/* 卓名の末尾の「#1」「＃２」などを除いたシナリオ名 */
+function baseTitle(t){ return String(t || "").trim().replace(/\s*[#＃]\s*[0-9０-９]+\s*$/, "").trim(); }
+function cardGroups(){
+  const g = {}, order = [];
+  (CARDS || []).forEach(function(c){
+    const t = baseTitle(c.title); if(!t) return;
+    if(!g[t]){ g[t] = {title:t, n:0, last:0, date:""}; order.push(t); }
+    g[t].n++; if(c.addedAt >= g[t].last){ g[t].last = c.addedAt; g[t].date = c.date; }
+  });
+  return order.map(function(t){ return g[t]; }).sort(function(a,b){ return b.last - a.last; });
+}
+function renderPick(){
+  const q = $("pickQ").value.trim().toLowerCase();
+  const list = cardGroups().filter(function(g){ return !q || g.title.toLowerCase().indexOf(q) >= 0; }).slice(0, 80);
+  $("pickList").innerHTML = list.length ? list.map(function(g){
+    return '<button class="pick-item' + (ED.report && ED.scenario === g.title ? " on" : "") + '" data-title="' + esc(g.title) + '">' + esc(g.title) + "<small>" + g.n + "卓" + (g.date ? " / 最新 " + esc(g.date) : "") + "</small></button>";
+  }).join("") : '<div class="shiori-empty">見つかりません</div>';
+  $("picked").innerHTML = ED.report && ED.scenario ? "選択中：<b>" + esc(ED.scenario) + "</b>" : "";
+}
+async function openEditor(id){
+  const m = id ? MEMOS.find(function(x){ return x.id === id; }) : null;
+  const fromReport = !!(m && (m.report || m.cardId));
+  ED = { id: m ? m.id : null, report: fromReport, scenario: m ? (m.scenario || "") : "", mode:"pick", unlocked: !!(m && m.vis === "pass" && UNLOCKED[m.id] != null), origVis: m ? m.vis : "public" };
+  $("mTitle").textContent = m ? "メモを編集" : "メモを書く";
+  $("pickQ").value = ""; $("newScn").value = m && !fromReport ? (m.scenario || "") : "";
+  const un = m && m.vis === "pass" && ED.unlocked ? UNLOCKED[m.id] : null;
+  $("fNote").value = m ? ((un && un.note != null) ? un.note : (m.note || "")) : "";
+  $("fBody").value = m ? (m.vis === "pass" ? (un ? un.body : "") : (m.body || "")) : "";
+  $("fPass").value = ""; $("unlockPass").value = ""; $("unlockErr").textContent = ""; $("mErr").textContent = "";
+  document.querySelectorAll('input[name=vis]').forEach(function(r){ r.checked = r.value === (m ? m.vis : "public"); });
+  setScnMode(m && !fromReport && m.scenario ? "new" : "pick");
+  setBodyMode("write");
+  updatePassUi();
+  $("ov").classList.add("open");
+  await loadCards();
+  renderPick();
+}
+function closeEditor(){ $("ov").classList.remove("open"); ED = null; }
+
+async function saveEditor(){
+  const err = $("mErr"); err.textContent = "";
+  let fromReport = false, scenario = "";
+  if(ED.mode === "pick"){ fromReport = ED.report; scenario = ED.report ? ED.scenario : ""; }
+  else{ scenario = $("newScn").value.trim(); }
+  if(!scenario){ err.textContent = "シナリオを選ぶか入力してください。"; return; }
+  const vis = visVal(), note = $("fNote").value.trim(), body = $("fBody").value, pass = normPass($("fPass").value);
+  const old = ED.id ? MEMOS.find(function(x){ return x.id === ED.id; }) : null;
+  const keepLocked = old && old.vis === "pass" && !ED.unlocked && vis === "pass" && !pass;
+  if(!keepLocked && !body.trim()){ err.textContent = "本文を入力してください。"; return; }
+  if(old && old.vis === "pass" && !ED.unlocked && vis === "public"){ err.textContent = "誰でも見られる設定に変えるには、先にPASSで本文を読み込んでください。"; return; }
+  if(vis === "pass" && !keepLocked && !pass){ err.textContent = "PASSを入力してください。"; return; }
+  if(keepLocked && !$("fNote").disabled && hasFuse(note) && !(old.note === note)){ err.textContent = "伏字を使うには、先にPASSで本文を読み込んでください。"; return; }
+  $("mSave").disabled = true;
+  try{
+    const now = Date.now();
+    const rec = old ? Object.assign({}, old) : { id:newId(), createdAt:now };
+    rec.scenario = scenario; rec.vis = vis; rec.updatedAt = now;
+    delete rec.cardId; if(fromReport) rec.report = true; else delete rec.report;
+    if(vis === "public"){ rec.note = note; rec.body = body; delete rec.enc; delete UNLOCKED[rec.id]; }
+    else if(!keepLocked){ rec.enc = await encryptText(JSON.stringify({v:2, body:body, note:note}), pass); rec.note = maskNote(note); delete rec.body; UNLOCKED[rec.id] = {body:body, note:note}; }
+    else if(!$("fNote").disabled){ rec.note = note; }
+    if(old) MEMOS[MEMOS.indexOf(old)] = rec; else MEMOS.push(rec);
+    SHARE_DIRTY.add(rec.id);
+    closeEditor(); render();
+    await saveMemos();
+  }finally{ $("mSave").disabled = false; }
+}
+
+/* ===== イベント ===== */
+$("list").addEventListener("click", async function(e){
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  const id = b.dataset.id, m = MEMOS.find(function(x){ return x.id === id; }); if(!m) return;
+  const act = b.dataset.act;
+  if(act === "show"){ SHOWN[id] = true; renderList(); }
+  else if(act === "hide"){ delete SHOWN[id]; renderList(); }
+  else if(act === "unlock"){
+    const inp = document.querySelector('[data-pass="' + id + '"]'), er = document.querySelector('[data-err="' + id + '"]');
+    if(!inp.value.trim()){ er.textContent = "PASSを入力してください。"; return; }
+    b.disabled = true;
+    try{ UNLOCKED[id] = parsePlain(await decryptText(m.enc, inp.value)); SHOWN[id] = true; renderList(); }
+    catch(x){ er.textContent = "PASSが違います。"; b.disabled = false; }
+  }
+  else if(act === "copy"){
+    const url = m.shareV === SHARE_V ? memoShareUrl(m) : SITE_BASE + "memo.html?m=" + encodeURIComponent(id);
+    const done = function(){ const o = b.textContent; b.textContent = "コピーしました"; setTimeout(function(){ b.textContent = o; }, 1500); };
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done).catch(function(){ prompt("URL", url); });
+    else prompt("URL", url);
+  }
+  else if(act === "edit"){ openEditor(id); }
+  else if(act === "del"){
+    if(!confirm("「" + (m.scenario || "") + "」のメモを削除しますか？")) return;
+    MEMOS = MEMOS.filter(function(x){ return x.id !== id; }); SHARE_REMOVED.add(id); render(); await saveMemos();
+  }
+});
+$("list").addEventListener("keydown", function(e){
+  if(e.key === "Enter" && e.target.dataset && e.target.dataset.pass){ const b = document.querySelector('[data-act="unlock"][data-id="' + e.target.dataset.pass + '"]'); if(b && !e.isComposing) b.click(); }
+});
+$("shiori").addEventListener("click", function(e){
+  const b = e.target.closest(".shiori-item"); if(!b) return;
+  curScn = b.dataset.scn || "";
+  if(FOCUS_ID){ location.href = "memo.html" + (IS_EDIT ? "?edit=1" : ""); return; }
+  render();
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+$("q").addEventListener("input", function(){ curScn = ""; render(); });
+$("shioriToggle").addEventListener("click", function(){ this.closest(".shiori").classList.toggle("open"); });
+$("groupSeg").addEventListener("click", function(e){
+  const b = e.target.closest("button"); if(!b || b.dataset.g === groupMode) return;
+  groupMode = b.dataset.g; curScn = "";
+  try{ localStorage.setItem("memo_group", groupMode); }catch(e){}
+  render();
+});
+$("addBtn").addEventListener("click", function(){ openEditor(null); });
+$("reloadBtn").addEventListener("click", function(){ setStatus("読み込み中…"); loadMemos().then(function(){ setStatus("読み込みました。"); }); });
+$("mClose").addEventListener("click", closeEditor);
+$("mCancel").addEventListener("click", closeEditor);
+$("mSave").addEventListener("click", saveEditor);
+$("scnSeg").addEventListener("click", function(e){ const b = e.target.closest("button"); if(b) setScnMode(b.dataset.k); });
+$("bodySeg").addEventListener("click", function(e){ const b = e.target.closest("button"); if(b) setBodyMode(b.dataset.k); });
+$("pickQ").addEventListener("input", renderPick);
+$("toggleBtn").addEventListener("click", function(){
+  const ta = $("fBody"); if(ta.disabled || ta.style.display === "none") return;
+  const a = ta.selectionStart, b = ta.selectionEnd, sel = ta.value.slice(a, b);
+  const pre = (a > 0 && ta.value[a-1] !== "\n") ? "\n" : "";
+  const head = ":::トグルの見出し\n";
+  ta.setRangeText(pre + head + (sel || "中身") + "\n:::\n", a, b, "end");
+  const st = a + pre.length + 3; ta.setSelectionRange(st, st + "トグルの見出し".length);
+  ta.focus();
+});
+$("fuseBtn").addEventListener("click", function(){
+  const ta = $("fNote"); if(ta.disabled) return;
+  const a = ta.selectionStart, b = ta.selectionEnd;
+  if(a === b){ ta.setRangeText("[[]]", a, b, "end"); ta.selectionStart = ta.selectionEnd = a + 2; }
+  else ta.setRangeText("[[" + ta.value.slice(a, b) + "]]", a, b, "select");
+  ta.focus();
+});
+$("pickList").addEventListener("click", function(e){
+  const b = e.target.closest(".pick-item"); if(!b) return;
+  ED.report = true; ED.scenario = b.dataset.title; renderPick();
+});
+document.querySelectorAll('input[name=vis]').forEach(function(r){ r.addEventListener("change", updatePassUi); });
+$("unlockBtn").addEventListener("click", async function(){
+  const m = MEMOS.find(function(x){ return x.id === ED.id; }); if(!m) return;
+  try{ const pl = parsePlain(await decryptText(m.enc, $("unlockPass").value)); UNLOCKED[m.id] = pl; ED.unlocked = true; $("fBody").value = pl.body; if(pl.note != null) $("fNote").value = pl.note; $("fPass").value = normPass($("unlockPass").value); updatePassUi(); }
+  catch(x){ $("unlockErr").textContent = "PASSが違います。"; }
+});
+
+/* ===== 起動 ===== */
+if(IS_EDIT) document.body.classList.add("editmode");
+if(IS_EDIT){ try{ const t = localStorage.getItem(GH_TOKEN_KEY); if(t) $("token").value = t; }catch(e){} }
+if(IS_EDIT) $("allLink").href = "memo.html?edit=1";
+loadMemos().then(function(){ if(FOCUS_ID){ const el = document.getElementById("memo-" + FOCUS_ID); if(el) el.scrollIntoView(); } });
+</script>
+<script>
+/* ===== 共通ヘッダー（大ページ ≡メニュー / 小ページタブ） ===== */
+(function(){
+  var REPO   = "8i10/EiThiophile";
+  var BRANCH = "main";
+  var JSON_URL = "https://raw.githubusercontent.com/"+REPO+"/"+BRANCH+"/profile.json";
+  var HOME = "index.html";
+  var EDIT = new URLSearchParams(location.search).get("edit") === "1";
+  var SELF = (location.pathname.split("/").pop() || "index.html").toLowerCase().replace(/\.html$/, "");
+
+  function withEdit(u){
+    if(!EDIT) return u;
+    return u + (u.indexOf("?") >= 0 ? "&" : "?") + "edit=1";
+  }
+  function fileOf(u){ return (String(u||"").split("?")[0].split("#")[0].split("/").pop() || "index.html").toLowerCase().replace(/\.html$/, ""); }
+  function isSelf(u){ return !!u && fileOf(u) === SELF; }
+
+  var menu = document.getElementById("ethNavMenu");
+  var btn  = document.getElementById("ethNavBtn");
+  function closeMenu(){ menu.classList.remove("open"); }
+  btn.addEventListener("click", function(e){ e.stopPropagation(); menu.classList.toggle("open"); });
+  document.addEventListener("click", function(e){
+    var w = document.querySelector(".eth-navwrap");
+    if(w && !w.contains(e.target)) closeMenu();
+  });
+
+  function majorHref(m){
+    if(m.url) return withEdit(m.url);
+    var ps = m.pages || [];
+    if(ps.length && ps.every(function(p){ return !!p.url; })) return withEdit(ps[0].url);
+    return withEdit(HOME + "?major=" + encodeURIComponent(m.id || ""));
+  }
+  function pageHref(m, p){
+    if(p.url) return withEdit(p.url);
+    return withEdit(HOME + "?major=" + encodeURIComponent(m.id || "") + "&page=" + encodeURIComponent(p.id || ""));
+  }
+
+  var CACHE_KEY = "eth_profile_cache_v1";
+  function readCache(){
+    try{ var s = localStorage.getItem(CACHE_KEY); return s ? JSON.parse(s) : null; }catch(e){ return null; }
+  }
+  function writeCache(j){
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(j)); }catch(e){}
+  }
+  fetch(JSON_URL + "?t=" + Date.now())
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      if(j && Array.isArray(j.majors)) writeCache(j);
+      else j = readCache();               /* 取得失敗時は前回の内容を使う */
+      var majors = (j && Array.isArray(j.majors)) ? j.majors : [];
+      var cur = null;
+      majors.forEach(function(m){
+        if(isSelf(m.url)) cur = m;
+        (m.pages || []).forEach(function(p){ if(isSelf(p.url)) cur = m; });
+      });
+
+      menu.innerHTML = "";
+      majors.forEach(function(m){
+        if(m.hidden) return;
+        var b = document.createElement("button");
+        var here = (cur && m.id === cur.id);
+        b.className = "eth-mtab" + (here ? " active" : "");
+        b.textContent = m.name || "(無題)";
+        b.addEventListener("click", function(){ closeMenu(); location.href = majorHref(m); });
+        menu.appendChild(b);
+      });
+
+      var bar = document.getElementById("ethTabbar");
+      var inner = document.getElementById("ethTabbarInner");
+      inner.innerHTML = "";
+      var _vis = (cur ? (cur.pages || []) : []).filter(function(p){ return !p.hidden; });
+      if(cur && _vis.length > 1){
+        bar.style.display = "";
+        cur.pages.forEach(function(p){
+          if(p.hidden) return;
+          var b = document.createElement("button");
+          b.className = "eth-tab" + (isSelf(p.url) ? " active" : "");
+          b.textContent = p.name || "(無題)";
+          b.addEventListener("click", function(){ location.href = pageHref(cur, p); });
+          inner.appendChild(b);
+        });
+      }
+    })
+    .catch(function(){
+      /* 通信自体が失敗 → 前回内容で描画 */
+      var j = readCache();
+      var majors = (j && Array.isArray(j.majors)) ? j.majors : [];
+      if(!majors.length) return;
+      var cur = null;
+      majors.forEach(function(m){
+        if(isSelf(m.url)) cur = m;
+        (m.pages || []).forEach(function(p){ if(isSelf(p.url)) cur = m; });
+      });
+      menu.innerHTML = "";
+      majors.forEach(function(m){
+        if(m.hidden) return;
+        var b = document.createElement("button");
+        b.className = "eth-mtab" + ((cur && m.id === cur.id) ? " active" : "");
+        b.textContent = m.name || "(無題)";
+        b.addEventListener("click", function(){ closeMenu(); location.href = majorHref(m); });
+        menu.appendChild(b);
+      });
+    });
+})();
+</script>
+</body>
+</html>
